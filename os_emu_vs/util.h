@@ -1,0 +1,48 @@
+#ifndef UTIL_H
+#define UTIL_H
+
+#include <string>
+#include <array>
+#include <cstdlib>
+#include <iostream>
+#include <algorithm>
+
+namespace Util {
+    inline constexpr char asciiHeader[] =
+        "  ______     _______.  ______   .______    _______     _______.____    ____ \n"
+        " /      |   /       | /  __  \\  |   _  \\  |   ____|   /       |\\   \\  /   / \n"
+        "|  ,----'  |   (----`|  |  |  | |  |_)  | |  |__     |   (----` \\   \\/   /  \n"
+        "|  |        \\   \\    |  |  |  | |   ___/  |   __|     \\   \\      \\_    _/   \n"
+        "|  `----.----)   |   |  `--'  | |  |      |  |____.----)   |       |  |     \n"
+        " \\______|_______/     \\______/  | _|      |_______|_______/        |__|     \n"
+        "                                                                            \n";
+
+    inline constexpr int commandsCount = 7;
+
+    inline constexpr std::array<const char*, commandsCount> commands = {
+        "initialize",
+        "screen",
+        "scheduler-test",
+        "scheduler-stop",
+        "report-util",
+        "clear",
+        "exit"
+    };
+
+    inline bool checkIfCommandExists(const std::string_view command) {
+        return std::ranges::find_if(commands, [&command](const char* cmd) {
+            return command == cmd;
+            }) != commands.end();
+    }
+
+    inline void flushScreen() {
+        std::cout << std::flush;
+    }
+
+    inline void clearScreen() {
+        flushScreen();
+        system("cls");
+    }
+}
+
+#endif //UTIL_H
