@@ -47,6 +47,8 @@ namespace Util {
 	#else
 		std::system("clear");
 	#endif
+
+		std::cout << asciiHeader << '\n';
 	}
 }
 

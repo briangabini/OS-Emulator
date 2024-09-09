@@ -5,42 +5,43 @@
 #include <string_view>
 
 int main() {
-    std::string userInput{};
+	std::string userInput{};
 
-    while (true) {
-        greetings();
 
-        getUserInput(userInput);
+	greetings();
 
-        onEvent(userInput);
-    }
+	while (true) {
+		getUserInput(userInput);
 
-    return 0;
+		onEvent(userInput);
+	}
+
+	return 0;
 }
 
 void greetings() {
-    std::cout << Util::asciiHeader << '\n';
-    std::cout << "Hello, Welcome to CSOPESY commandline!\n";
-    std::cout << "Type \'exit\' to quit, \'clear\' to clear the screen\n";
+	std::cout << Util::asciiHeader << '\n';
+	std::cout << "Hello, Welcome to CSOPESY commandline!\n";
+	std::cout << "Type \'exit\' to quit, \'clear\' to clear the screen\n";
 }
 
 void getUserInput(std::string& userInput) {
-    std::cout << "Enter a command: ";
-    std::getline(std::cin >> std::ws, userInput);
+	std::cout << "Enter a command: ";
+	std::getline(std::cin >> std::ws, userInput);
 }
 
 void onEvent(const std::string_view command) {
-    if (!Util::checkIfCommandExists(command)) {
-        std::cout << command << " command not recognized. Doing nothing.\n";
-        return;
-    }
+	if (!Util::checkIfCommandExists(command)) {
+		std::cout << command << " command not recognized. Doing nothing.\n";
+		return;
+	}
 
-    std::cout << command << " command recognized. Doing something.\n";
+	std::cout << command << " command recognized. Doing something.\n";
 
-    if (command == "clear") {
-        Util::clearScreen();
-    }
-    else if (command == "exit") {
-        exit(0);
-    }
+	if (command == "clear") {
+		Util::clearScreen();
+	}
+	else if (command == "exit") {
+		exit(0);
+	}
 }
