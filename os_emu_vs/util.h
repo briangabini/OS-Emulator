@@ -39,6 +39,13 @@ namespace Util {
 		std::cout << std::flush;
 	}
 
+	inline void greetings() {
+		std::cout << Util::asciiHeader << '\n';
+		std::cout << "Hello, Welcome to CSOPESY commandline!\n";
+		std::cout << "Type \'exit\' to quit, \'clear\' to clear the screen\n";
+	}
+
+
 	inline void clearScreen() {
 		flushScreen();
 
@@ -48,8 +55,10 @@ namespace Util {
 		std::system("clear");
 	#endif
 
-		std::cout << asciiHeader << '\n';
+		greetings();
 	}
+
+	
 }
 
 #endif //UTIL_H

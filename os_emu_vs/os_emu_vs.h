@@ -4,8 +4,6 @@
 #include <string>
 #include <string_view>
 
-void greetings();
-
 void getUserInput(std::string& userInput);
 
 void onEvent(std::string_view command);

@@ -7,8 +7,7 @@
 int main() {
 	std::string userInput{};
 
-
-	greetings();
+	Util::greetings();
 
 	while (true) {
 		getUserInput(userInput);
@@ -19,11 +18,6 @@ int main() {
 	return 0;
 }
 
-void greetings() {
-	std::cout << Util::asciiHeader << '\n';
-	std::cout << "Hello, Welcome to CSOPESY commandline!\n";
-	std::cout << "Type \'exit\' to quit, \'clear\' to clear the screen\n";
-}
 
 void getUserInput(std::string& userInput) {
 	std::cout << "Enter a command: ";
