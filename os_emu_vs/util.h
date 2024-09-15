@@ -42,8 +42,9 @@ namespace Util {
 
 	inline void greetings() {
 		std::cout << Util::asciiHeader << '\n';
-		std::cout << "Hello, Welcome to CSOPESY commandline!\n";
-		std::cout << "Type \'exit\' to quit, \'clear\' to clear the screen\n";
+		std::cout << "\033[32m" << "Hello, Welcome to CSOPESY commandline!\n";
+		std::cout << "\033[93m" << "Type \'exit\' to quit, \'clear\' to clear the screen\n";
+		std::cout << "\033[0m"; // reset color
 	}
 
 
@@ -55,8 +56,6 @@ namespace Util {
 	#else
 		std::system("clear");
 	#endif
-
-		greetings();
 	}
 
 	
