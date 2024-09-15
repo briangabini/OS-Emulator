@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdlib>
 #include <iostream>
+#include <string_view>
 
 #define windows // change based on your OS
 
@@ -19,7 +20,7 @@ namespace Util {
 
 	inline constexpr int commandsCount = 7;
 
-	inline constexpr std::array<const char*, commandsCount> commands = {
+	inline constexpr std::array<std::string_view, commandsCount> commands = {
 		"initialize",
 		"screen",
 		"scheduler-test",
@@ -30,7 +31,7 @@ namespace Util {
 	};
 
 	inline bool checkIfCommandExists(const std::string_view command) {
-		return std::ranges::find_if(commands, [&command](const char* cmd) {
+		return std::ranges::find_if(commands, [&command](std::string_view cmd) {
 			return command == cmd;
 			}) != commands.end();
 	}
