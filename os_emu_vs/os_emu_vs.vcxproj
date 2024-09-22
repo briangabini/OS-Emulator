@@ -136,9 +136,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="os_emu_vs.cpp" />
+    <ClCompile Include="Process.cpp" />
+    <ClCompile Include="Screen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="os_emu_vs.h" />
+    <ClInclude Include="Process.h" />
+    <ClInclude Include="Screen.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
