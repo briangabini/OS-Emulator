@@ -1,6 +1,4 @@
-#ifndef UTIL_H
-#define UTIL_H
-
+#pragma once
 #include <array>
 #include <cstdlib>
 #include <iostream>
@@ -60,5 +58,3 @@ namespace Util {
 
 	
 }
-
-#endif //UTIL_H

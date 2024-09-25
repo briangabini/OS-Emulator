@@ -7,6 +7,8 @@
 Process::Process(const std::string& name)
     : name(name), currentLine(1), totalLines(100), timestamp(getCurrentTimestamp()) {}
 
+Process::Process() : currentLine(1), totalLines(100), timestamp(getCurrentTimestamp()) {}
+
 std::string Process::getName() const {
     return name;
 }

@@ -1,16 +1,18 @@
+// Process.h
 #pragma once
 #include <string>
+#include <vector>
 #include <chrono>
 
 class Process {
 public:
     explicit Process(const std::string& name);
-	Process() = default;
+    Process();
 
     std::string getName() const;
-    std::string getTimestamp() const;
     int getCurrentLine() const;
     int getTotalLines() const;
+    std::string getTimestamp() const;
 
 private:
     std::string name;
