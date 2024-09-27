@@ -1,4 +1,3 @@
-// Process.h
 #pragma once
 #include <string>
 #include <vector>
@@ -7,18 +6,16 @@
 class Process {
 public:
     explicit Process(const std::string& name);
-    Process();
+    Process() = default;
 
     std::string getName() const;
     int getCurrentLine() const;
     int getTotalLines() const;
-    std::string getTimestamp() const;
+
+    friend std::ostream& operator<<(std::ostream& out, const Process& process);
 
 private:
     std::string name;
-    std::string timestamp;
     int currentLine;
     int totalLines;
-
-    std::string getCurrentTimestamp() const;
 };
