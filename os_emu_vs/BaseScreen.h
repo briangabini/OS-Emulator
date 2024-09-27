@@ -13,7 +13,7 @@ public:
     BaseScreen(std::shared_ptr<Process> process, const String& processName);
 
     // Default constructor (if needed)
-    BaseScreen() : attachedProcess(nullptr), refreshed(false), timestamp(getCurrentTimestamp()) {}
+    BaseScreen() : attachedProcess(nullptr), timestamp(getCurrentTimestamp()) {}
 
     ~BaseScreen() override = default;
     void onEnabled() override;

@@ -6,6 +6,8 @@
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
 
+#define windows
+
 namespace {
 	inline constexpr char asciiHeader[] =
 		"  ______     _______.  ______   .______    _______     _______.____    ____ \n"
@@ -79,8 +81,13 @@ namespace {
 				const auto newProcess = std::make_shared<Process>(processName);
 				const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, processName);
 
-				ConsoleManager::getInstance()->registerScreen(newBaseScreen);
-				ConsoleManager::getInstance()->switchToScreen(processName);
+				try {
+					ConsoleManager::getInstance()->registerScreen(newBaseScreen);
+					ConsoleManager::getInstance()->switchToScreen(processName);
+				}
+				catch (const std::exception& e) {
+					return;
+				}
 			}
 			else if (flag == "-r") {
 				ConsoleManager::getInstance()->switchToScreen(processName);

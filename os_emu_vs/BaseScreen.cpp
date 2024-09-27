@@ -6,6 +6,22 @@
 #include "Process.h"
 #include "ConsoleManager.h"
 
+#define _WIN32
+
+namespace {
+	void onEvent(const std::string_view command) {
+
+		if (command == "exit") {
+			ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
+		}
+	}
+
+	void getUserInput(std::string& userInput) {
+		std::cout << "root:\\>";
+		std::getline(std::cin >> std::ws, userInput);
+	}
+}
+
 std::string BaseScreen::getTimestamp() const {
 	return timestamp;
 }
@@ -34,10 +50,15 @@ void BaseScreen::printProcessInfo() const {
 
 void BaseScreen::onEnabled() {
     display();
+	process();
 };
 
 void BaseScreen::process() {
-	ConsoleManager::getInstance()->drawConsole();
+	std::string userInput;
+	while (true) {
+		getUserInput(userInput);
+		onEvent(userInput);
+	}
 };
 
 void BaseScreen::display() {
@@ -45,7 +66,7 @@ void BaseScreen::display() {
 };
 
 BaseScreen::BaseScreen(std::shared_ptr<Process> process, const String& processName)
-	: AConsole(processName), attachedProcess(process)
+	: AConsole(processName), attachedProcess(process), timestamp(getCurrentTimestamp())
 {
 }
 

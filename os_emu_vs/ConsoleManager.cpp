@@ -71,19 +71,10 @@ void ConsoleManager::switchConsole(const String& consoleName)
 
 void ConsoleManager::registerScreen(std::shared_ptr<BaseScreen> screenRef)
 {
-	if (this->getInstance() == nullptr) {
-		std::cout << "wtf";
-	}
-
-    if (screenRef == nullptr) {
-        std::cout << "Attempted to register a null screen." << std::endl;
-        return;
-    }
-
     if (this->consoleTable.contains(screenRef->getName()))
     {
         std::cerr << "Screen name " << screenRef->getName() << " already exists. Please use a different name." << '\n';
-        return;
+		throw std::runtime_error("Screen name already exists.");
     }
 
     this->consoleTable[screenRef->getName()] = screenRef;
