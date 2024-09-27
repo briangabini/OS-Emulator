@@ -132,7 +132,7 @@ ConsoleManager::ConsoleManager()
 	this->running = true;
 
 	// initialize consoles
-	this->consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	// this->consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	const auto mainConsole = std::make_shared<MainConsole>();
 	// const std::shared_ptr<MarqueeConsole> marqueeConsole = std::make_shared<MarqueeConsole>();

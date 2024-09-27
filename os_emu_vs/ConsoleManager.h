@@ -49,7 +49,7 @@ private:
 	std::shared_ptr<AConsole> currentConsole;
 	std::shared_ptr<AConsole> previousConsole;
 
-	HANDLE consoleHandle;
+	// HANDLE consoleHandle;
 	bool running = true;
 
 };
