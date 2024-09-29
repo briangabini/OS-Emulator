@@ -18,7 +18,7 @@ namespace {
 		" \\______|_______/     \\______/  | _|      |_______|_______/        |__|     \n"
 		"                                                                            \n";
 
-	inline constexpr int commandsCount = 7;
+	inline constexpr int commandsCount = 8;
 
 	inline constexpr std::array<std::string_view, commandsCount> commands = {
 		"initialize",
@@ -27,7 +27,8 @@ namespace {
 		"scheduler-stop",
 		"report-util",
 		"clear",
-		"exit"
+		"exit",
+		"nvidia-smi"
 	};
 
 	inline bool checkIfCommandExists(const std::string_view command) {
@@ -48,6 +49,9 @@ namespace {
 }
 
 namespace {
+	// forward declarations
+	void printNvidiaSmiOutput();
+
 	// Helper function to split command into tokens
 	std::vector<std::string> splitCommand(const std::string& command) {
 		std::istringstream iss(command);
@@ -109,6 +113,9 @@ namespace {
 		if (command == "clear") {
 			clearScreen();
 		}
+		else if (command == "nvidia-smi") {
+			printNvidiaSmiOutput();
+		}
 		else if (command == "exit") {
 			exit(0);
 		}
@@ -117,6 +124,49 @@ namespace {
 	void getUserInput(std::string& userInput) {
 		std::cout << "Enter a command: ";
 		std::getline(std::cin >> std::ws, userInput);
+	}
+
+	void printNvidiaSmiOutput() {
+		std::cout << "Mon Sep 30 00:19:57 2024\n"
+			<< "+-----------------------------------------------------------------------------------------+\n"
+			<< "| NVIDIA-SMI 561.09                 Driver Version: 561.09         CUDA Version: 12.6     |\n"
+			<< "|-----------------------------------------+------------------------+----------------------+\n"
+			<< "| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n"
+			<< "| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n"
+			<< "|                                         |                        |               MIG M. |\n"
+			<< "|=========================================+========================+======================|\n"
+			<< "|   0  NVIDIA GeForce RTX 2060 ...  WDDM  |   00000000:26:00.0  On |                  N/A |\n"
+			<< "| 41%   43C    P8             25W /  184W |    2684MiB /   8192MiB |     14%      Default |\n"
+			<< "|                                         |                        |                  N/A |\n"
+			<< "+-----------------------------------------+------------------------+----------------------+\n"
+			<< "\n"
+			<< "+-----------------------------------------------------------------------------------------+\n"
+			<< "| Processes:                                                                              |\n"
+			<< "|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |\n"
+			<< "|        ID   ID                                                               Usage      |\n"
+			<< "|=========================================================================================|\n"
+			<< "|    0   N/A  N/A      2268    C+G   ...al\\Discord\\app-1.0.9164\\Discord.exe      N/A      |\n"
+			<< "|    0   N/A  N/A      4168    C+G   ...ndows-x86_64\\qemu-system-x86_64.exe      N/A      |\n"
+			<< "|    0   N/A  N/A      4560    C+G   ...5n1h2txyewy\\ShellExperienceHost.exe      N/A      |\n"
+			<< "|    0   N/A  N/A      5900    C+G   C:\\Windows\\explorer.exe                     N/A      |\n"
+			<< "|    0   N/A  N/A      8112    C+G   ...nt.CBS_cw5n1h2txyewy\\SearchHost.exe      N/A      |\n"
+			<< "|    0   N/A  N/A      8136    C+G   ...2txyewy\\StartMenuExperienceHost.exe      N/A      |\n"
+			<< "|    0   N/A  N/A      8176    C+G   ...CBS_cw5n1h2txyewy\\TextInputHost.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     13748    C+G   ...les\\Microsoft OneDrive\\OneDrive.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     14044    C+G   ....0_x64__kzh8wxbdkxb8p\\DCv2\\DCv2.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     16152    C+G   ...t.LockApp_cw5n1h2txyewy\\LockApp.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     16836    C+G   ...al\\Discord\\app-1.0.9164\\Discord.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     18272    C+G   ...GeForce Experience\\NVIDIA Share.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     19200    C+G   ...AppData\\Roaming\\Spotify\\Spotify.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     21244    C+G   ...t Office\\root\\Office16\\POWERPNT.EXE      N/A      |\n"
+			<< "|    0   N/A  N/A     21572    C+G   ...\\PowerToys\\PowerToys.FancyZones.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     21712    C+G   ...ys\\WinUI3Apps\\PowerToys.Peek.UI.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     21952    C+G   ...GeForce Experience\\NVIDIA Share.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     21984    C+G   ...werToys\\PowerToys.PowerLauncher.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     22064    C+G   ...ram Files (x86)\\Adguard\\Adguard.exe      N/A      |\n"	
+			<< "|    0   N/A  N/A     34472    C+G   ...__8wekyb3d8bbwe\\WindowsTerminal.exe      N/A      |\n"
+			<< "|    0   N/A  N/A     39344    C+G   ...22\\Community\\Common7\\IDE\\devenv.exe      N/A      |\n"
+			<< "+-----------------------------------------------------------------------------------------+\n";
 	}
 }
 
