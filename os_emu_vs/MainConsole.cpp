@@ -18,7 +18,7 @@ namespace {
 		" \\______|_______/     \\______/  | _|      |_______|_______/        |__|     \n"
 		"                                                                            \n";
 
-	inline constexpr int commandsCount = 8;
+	inline constexpr int commandsCount = 9;
 
 	inline constexpr std::array<std::string_view, commandsCount> commands = {
 		"initialize",
@@ -28,7 +28,8 @@ namespace {
 		"report-util",
 		"clear",
 		"exit",
-		"nvidia-smi"
+		"nvidia-smi",
+		"marquee"
 	};
 
 	inline bool checkIfCommandExists(const std::string_view command) {
@@ -115,6 +116,9 @@ namespace {
 		}
 		else if (command == "nvidia-smi") {
 			printNvidiaSmiOutput();
+		} else if (command == "marquee")
+		{
+			ConsoleManager::getInstance()->switchConsole(MARQUEE_CONSOLE);
 		}
 		else if (command == "exit") {
 			exit(0);
