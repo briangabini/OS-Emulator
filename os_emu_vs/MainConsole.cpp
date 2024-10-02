@@ -1,10 +1,10 @@
-#include "MainConsole.h"
-#include <iostream>
-#include <array>
-#include <vector>
-#include <sstream>
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
+#include "MainConsole.h"
+#include <array>
+#include <iostream>
+#include <sstream>
+#include <vector>
 
 #define windows
 
@@ -18,7 +18,7 @@ namespace {
 		" \\______|_______/     \\______/  | _|      |_______|_______/        |__|     \n"
 		"                                                                            \n";
 
-	inline constexpr int commandsCount = 7;
+	inline constexpr int commandsCount = 8;
 
 	inline constexpr std::array<std::string_view, commandsCount> commands = {
 		"initialize",
@@ -26,6 +26,7 @@ namespace {
 		"scheduler-test",
 		"scheduler-stop",
 		"report-util",
+		"nvidia-smi",
 		"clear",
 		"exit"
 	};
@@ -39,11 +40,11 @@ namespace {
 	inline void clearScreen() {
 		std::cout << std::flush;
 
-	#ifdef windows
+#ifdef windows
 		std::system("cls");
-	#else
+#else
 		std::system("clear");
-	#endif
+#endif
 	}
 }
 
@@ -57,6 +58,101 @@ namespace {
 			tokens.push_back(token);
 		}
 		return tokens;
+	}
+
+	void gpuSummary() {
+		struct GPUInfo {
+			std::string id;
+			std::string name;
+			std::string driverModel;
+			std::string busId;
+			std::string dispA;
+			std::string ecc;
+			std::string fan;
+			std::string temp;
+			std::string perf;
+			std::string powerUsage;
+			std::string memoryUsage;
+			std::string gpuUtil;
+			std::string computeM;
+			std::string migM;
+		};
+
+		struct ProcessInfo {
+			std::string pid;
+			std::string type;
+			std::string processName;
+			std::string gpuMemoryUsage;
+		};
+
+		std::vector<GPUInfo> gpus = {
+			{"0", "NVIDIA GeForce RTX 3060", "WDDM", "00000000:01:00.0",
+				"On", "N/A", "0%", "44C",
+				"P8", "12W /  170W", "2743MiB /  12288MiB", "2%",
+				"Default", "N/A"}
+		};
+
+		std::vector<ProcessInfo> processes = {
+			{"22104", "C+G", "C:\\Windows\\System32\\ServiceHub.ThreadedWaitDialog.exe", "N/A"},
+			{"13848", "C+G", "C:\\Program Files\\Discord\\Discord.exe", "N/A"},
+			{"30648", "C+G", "C:\\Windows\\System32\\SystemSettings.exe", "N/A"},
+			{"6888", "C+G", "C:\\Windows\\explorer.exe", "N/A"},
+			{"7252", "C+G", "C:\\Program Files\\WindowsApps\\Microsoft.Media.Player.exe", "N/A"}
+		};
+
+		auto truncateString = [](const std::string& str, std::size_t width) {
+			if (str.length() > width) {
+				return "..." + str.substr(str.length() - (width - 3));
+			}
+			return str;
+			};
+
+		auto now = std::chrono::system_clock::now();
+		std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+		std::tm now_tm;
+		localtime_s(&now_tm, &now_time);
+
+		std::cout << std::put_time(&now_tm, "%a %b %d %H:%M:%S %Y") << "\n";
+		std::cout << "+-----------------------------------------------------------------------------------------+\n";
+		std::cout << "| NVIDIA-SMI 561.09                 Driver Version: 561.09         CUDA Version: 12.6     |\n";
+		std::cout << "|-----------------------------------------+------------------------+----------------------+\n";
+		std::cout << "| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n";
+		std::cout << "| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n";
+		std::cout << "|                                         |                        |               MIG M. |\n";
+		std::cout << "|=========================================+========================+======================|\n";
+
+		for (GPUInfo gpu : gpus) {
+			std::cout << "| " << std::setw(3) << gpu.id
+				<< "  " << std::setw(22) << gpu.name
+				<< "   " << std::setw(7) << gpu.driverModel << " "
+				<< " |   " << std::setw(16) << gpu.busId
+				<< "  " << std::setw(2) << gpu.dispA
+				<< " | " << std::setw(20) << gpu.ecc << " |\n";
+			std::cout << "|" << std::setw(4) << gpu.fan
+				<< "  " << std::setw(4) << gpu.temp
+				<< "  " << std::setw(4) << gpu.perf
+				<< "  " << std::setw(22) << gpu.powerUsage
+				<< " | " << std::setw(22) << gpu.memoryUsage
+				<< " | " << std::setw(7) << gpu.gpuUtil
+				<< "   " << std::setw(10) << gpu.computeM << " |\n";
+			std::cout << "|                                         |                        | " << std::setw(20) << gpu.migM << " |\n";
+		}
+
+		std::cout << "+-----------------------------------------+------------------------+----------------------+\n\n";
+		std::cout << "+----------------------------------------------------------------------+\n";
+		std::cout << "| Processes:                                                           |\n";
+		std::cout << "|    PID   Type   Process name                              GPU Memory |\n";
+		std::cout << "|                                                           Usage      |\n";
+		std::cout << "|======================================================================|\n";
+
+		for (ProcessInfo process : processes) {
+			std::cout << "| " << std::setw(6) << process.pid
+				<< "   " << std::setw(4) << process.type
+				<< "   " << std::left << std::setw(39) << truncateString(process.processName, 38)
+				<< " " << std::right << std::setw(7) << process.gpuMemoryUsage << "      |\n";
+		}
+
+		std::cout << "+----------------------------------------------------------------------+\n";
 	}
 
 	void onEvent(const std::string_view command) {
@@ -106,7 +202,11 @@ namespace {
 
 		std::cout << command << " command recognized. Doing something.\n";
 
-		if (command == "clear") {
+		if (command == "nvidia-smi")
+		{
+			gpuSummary();
+		}
+		else if (command == "clear") {
 			clearScreen();
 		}
 		else if (command == "exit") {
