@@ -127,23 +127,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ConsoleManager.cpp" />
-    <ClCompile Include="MainConsole.cpp" />
-    <ClCompile Include="Marquee.cpp" />
-    <ClCompile Include="OSEmulator.cpp" />
-    <ClCompile Include="Process.cpp" />
-    <ClCompile Include="Screen.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Console.h" />
-    <ClInclude Include="ConsoleManager.h" />
-    <ClInclude Include="MainConsole.h" />
-    <ClInclude Include="Marquee.h" />
-    <ClInclude Include="Process.h" />
-    <ClInclude Include="Screen.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include=".gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Console.h" />
+    <ClInclude Include="src\ConsoleManager.h" />
+    <ClInclude Include="src\MainConsole.h" />
+    <ClInclude Include="src\Marquee.h" />
+    <ClInclude Include="src\Process.h" />
+    <ClInclude Include="src\Screen.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ConsoleManager.cpp" />
+    <ClCompile Include="src\MainConsole.cpp" />
+    <ClCompile Include="src\Marquee.cpp" />
+    <ClCompile Include="src\OSEmulator.cpp" />
+    <ClCompile Include="src\Process.cpp" />
+    <ClCompile Include="src\Screen.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
