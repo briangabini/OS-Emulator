@@ -2,110 +2,105 @@
 #include <iostream>
 #include <windows.h>
 #include <conio.h>
+#include <chrono>
+#include <thread>
+#include <mutex>
 
-MarqueeConsole::MarqueeConsole(const std::shared_ptr<Process>& process, const std::string& name)
-    : BaseScreen(process, name), running(false), text(""), position(0), refreshRate(30), isThreaded(true) {}
-
-MarqueeConsole::~MarqueeConsole() {
-    stop();
-}
-
-void MarqueeConsole::setMarqueeText(const std::string& newText) {
-    text = newText;
-    position = 0;
-}
-
-void MarqueeConsole::start(bool threaded) {
-    running = true;
-    isThreaded = threaded;
-    exitCondition = []() {
-        return _kbhit() && _getch() == 27; // Check for ESC key
-        };
-
-    if (isThreaded) {
-        workerThread = std::thread(&MarqueeConsole::marqueeWorker, this);
-    }
-    else {
-        run();
-    }
-}
-
-void MarqueeConsole::stop() {
-    running = false;
-    if (isThreaded && workerThread.joinable()) {
-        workerThread.join();
-    }
-}
-
-void MarqueeConsole::setRefreshRate(int rate) {
-    refreshRate = rate;
-}
-
-void MarqueeConsole::marqueeWorker() {
-    while (running && !exitCondition()) {
-        updateMarquee();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / refreshRate));
-    }
-    running = false;
+MarqueeConsole::MarqueeConsole(ConsoleManager& manager) : consoleManager(manager), running(true) {
+    messages = {
+        R"(  _   _      _ _         __        __         _     _ )",
+        R"( | | | | ___| | | ___    \ \      / /__  _ __| | __| |)",
+        R"( | |_| |/ _ \ | |/ _ \    \ \ /\ / / _ \| '__| |/ _` |)",
+        R"( |  _  |  __/ | | (_) |    \ V  V / (_) | |  | | (_| |)",
+        R"( |_| |_|\___|_|_|\___/      \_/\_/ \___/|_|  |_|\__,_|)"
+    };
 }
 
 void MarqueeConsole::run() {
-    while (running && !exitCondition()) {
-        updateMarquee();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / refreshRate));
-    }
+    system("cls");
+    std::thread marqueeThread(&MarqueeConsole::marqueeLoop, this);
+    inputLoop();
     running = false;
+    marqueeThread.join();
 }
 
-void MarqueeConsole::updateMarquee() {
-    clearScreen();
+void MarqueeConsole::marqueeLoop() {
+    const int MARQUEE_WIDTH = 60;
+    std::vector<size_t> start_positions(messages.size(), 0);
 
-    // Display header
-    std::cout << "**********************************************\n";
-    std::cout << "* Displaying a marquee console! *\n";
-    std::cout << "**********************************************\n\n";
+    while (running) {
+        {
+            std::lock_guard<std::mutex> lock(consoleMutex);
+            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+            CONSOLE_SCREEN_BUFFER_INFO csbi;
+            GetConsoleScreenBufferInfo(hConsole, &csbi);
+            COORD cursorPosition = csbi.dwCursorPosition;
 
-    int consoleWidth = getConsoleWidth();
-    std::string visibleText = text + " " + text;
-    visibleText = visibleText.substr(position, consoleWidth);
+            for (size_t i = 0; i < messages.size(); ++i) {
+                SetConsoleCursorPosition(hConsole, { 0, static_cast<SHORT>(i) });
+                std::string to_display = messages[i].substr(start_positions[i], MARQUEE_WIDTH);
+                if (to_display.length() < MARQUEE_WIDTH) {
+                    to_display += messages[i].substr(0, MARQUEE_WIDTH - to_display.length());
+                }
+                std::cout << to_display;
+            }
 
-    // Print the visible portion of the text
-    std::cout << visibleText << "\n\n";
+            SetConsoleCursorPosition(hConsole, cursorPosition);
+        }
 
-    // Display footer
-    std::cout << "Enter a command for MARQUEE_CONSOLE: Notice the crude refresh. This is very dependent on your monitor\n";
-    std::cout << "Command processed in MARQUEE_CONSOLE: This is a sample barebones immediate mode UI drawing.\n";
-    std::cout << "Press ESC to exit the marquee.\n";
+        for (size_t i = 0; i < messages.size(); ++i) {
+            start_positions[i] = (start_positions[i] + 1) % messages[i].length();
+        }
 
-    // Move the position for the next update
-    position = (position + 1) % text.length();
-}
-
-void MarqueeConsole::processInput(const std::string& input) {
-    if (input == "exit") {
-        running = false;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    else {
-        std::cout << "\nProcessed command: " << input << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+}
+
+void MarqueeConsole::inputLoop() {
+    std::string user_input;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorPosition(hConsole, { 0, static_cast<SHORT>(messages.size() + 1) });
+    std::cout << "\nMarquee> ";
+    std::cout.flush();
+
+    while (running) {
+        if (_kbhit()) {
+            char ch = _getch();
+
+            if (ch == '\r') { // Enter key
+                {
+                    std::lock_guard<std::mutex> lock(consoleMutex);
+                    SetConsoleCursorPosition(hConsole, { 0, static_cast<SHORT>(messages.size() + 2) });
+                    std::cout << "You entered: " << user_input << std::string(60 - user_input.length(), ' ') << "\n";
+                }
+
+                if (user_input == "back" || user_input == "exit") {
+                    running = false;
+                    break;
+                }
+
+                user_input.clear();
+                SetConsoleCursorPosition(hConsole, { 0, static_cast<SHORT>(messages.size() + 3) });
+                std::cout << "Marquee> " << std::string(60, ' ');
+                SetConsoleCursorPosition(hConsole, { 8, static_cast<SHORT>(messages.size() + 3) });
+            }
+            else if (ch == '\b') { // Backspace key
+                if (!user_input.empty()) {
+                    user_input.pop_back();
+                    std::lock_guard<std::mutex> lock(consoleMutex);
+                    std::cout << "\b \b";
+                }
+            }
+            else {
+                user_input += ch;
+                std::lock_guard<std::mutex> lock(consoleMutex);
+                std::cout << ch;
+            }
+            std::cout.flush();
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-}
 
-void MarqueeConsole::clearScreen() {
-    COORD topLeft = { 0, 0 };
-    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO screen;
-    DWORD written;
-
-    GetConsoleScreenBufferInfo(console, &screen);
-    FillConsoleOutputCharacterA(console, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
-    FillConsoleOutputAttribute(console, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE,
-        screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
-    SetConsoleCursorPosition(console, topLeft);
-}
-
-int MarqueeConsole::getConsoleWidth() const {
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    std::cout << "\nReturning to main console...\n";
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 }

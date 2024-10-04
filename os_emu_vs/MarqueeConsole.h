@@ -1,37 +1,23 @@
 #pragma once
 
-#include "BaseScreen.h"
 #include <string>
-#include <thread>
+#include <vector>
 #include <atomic>
-#include <chrono>
-#include <functional>
+#include <mutex>
 
-class MarqueeConsole : public BaseScreen {
+class ConsoleManager;
+
+class MarqueeConsole {
 public:
-    MarqueeConsole(const std::shared_ptr<Process>& process, const std::string& name);
-    ~MarqueeConsole();
-
-    void setMarqueeText(const std::string& newText);
-    void start(bool threaded = true);
-    void stop();
-    void setRefreshRate(int rate);
-    void processInput(const std::string& input);
-    void run(); 
-
-    bool isRunning() const { return running; }
+    MarqueeConsole(ConsoleManager& manager);
+    void run();
 
 private:
-    void marqueeWorker();
-    void updateMarquee();
-    void clearScreen();
-    int getConsoleWidth() const;
+    void marqueeLoop();
+    void inputLoop();
 
+    std::vector<std::string> messages;
     std::atomic<bool> running;
-    std::string text;
-    size_t position;
-    std::thread workerThread;
-    int refreshRate;
-    bool isThreaded;
-    std::function<bool()> exitCondition;
+    ConsoleManager& consoleManager;
+    std::mutex consoleMutex;
 };

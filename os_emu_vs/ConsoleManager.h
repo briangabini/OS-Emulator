@@ -26,6 +26,9 @@ public:
 	void process() const;
 	void switchConsole(const String& consoleName);
 
+	// New method to switch to MarqueeConsole
+	void switchToMarquee();
+
 	void registerScreen(std::shared_ptr<BaseScreen> screenRef);
 	void switchToScreen(const String& screenName);
 	void unregisterScreen(const String& screenName);
@@ -33,7 +36,6 @@ public:
 	void returnToPreviousConsole();
 	void exitApplication();
 	bool isRunning() const;
-
 	// HANDLE getConsoleHandle() const;
 
 	// void setCursorPosition(int posX, int posY) const;

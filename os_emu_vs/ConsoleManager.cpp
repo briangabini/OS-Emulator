@@ -1,8 +1,7 @@
 #include "ConsoleManager.h"
-
 #include <iostream>
-
 #include "MainConsole.h"
+#include "MarqueeConsole.h"
 // #include "MarqueeConsole.h"
 // #include "SchedulingConsole.h"
 // #include "MemorySimulationConsole.h"
@@ -39,6 +38,11 @@ void ConsoleManager::drawConsole() const
 	{
 		std::cerr << "There is no assigned console. Please check." << '\n';
 	}
+}
+
+void ConsoleManager::switchToMarquee() {
+	MarqueeConsole marquee(*this);
+	marquee.run();
 }
 
 void ConsoleManager::process() const
@@ -131,18 +135,11 @@ ConsoleManager::ConsoleManager()
 {
 	this->running = true;
 
-	// initialize consoles
-	// this->consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-
 	const auto mainConsole = std::make_shared<MainConsole>();
-	// const std::shared_ptr<MarqueeConsole> marqueeConsole = std::make_shared<MarqueeConsole>();
-	// const std::shared_ptr<SchedulingConsole> schedulingConsole = std::make_shared<SchedulingConsole>();
-	// const std::shared_ptr<MemorySimulationConsole> memoryConsole = std::make_shared<MemorySimulationConsole>();
+	// const std::shared_ptr<MarqueeConsole> marqueeConsole = std::make_shared<MarqueeConsole>(*this);
 
 	this->consoleTable[MAIN_CONSOLE] = mainConsole;
 	// this->consoleTable[MARQUEE_CONSOLE] = marqueeConsole;
-	// this->consoleTable[SCHEDULING_CONSOLE] = schedulingConsole;
-	// this->consoleTable[MEMORY_CONSOLE] = memoryConsole;
 }
 
 bool ConsoleManager::isRunning() const

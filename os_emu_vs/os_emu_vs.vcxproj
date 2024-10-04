@@ -141,7 +141,6 @@
     <ClCompile Include="MainConsole.cpp" />
     <ClCompile Include="MarqueeConsole.cpp" />
     <ClCompile Include="os_emu_vs.cpp" />
-    <ClCompile Include="os_emu_vs.txt" />
     <ClCompile Include="Process.cpp" />
   </ItemGroup>
   <ItemGroup>

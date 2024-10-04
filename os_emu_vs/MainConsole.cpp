@@ -145,44 +145,16 @@ namespace {
             return;
         }
 
-        if (tokens[0] == "marquee") {
-            if (tokens.size() < 3) {
-                std::cout << "Error: Insufficient arguments for marquee command.\n";
-                std::cout << "Usage: marquee <threaded/non-threaded> <text>\n";
-                return;
-            }
-
-            bool threaded = (tokens[1] == "threaded");
-            std::string marqueeText = "";
-            for (size_t i = 2; i < tokens.size(); ++i) {
-                marqueeText += tokens[i] + " ";
-            }
-            marqueeText = marqueeText.substr(0, marqueeText.length() - 1); // Remove trailing space
-
-            const auto newProcess = std::make_shared<Process>("MarqueeProcess");
-            auto marqueeScreen = std::make_shared<MarqueeConsole>(newProcess, "MarqueeScreen");
-            marqueeScreen->setMarqueeText(marqueeText);
-            marqueeScreen->start(threaded);
-
-            // Run the marquee until it stops
-            while (marqueeScreen->isRunning()) {
-                if (_kbhit()) {
-                    char ch = _getch();
-                    if (ch == 27) { // ESC key
-                        marqueeScreen->stop();
-                        break;
-                    }
-                    else {
-                        std::string input(1, ch);
-                        std::getline(std::cin, input);
-                        marqueeScreen->processInput(input);
-                    }
-                }
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
-
+        else if (tokens[0] == "marquee") {
+            ConsoleManager* manager = ConsoleManager::getInstance();
+            MarqueeConsole marquee(*manager);
+            marquee.run();
+            // After marquee exits, redisplay the main console
+            system("cls");
+            manager->drawConsole();
             return;
         }
+
 
         if (!checkIfCommandExists(command)) {
             std::cout << command << " command not recognized. Doing nothing.\n";
