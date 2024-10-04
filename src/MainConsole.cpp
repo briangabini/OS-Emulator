@@ -75,6 +75,9 @@ void MainConsole::handleCommand(const std::string& input) {
     else if (command == "marquee") {
         consoleManager.switchToMarquee();
     }
+    else if (command == "marqueent") {
+        consoleManager.switchToMarqueeNT();
+    }
     else {
         std::cout << "Command not recognized. Please try again.\n";
     }

@@ -21,6 +21,7 @@ public:
     void switchToMainConsole();
     void switchToScreen(Process* process);
     void switchToMarquee();
+    void switchToMarqueeNT();
     std::mutex& getIOMutex();
 
     void createProcess(const std::string& name);

@@ -1,6 +1,7 @@
 #include "ConsoleManager.h"
 #include "MainConsole.h"
 #include "Marquee.h"
+#include "MarqueeNT.h"
 #include <iostream>
 
 ConsoleManager::ConsoleManager() {
@@ -30,6 +31,11 @@ void ConsoleManager::switchToScreen(Process* process) {
 void ConsoleManager::switchToMarquee() {
     Marquee marquee(*this);
     marquee.run();
+}
+
+void ConsoleManager::switchToMarqueeNT() {
+    MarqueeNT marqueeNT(*this);
+    marqueeNT.run();
 }
 
 std::mutex& ConsoleManager::getIOMutex() {
