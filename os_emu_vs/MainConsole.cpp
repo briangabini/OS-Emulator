@@ -7,9 +7,11 @@
 #include <ctime>
 #include <random>
 #include <algorithm>
+#include <conio.h>
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
 #include "Process.h"
+#include "MarqueeConsole.h"
 
 // Add Windows-specific include
 #include <windows.h>
@@ -26,7 +28,7 @@ namespace {
         " \\______|_______/     \\______/  | _|      |_______|_______/        |__|     \n"
         "                                                                            \n";
 
-    inline constexpr int commandsCount = 8;
+    inline constexpr int commandsCount = 9;
 
     inline constexpr std::array<std::string_view, commandsCount> commands = {
         "initialize",
@@ -36,7 +38,8 @@ namespace {
         "report-util",
         "clear",
         "exit",
-        "nvidia-smi"
+        "nvidia-smi",
+        "marquee"
     };
 
     inline bool checkIfCommandExists(const std::string_view command) {
@@ -79,19 +82,18 @@ namespace {
     }
 
     void showNvidiaSmi() {
-        // Get current time
         auto now = std::time(nullptr);
         std::tm localTime;
         localtime_s(&localTime, &now);
 
-        // Random number generator for dynamic values
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> tempDist(30, 80);
         std::uniform_int_distribution<> utilDist(0, 100);
         std::uniform_int_distribution<> memDist(0, 8192);
+        std::uniform_int_distribution<> pid4Dist(1000, 9999);
+        std::uniform_int_distribution<> pid5Dist(10000, 99999);
 
-        // Header
         std::cout << std::put_time(&localTime, "%a %b %d %H:%M:%S %Y") << std::endl;
         std::cout << "+-----------------------------------------------------------------------------+\n";
         std::cout << "| NVIDIA-SMI 515.65.01    Driver Version: 515.65.01    CUDA Version: 11.7     |\n";
@@ -101,7 +103,6 @@ namespace {
         std::cout << "|                               |                      |               MIG M. |\n";
         std::cout << "|===============================+======================+======================|\n";
 
-        // GPU Info (randomized for demonstration)
         int temp = tempDist(gen);
         int util = utilDist(gen);
         int memUsed = memDist(gen);
@@ -112,22 +113,29 @@ namespace {
         std::cout << "|                               |                      |                  N/A |\n";
         std::cout << "+-------------------------------+----------------------+----------------------+\n";
 
-        // Processes
         std::cout << "                                                                               \n";
         std::cout << "+-----------------------------------------------------------------------------+\n";
         std::cout << "| Processes:                                                                  |\n";
         std::cout << "|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |\n";
         std::cout << "|        ID   ID                                                   Usage      |\n";
         std::cout << "|=============================================================================|\n";
-        std::cout << "|    0   N/A  N/A      1234      C   ...\\Windows\\System32\\dwm.exe   N/A       |\n";
-        std::cout << "|    0   N/A  N/A      5678      C   ...ram Files\\NVIDIA Corpora... N/A       |\n";
-        std::cout << "|    0   N/A  N/A      9101      C   ...\\Google\\Chrome\\Application  N/A       |\n";
-        std::cout << "|    0   N/A  N/A      1122      C   ...\\Adobe\\Photoshop\\Photosh... N/A       |\n";
-        std::cout << "|    0   N/A  N/A      3344      C   ...\\Epic Games\\Fortnite\\For... N/A       |\n";
+
+        std::vector<std::tuple<int, std::string, int>> processes = {
+            {pid4Dist(gen), "C:\\Windows\\System32\\dwm.exe", memDist(gen)},
+            {pid4Dist(gen), "C:\\Program Files\\NVIDIA Corporation\\NVIDIA GeForce Experience\\NVIDIA Share.exe", memDist(gen)},
+            {pid4Dist(gen), "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", memDist(gen)},
+            {pid5Dist(gen), "C:\\Program Files\\Adobe\\Adobe Photoshop 2023\\Photoshop.exe", memDist(gen)},
+            {pid5Dist(gen), "C:\\Program Files\\Epic Games\\Fortnite\\FortniteGame\\Binaries\\Win64\\FortniteClient-Win64-Shipping.exe", memDist(gen)}
+        };
+
+        for (const auto& [pid, name, memory] : processes) {
+            std::cout << "|    0   N/A  N/A  " << std::setw(8) << pid << "      C   "
+                << std::left << std::setw(26) << truncate(name, 26)
+                << std::right << std::setw(10) << memory << " MiB |\n";
+        }
+
         std::cout << "+-----------------------------------------------------------------------------+\n";
     }
-
-
 
     void onEvent(const std::string_view command) {
         std::vector<std::string> tokens = splitCommand(std::string(command));
@@ -137,36 +145,42 @@ namespace {
             return;
         }
 
-        if (tokens[0] == "screen") {
+        if (tokens[0] == "marquee") {
             if (tokens.size() < 3) {
-                std::cout << "Error: Insufficient arguments for screen command.\n";
-                std::cout << "Usage: screen -r <process_name> or screen -s <process_name>\n";
+                std::cout << "Error: Insufficient arguments for marquee command.\n";
+                std::cout << "Usage: marquee <threaded/non-threaded> <text>\n";
                 return;
             }
 
-            const std::string& flag = tokens[1];
-            const std::string& processName = tokens[2];
+            bool threaded = (tokens[1] == "threaded");
+            std::string marqueeText = "";
+            for (size_t i = 2; i < tokens.size(); ++i) {
+                marqueeText += tokens[i] + " ";
+            }
+            marqueeText = marqueeText.substr(0, marqueeText.length() - 1); // Remove trailing space
 
-            if (flag == "-s") {
-                const auto newProcess = std::make_shared<Process>(processName);
-                const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, processName);
+            const auto newProcess = std::make_shared<Process>("MarqueeProcess");
+            auto marqueeScreen = std::make_shared<MarqueeConsole>(newProcess, "MarqueeScreen");
+            marqueeScreen->setMarqueeText(marqueeText);
+            marqueeScreen->start(threaded);
 
-                try {
-                    ConsoleManager::getInstance()->registerScreen(newBaseScreen);
-                    ConsoleManager::getInstance()->switchToScreen(processName);
+            // Run the marquee until it stops
+            while (marqueeScreen->isRunning()) {
+                if (_kbhit()) {
+                    char ch = _getch();
+                    if (ch == 27) { // ESC key
+                        marqueeScreen->stop();
+                        break;
+                    }
+                    else {
+                        std::string input(1, ch);
+                        std::getline(std::cin, input);
+                        marqueeScreen->processInput(input);
+                    }
                 }
-                catch (const std::exception&) {
-                    // Handle the exception if needed
-                    return;
-                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
-            else if (flag == "-r") {
-                ConsoleManager::getInstance()->switchToScreen(processName);
-            }
-            else {
-                std::cout << "Error: Invalid screen command flag.\n";
-                std::cout << "Usage: screen -r <process_name> or screen -s <process_name>\n";
-            }
+
             return;
         }
 
