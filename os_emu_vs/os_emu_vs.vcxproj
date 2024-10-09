@@ -139,6 +139,7 @@
     <ClCompile Include="BaseScreen.cpp" />
     <ClCompile Include="ConsoleManager.cpp" />
     <ClCompile Include="MainConsole.cpp" />
+    <ClCompile Include="MarqueeConsole.cpp" />
     <ClCompile Include="os_emu_vs.cpp" />
     <ClCompile Include="os_emu_vs.txt" />
     <ClCompile Include="Process.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="BaseScreen.h" />
     <ClInclude Include="ConsoleManager.h" />
     <ClInclude Include="MainConsole.h" />
+    <ClInclude Include="MarqueeConsole.h" />
     <ClInclude Include="os_emu_vs.h" />
     <ClInclude Include="Process.h" />
     <ClInclude Include="TypedefRepo.h" />

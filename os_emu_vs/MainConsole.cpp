@@ -18,7 +18,7 @@ namespace {
 		" \\______|_______/     \\______/  | _|      |_______|_______/        |__|     \n"
 		"                                                                            \n";
 
-	inline constexpr int commandsCount = 7;
+	inline constexpr int commandsCount = 9;
 
 	inline constexpr std::array<std::string_view, commandsCount> commands = {
 		"initialize",
@@ -27,7 +27,9 @@ namespace {
 		"scheduler-stop",
 		"report-util",
 		"clear",
-		"exit"
+		"exit",
+		"nvidia-smi",
+		"marquee"
 	};
 
 	inline bool checkIfCommandExists(const std::string_view command) {
@@ -48,6 +50,9 @@ namespace {
 }
 
 namespace {
+	// forward declarations
+	void printNvidiaSmiOutput();
+
 	// Helper function to split command into tokens
 	std::vector<std::string> splitCommand(const std::string& command) {
 		std::istringstream iss(command);
@@ -109,6 +114,12 @@ namespace {
 		if (command == "clear") {
 			clearScreen();
 		}
+		else if (command == "nvidia-smi") {
+			printNvidiaSmiOutput();
+		} else if (command == "marquee")
+		{
+			ConsoleManager::getInstance()->switchConsole(MARQUEE_CONSOLE);
+		}
 		else if (command == "exit") {
 			exit(0);
 		}
@@ -117,6 +128,76 @@ namespace {
 	void getUserInput(std::string& userInput) {
 		std::cout << "Enter a command: ";
 		std::getline(std::cin >> std::ws, userInput);
+	}
+
+
+	// Function to truncate text with ellipsis at the front if it exceeds the column width
+	std::string& truncateText(std::string& text, int maxWidth) {
+		if (text.length() > maxWidth) {
+			text = "..." + text.substr(text.length() - (maxWidth - 3));  // Truncate and add "..." at the start
+		}
+		return text;
+	}
+
+	void printNvidiaSmiOutput() {
+		constexpr std::string_view gpuSummary = "Mon Sep 30 00:19:57 2024\n"
+			"+-----------------------------------------------------------------------------------------+\n"
+			"| NVIDIA-SMI 561.09                 Driver Version: 561.09         CUDA Version: 12.6     |\n"
+			"|-----------------------------------------+------------------------+----------------------+\n"
+			"| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n"
+			"| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n"
+			"|                                         |                        |               MIG M. |\n"
+			"|=========================================+========================+======================|\n"
+			"|   0  NVIDIA GeForce RTX 2060 ...  WDDM  |   00000000:26:00.0  On |                  N/A |\n"
+			"| 41%   43C    P8             25W /  184W |    2684MiB /   8192MiB |     14%      Default |\n"
+			"|                                         |                        |                  N/A |\n"
+			"+-----------------------------------------+------------------------+----------------------+\n";
+
+		constexpr std::string_view gpuProcessHeader =
+			"+-------------------------------------------------------------------------+\n"
+			"| Processes:                                                              |\n"
+			"|      PID   Type    Process name                              GPU Memory |\n"
+			"|                                                              Usage      |\n"
+			"|=========================================================================|\n";
+
+		constexpr std::string_view gpuProcessFooter =
+			"+-------------------------------------------------------------------------+\n";
+
+		// Sample data for the rows
+		std::vector<std::vector<std::string>> processTable = {
+			{"2268", "C+G", "C:\\Users\\User\\AppData\\Local\\Discord\\app-1.0.9164\\Discord.exe", "N/A"},
+			{"4168", "C+G", "C:\\Program Files\\qemu-windows-x86_64\\qemu-system-x86_64.exe", "N/A"},
+			{"4560", "C+G", "C:\\Windows\\SystemApps\\Microsoft.Windows.ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe", "N/A"},
+			{"511900", "C+G", "C:\\Windows\\explorer.exe", "N/A"},
+			{"81120", "C+G", "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe", "N/A"}
+		};
+
+
+		std::cout << gpuSummary ;
+		std::cout << '\n';
+		std::cout << gpuProcessHeader;
+
+		for (auto& row : processTable) {
+			// Define column widths
+			constexpr int pidWidth = 6;        // Width for the PID column
+			constexpr int typeWidth = 3;       // Width for the Type column
+			constexpr int nameWidth = 38;      // Width for the Process Name column
+			constexpr int memoryWidth = 10;    // Width for the GPU Memory Usage column
+
+			// Get each column's text, truncate if necessary (modified directly)
+			std::string& pid = truncateText(row[0], pidWidth);
+			std::string& type = truncateText(row[1], typeWidth);
+			std::string& processName = truncateText(row[2], nameWidth);
+			std::string& memoryUsage = truncateText(row[3], memoryWidth);
+
+			// Print the row with proper column spacing
+			std::cout << "|   " << std::right << std::setw(pidWidth) << pid
+				<< "    " << std::right << std::setw(typeWidth) << type
+				<< "    " << std::left << std::setw(nameWidth) << processName
+				<< "    " << std::left << std::setw(memoryWidth) << memoryUsage << " |\n";
+		}
+
+		std::cout << gpuProcessFooter;
 	}
 }
 
