@@ -1,0 +1,100 @@
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:02PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:02PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:02PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:03PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:03PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:03PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:03PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:04PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:04PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:07:04PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:15PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:16PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:16PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:16PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:16PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:16PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:17PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:17PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:17PM) Core:-1 "Sample text"
+====
+Process name: process_8
+Logs:
+
+(10/10/2024 10:08:17PM) Core:-1 "Sample text"

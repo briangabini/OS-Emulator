@@ -9,7 +9,12 @@ Process::Process(int pid, String name)
 
 void Process::addCommand(ICommand::CommandType commandType)
 {
-	commandList.push_back(std::make_shared<ICommand>(pid, commandType));
+
+	//commandList.push_back(std::make_shared<ICommand>(pid, commandType));
+	if (commandType == ICommand::CommandType::PRINT) {
+		String message = "Sample text";
+		commandList.push_back(std::make_shared<PrintCommand>(pid, message));
+	}
 }
 
 void Process::executeCurrentCommand() const
