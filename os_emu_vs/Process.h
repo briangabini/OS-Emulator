@@ -45,6 +45,7 @@ public:
 
     // setters
     void setState(ProcessState state);
+    void setCpuCoreId(int _cpuCoreId);
 
     //void test_generateRandomCommands(int limit);
 

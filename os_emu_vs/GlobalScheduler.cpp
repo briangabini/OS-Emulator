@@ -41,7 +41,7 @@ std::shared_ptr<Process> GlobalScheduler::createUniqueProcess(std::string proces
     std::shared_ptr<Process> newProcess = std::make_shared<Process>(nextPid++, processName);
 
     // Week 6
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 100; i++) {
         newProcess->addCommand(ICommand::PRINT);
     }
 
@@ -111,10 +111,21 @@ void GlobalScheduler::listProcesses() const {
         int currentLinesOfCode = process->getCommandCounter();
         int totalLinesOfCode = process->getLinesOfCode();
 
+        std::string coreIdOutput;
+        if (process->isFinished()) {
+            coreIdOutput = "Finished";
+        }
+        else if (process->getCPUCoreID() == -1) {
+            coreIdOutput = "N/A";
+        }
+        else {
+            coreIdOutput = std::to_string(process->getCPUCoreID());
+        }
+
         std::cout << "Process Name: " << process->getName()
             << " | PID: " << process->getPID()
             << " | Status: " << (process->isFinished() ? "Finished" : "Not Finished")
-            << " | Core ID: " << (process->isFinished() ? "N/A" : std::to_string(process->getCPUCoreID()))
+            << " | Core ID: " << coreIdOutput
             << " | Lines of Code: " << currentLinesOfCode << "/" << totalLinesOfCode
             << "\n";
     }

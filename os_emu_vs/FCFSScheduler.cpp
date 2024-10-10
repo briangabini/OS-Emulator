@@ -7,9 +7,9 @@ FCFSScheduler::FCFSScheduler()
 }
 
 void FCFSScheduler::init() {
-	for (auto& process : processes) {
-		readyQueue.push(process);
-	}
+	//for (auto& process : processes) {
+	//	readyQueue.push(process);
+	//}
 }
 
 std::shared_ptr<SchedulerWorker> FCFSScheduler::findAvailableWorker() {
@@ -27,8 +27,9 @@ void FCFSScheduler::execute() {
 		readyQueue.pop();
 
 		std::shared_ptr<SchedulerWorker> worker = nullptr;
+
 		while (!(worker = findAvailableWorker())) {
-			sleep(5000);
+			sleep(200);
 		}
 		worker->update(true);
 		worker->assignProcess(currentProcess);

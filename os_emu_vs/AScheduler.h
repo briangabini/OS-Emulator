@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <queue>
 
 #include "IETThread.h"
 #include "Process.h"
@@ -23,14 +24,14 @@ public:
 	AScheduler(SchedulingAlgorithm schedulingAlgo);
 
 	void addProcess(std::shared_ptr<Process> process);
-	std::shared_ptr<Process> findProcess(std::string processName);
+	//std::shared_ptr<Process> findProcess(std::string processName);
 	void run() override;
 	void stop();
 
 	virtual void init() = 0;
 	virtual void execute() = 0;
 
-	/*struct ProcessInfo {
+	struct ProcessInfo {
 		int pid;
 		std::string name;
 		typedef std::vector<std::shared_ptr<ICommand>> CommandList;
@@ -38,7 +39,7 @@ public:
 		int commandCounter;
 		int cpuCoreId;
 		Process::ProcessState currentState;
-	};*/
+	};
 
 	friend class GlobalScheduler;
 
@@ -48,5 +49,6 @@ protected:
 	bool running = true;
 	int workersCount = 4;
 	std::vector<std::shared_ptr<Process>> processes;
+	std::queue<std::shared_ptr<Process>> readyQueue;
 	std::vector<std::shared_ptr<SchedulerWorker>> schedulerWorkers;
 };

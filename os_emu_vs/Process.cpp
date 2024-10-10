@@ -78,6 +78,10 @@ void Process::setState(Process::ProcessState state) {
 	this->currentState = state;
 }
 
+void Process::setCpuCoreId(int _cpuCoreId) {
+	this->cpuCoreId = _cpuCoreId;
+}
+
 //void Process::test_generateRandomCommands(int limit)
 
 //std::ostream& operator<<(std::ostream& out, const Process& process) {

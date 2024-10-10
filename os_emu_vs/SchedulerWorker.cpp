@@ -15,16 +15,19 @@ void SchedulerWorker::run() {
     while (true) {
         if (currentProcess) {
             currentProcess->setState(currentProcess->RUNNING);
+            currentProcess->setCpuCoreId(cpuCoreId);
+
             while (!currentProcess->isFinished()) {
                 currentProcess->executeCurrentCommand();
                 currentProcess->moveToNextLine();
-				sleep(200);
+                sleep(250);
             }
             currentProcess = nullptr;
             running = false;
         }
     }
 }
+
 
 bool SchedulerWorker::isRunning() {
     return running;
