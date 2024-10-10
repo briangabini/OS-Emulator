@@ -18,11 +18,11 @@ void SchedulerWorker::run() {
             while (!currentProcess->isFinished()) {
                 currentProcess->executeCurrentCommand();
                 currentProcess->moveToNextLine();
+				sleep(200);
             }
             currentProcess = nullptr;
             running = false;
         }
-        sleep(200);
     }
 }
 

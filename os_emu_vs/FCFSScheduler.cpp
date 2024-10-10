@@ -28,7 +28,7 @@ void FCFSScheduler::execute() {
 
 		std::shared_ptr<SchedulerWorker> worker = nullptr;
 		while (!(worker = findAvailableWorker())) {
-			sleep(100);
+			sleep(5000);
 		}
 		worker->update(true);
 		worker->assignProcess(currentProcess);
