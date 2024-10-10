@@ -19,8 +19,6 @@ void ConsoleManager::initialize() {
 	if (sharedInstance == nullptr) {
 		sharedInstance = new ConsoleManager();
 	}
-
-	sharedInstance->switchConsole(MAIN_CONSOLE);
 }
 
 void ConsoleManager::destroy()

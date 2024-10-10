@@ -5,6 +5,8 @@
 #include <sstream>
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
+#include "GlobalScheduler.h"
+#include "TypedefRepo.h"
 
 #define windows
 
@@ -28,7 +30,7 @@ namespace {
 		"report-util",
 		"clear",
 		"exit",
-		"nvidia-smi",
+		//"nvidia-smi,
 		"marquee"
 	};
 
@@ -51,13 +53,13 @@ namespace {
 
 namespace {
 	// forward declarations
-	void printNvidiaSmiOutput();
+	//void printNvidiaSmiOutput();
 
 	// Helper function to split command into tokens
 	std::vector<std::string> splitCommand(const std::string& command) {
 		std::istringstream iss(command);
-		std::vector<std::string> tokens;
-		std::string token;
+		std::vector<String> tokens;
+		String token;
 		while (iss >> token) {
 			tokens.push_back(token);
 		}
@@ -65,37 +67,57 @@ namespace {
 	}
 
 	void onEvent(const std::string_view command) {
-		std::vector<std::string> tokens = splitCommand(std::string(command));
+		std::vector<String> tokens = splitCommand(String(command));
 
 		if (tokens.empty()) {
 			std::cout << "Invalid command.\n";
 			return;
 		}
 
+		String processName{};
+
 		if (tokens[0] == "screen") {
-			if (tokens.size() < 3) {
+			if (tokens.size() < 2) {
 				std::cout << "Error: Insufficient arguments for screen command.\n";
 				std::cout << "Usage: screen -r <process_name> or screen -s <process_name>\n";
 				return;
 			}
 
-			const std::string& flag = tokens[1];
-			const std::string& processName = tokens[2];
+			const String& flag = tokens[1];
+
+			if (tokens.size() == 3)
+				processName = tokens[2];
 
 			if (flag == "-s") {
-				const auto newProcess = std::make_shared<Process>(processName);
-				const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, processName);
+				if (tokens.size() < 3) {
+					std::cout << "Error: Insufficient arguments for screen command.\n";
+					std::cout << "Usage: screen -s <process_name>\n";
+					return;
+				}
+
+				//const auto newProcess = std::make_shared<Process>(processName);
+				//const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, processName);
 
 				try {
-					ConsoleManager::getInstance()->registerScreen(newBaseScreen);
-					ConsoleManager::getInstance()->switchToScreen(processName);
+					//ConsoleManager::getInstance()->registerScreen(newBaseScreen);
+					//ConsoleManager::getInstance()->switchToScreen(processName);
 				}
 				catch (const std::exception& e) {
 					return;
 				}
 			}
 			else if (flag == "-r") {
+				if (tokens.size() < 3) {
+					std::cout << "Error: Insufficient arguments for screen command.\n";
+					std::cout << "Usage: screen -r <process_name>\n";
+					return;
+				}
+
 				ConsoleManager::getInstance()->switchToScreen(processName);
+			} else if (flag == "-ls")
+			{
+				//GlobalScheduler::getInstance()->monitorProcesses();
+				GlobalScheduler::getInstance()->listProcesses();
 			}
 			else {
 				std::cout << "Error: Invalid screen command flag.\n";
@@ -115,13 +137,13 @@ namespace {
 			clearScreen();
 		}
 		else if (command == "nvidia-smi") {
-			printNvidiaSmiOutput();
+			//printNvidiaSmiOutput();
 		} else if (command == "marquee")
 		{
 			ConsoleManager::getInstance()->switchConsole(MARQUEE_CONSOLE);
 		}
 		else if (command == "exit") {
-			exit(0);
+			ConsoleManager::getInstance()->exitApplication();
 		}
 	}
 
@@ -139,66 +161,66 @@ namespace {
 		return text;
 	}
 
-	void printNvidiaSmiOutput() {
-		constexpr std::string_view gpuSummary = "Mon Sep 30 00:19:57 2024\n"
-			"+-----------------------------------------------------------------------------------------+\n"
-			"| NVIDIA-SMI 561.09                 Driver Version: 561.09         CUDA Version: 12.6     |\n"
-			"|-----------------------------------------+------------------------+----------------------+\n"
-			"| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n"
-			"| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n"
-			"|                                         |                        |               MIG M. |\n"
-			"|=========================================+========================+======================|\n"
-			"|   0  NVIDIA GeForce RTX 2060 ...  WDDM  |   00000000:26:00.0  On |                  N/A |\n"
-			"| 41%   43C    P8             25W /  184W |    2684MiB /   8192MiB |     14%      Default |\n"
-			"|                                         |                        |                  N/A |\n"
-			"+-----------------------------------------+------------------------+----------------------+\n";
+	//void printNvidiaSmiOutput() {
+	//	constexpr std::string_view gpuSummary = "Mon Sep 30 00:19:57 2024\n"
+	//		"+-----------------------------------------------------------------------------------------+\n"
+	//		"| NVIDIA-SMI 561.09                 Driver Version: 561.09         CUDA Version: 12.6     |\n"
+	//		"|-----------------------------------------+------------------------+----------------------+\n"
+	//		"| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n"
+	//		"| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n"
+	//		"|                                         |                        |               MIG M. |\n"
+	//		"|=========================================+========================+======================|\n"
+	//		"|   0  NVIDIA GeForce RTX 2060 ...  WDDM  |   00000000:26:00.0  On |                  N/A |\n"
+	//		"| 41%   43C    P8             25W /  184W |    2684MiB /   8192MiB |     14%      Default |\n"
+	//		"|                                         |                        |                  N/A |\n"
+	//		"+-----------------------------------------+------------------------+----------------------+\n";
 
-		constexpr std::string_view gpuProcessHeader =
-			"+-------------------------------------------------------------------------+\n"
-			"| Processes:                                                              |\n"
-			"|      PID   Type    Process name                              GPU Memory |\n"
-			"|                                                              Usage      |\n"
-			"|=========================================================================|\n";
+	//	constexpr std::string_view gpuProcessHeader =
+	//		"+-------------------------------------------------------------------------+\n"
+	//		"| Processes:                                                              |\n"
+	//		"|      PID   Type    Process name                              GPU Memory |\n"
+	//		"|                                                              Usage      |\n"
+	//		"|=========================================================================|\n";
 
-		constexpr std::string_view gpuProcessFooter =
-			"+-------------------------------------------------------------------------+\n";
+	//	constexpr std::string_view gpuProcessFooter =
+	//		"+-------------------------------------------------------------------------+\n";
 
-		// Sample data for the rows
-		std::vector<std::vector<std::string>> processTable = {
-			{"2268", "C+G", "C:\\Users\\User\\AppData\\Local\\Discord\\app-1.0.9164\\Discord.exe", "N/A"},
-			{"4168", "C+G", "C:\\Program Files\\qemu-windows-x86_64\\qemu-system-x86_64.exe", "N/A"},
-			{"4560", "C+G", "C:\\Windows\\SystemApps\\Microsoft.Windows.ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe", "N/A"},
-			{"511900", "C+G", "C:\\Windows\\explorer.exe", "N/A"},
-			{"81120", "C+G", "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe", "N/A"}
-		};
+	//	// Sample data for the rows
+	//	std::vector<std::vector<std::string>> processTable = {
+	//		{"2268", "C+G", "C:\\Users\\User\\AppData\\Local\\Discord\\app-1.0.9164\\Discord.exe", "N/A"},
+	//		{"4168", "C+G", "C:\\Program Files\\qemu-windows-x86_64\\qemu-system-x86_64.exe", "N/A"},
+	//		{"4560", "C+G", "C:\\Windows\\SystemApps\\Microsoft.Windows.ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe", "N/A"},
+	//		{"511900", "C+G", "C:\\Windows\\explorer.exe", "N/A"},
+	//		{"81120", "C+G", "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe", "N/A"}
+	//	};
 
 
-		std::cout << gpuSummary ;
-		std::cout << '\n';
-		std::cout << gpuProcessHeader;
+	//	std::cout << gpuSummary ;
+	//	std::cout << '\n';
+	//	std::cout << gpuProcessHeader;
 
-		for (auto& row : processTable) {
-			// Define column widths
-			constexpr int pidWidth = 6;        // Width for the PID column
-			constexpr int typeWidth = 3;       // Width for the Type column
-			constexpr int nameWidth = 38;      // Width for the Process Name column
-			constexpr int memoryWidth = 10;    // Width for the GPU Memory Usage column
+	//	for (auto& row : processTable) {
+	//		// Define column widths
+	//		constexpr int pidWidth = 6;        // Width for the PID column
+	//		constexpr int typeWidth = 3;       // Width for the Type column
+	//		constexpr int nameWidth = 38;      // Width for the Process Name column
+	//		constexpr int memoryWidth = 10;    // Width for the GPU Memory Usage column
 
-			// Get each column's text, truncate if necessary (modified directly)
-			std::string& pid = truncateText(row[0], pidWidth);
-			std::string& type = truncateText(row[1], typeWidth);
-			std::string& processName = truncateText(row[2], nameWidth);
-			std::string& memoryUsage = truncateText(row[3], memoryWidth);
+	//		// Get each column's text, truncate if necessary (modified directly)
+	//		std::string& pid = truncateText(row[0], pidWidth);
+	//		std::string& type = truncateText(row[1], typeWidth);
+	//		std::string& processName = truncateText(row[2], nameWidth);
+	//		std::string& memoryUsage = truncateText(row[3], memoryWidth);
 
-			// Print the row with proper column spacing
-			std::cout << "|   " << std::right << std::setw(pidWidth) << pid
-				<< "    " << std::right << std::setw(typeWidth) << type
-				<< "    " << std::left << std::setw(nameWidth) << processName
-				<< "    " << std::left << std::setw(memoryWidth) << memoryUsage << " |\n";
-		}
+	//		// Print the row with proper column spacing
+	//		std::cout << "|   " << std::right << std::setw(pidWidth) << pid
+	//			<< "    " << std::right << std::setw(typeWidth) << type
+	//			<< "    " << std::left << std::setw(nameWidth) << processName
+	//			<< "    " << std::left << std::setw(memoryWidth) << memoryUsage << " |\n";
+	//	}
 
-		std::cout << gpuProcessFooter;
-	}
+	//	std::cout << gpuProcessFooter;
+	//}
 }
 
 
@@ -209,7 +231,7 @@ void MainConsole::onEnabled() {
 
 void MainConsole::process() {
 	std::string userInput;
-	while (true) {
+	while (ConsoleManager::getInstance()->isRunning()) {
 		getUserInput(userInput);
 		onEvent(userInput);
 	}

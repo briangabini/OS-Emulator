@@ -43,7 +43,7 @@ std::string BaseScreen::getCurrentTimestamp() const {
 }
 
 void BaseScreen::printProcessInfo() const {
-    std::cout << *attachedProcess;
+	std::cout << "Process Name: " << attachedProcess->getName() << '\n';
 
 	std::cout << "Created at: " << getTimestamp() << '\n';
 }

@@ -1,0 +1,3 @@
+C:/Users/Brian Gabini/code/school/csopesy/assign/csopesy/cmake-build-debug/CMakeFiles/csopesy.dir
+C:/Users/Brian Gabini/code/school/csopesy/assign/csopesy/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Brian Gabini/code/school/csopesy/assign/csopesy/cmake-build-debug/CMakeFiles/rebuild_cache.dir

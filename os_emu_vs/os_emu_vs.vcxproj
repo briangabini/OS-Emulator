@@ -136,22 +136,34 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AConsole.cpp" />
+    <ClCompile Include="AScheduler.cpp" />
     <ClCompile Include="BaseScreen.cpp" />
     <ClCompile Include="ConsoleManager.cpp" />
+    <ClCompile Include="FCFSScheduler.cpp" />
+    <ClCompile Include="GlobalScheduler.cpp" />
+    <ClCompile Include="IETThread.cpp" />
     <ClCompile Include="MainConsole.cpp" />
     <ClCompile Include="MarqueeConsole.cpp" />
     <ClCompile Include="os_emu_vs.cpp" />
-    <ClCompile Include="os_emu_vs.txt" />
+    <ClCompile Include="PrintCommand.cpp" />
     <ClCompile Include="Process.cpp" />
+    <ClCompile Include="SchedulerWorker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AConsole.h" />
+    <ClInclude Include="AScheduler.h" />
     <ClInclude Include="BaseScreen.h" />
     <ClInclude Include="ConsoleManager.h" />
+    <ClInclude Include="FCFSScheduler.h" />
+    <ClInclude Include="GlobalScheduler.h" />
+    <ClInclude Include="ICommand.h" />
+    <ClInclude Include="IETThread.h" />
     <ClInclude Include="MainConsole.h" />
     <ClInclude Include="MarqueeConsole.h" />
     <ClInclude Include="os_emu_vs.h" />
+    <ClInclude Include="PrintCommand.h" />
     <ClInclude Include="Process.h" />
+    <ClInclude Include="SchedulerWorker.h" />
     <ClInclude Include="TypedefRepo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
