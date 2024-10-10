@@ -15,18 +15,11 @@ public:
     static void destroy();
 	void run() override;
 
-    std::shared_ptr<Process> createUniqueProcess(String processName);
+    std::shared_ptr<Process> createProcess(String processName);
 	std::shared_ptr<Process> findProcess(String& name) const;
 
-    // Week 6
-    void test_init10Processes();
-
-    void listProcesses() const;
-
-    void create10DummyProcesses();
+    void test_init100Processes();
     void monitorProcesses() const;
-    bool allProcessesFinished() const;
-
 	void tick() const;
 
 private:
