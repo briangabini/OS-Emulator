@@ -1,0 +1,3 @@
+Process name: process
+Logs:
+(10/11/2024 01:47:06AM) Core:0 "Process finished execution."

@@ -1,16 +1,13 @@
 #pragma once
 
 #include "Console.h"
-#include "MainConsole.h"
 #include "Process.h"
-#include "Screen.h"
-#include <string>
+#include "Scheduler.h"
 #include <map>
 #include <mutex>
+#include <string>
 
 class MainConsole;
-class Process;
-class Screen;
 
 class ConsoleManager {
 public:
@@ -22,14 +19,20 @@ public:
     void switchToScreen(Process* process);
     void switchToMarquee();
     void switchToMarqueeNT();
-    std::mutex& getIOMutex();
 
     void createProcess(const std::string& name);
     Process* getProcess(const std::string& name);
+    std::map<std::string, Process*>& getProcesses();
+
+    Scheduler* getScheduler();
+
+    std::mutex& getIOMutex();
 
 private:
     MainConsole* mainConsole;
     std::map<std::string, Process*> processes;
     std::mutex processMutex;
     std::mutex ioMutex;
+
+    Scheduler* scheduler;
 };

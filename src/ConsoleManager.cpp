@@ -1,14 +1,20 @@
 #include "ConsoleManager.h"
 #include "MainConsole.h"
+#include "Screen.h"
 #include "Marquee.h"
 #include "MarqueeNT.h"
+#include "SchedulerFCFS.h"
 #include <iostream>
 
 ConsoleManager::ConsoleManager() {
     mainConsole = new MainConsole(*this);
+    scheduler = new SchedulerFCFS(4); // Declare 4 cores
+    scheduler->start();
 }
 
 ConsoleManager::~ConsoleManager() {
+    scheduler->stop();
+    delete scheduler;
     delete mainConsole;
     for (auto& pair : processes) {
         delete pair.second;
@@ -38,14 +44,12 @@ void ConsoleManager::switchToMarqueeNT() {
     marqueeNT.run();
 }
 
-std::mutex& ConsoleManager::getIOMutex() {
-    return ioMutex;
-}
-
 void ConsoleManager::createProcess(const std::string& name) {
     std::lock_guard<std::mutex> lock(processMutex);
     if (processes.find(name) == processes.end()) {
-        processes[name] = new Process(name);
+        Process* process = new Process(name);
+        processes[name] = process;
+        scheduler->addProcess(process);
     }
     else {
         std::cout << "Process with name '" << name << "' already exists.\n";
@@ -62,4 +66,16 @@ Process* ConsoleManager::getProcess(const std::string& name) {
         std::cout << "No process found with name '" << name << "'.\n";
         return nullptr;
     }
+}
+
+std::map<std::string, Process*>& ConsoleManager::getProcesses() {
+    return processes;
+}
+
+Scheduler* ConsoleManager::getScheduler() {
+    return scheduler;
+}
+
+std::mutex& ConsoleManager::getIOMutex() {
+    return ioMutex;
 }

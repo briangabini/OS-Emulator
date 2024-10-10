@@ -1,10 +1,9 @@
 #pragma once
 
 #include "Console.h"
-#include "Process.h"
-#include <string>
 
 class ConsoleManager;
+class Process;
 
 class Screen : public Console {
 public:

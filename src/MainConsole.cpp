@@ -45,16 +45,39 @@ void MainConsole::handleCommand(const std::string& input) {
         iss >> flag >> processName;
 
         if (flag == "-s") {
-            consoleManager.createProcess(processName);
+            if (!processName.empty()) {
+                consoleManager.createProcess(processName);
+                std::cout << "Process '" << processName << "' created.\n";
+            }
+            else {
+                std::cout << "Please specify a process name.\n";
+            }
         }
         else if (flag == "-r") {
-            Process* process = consoleManager.getProcess(processName);
-            if (process) {
-                consoleManager.switchToScreen(process);
+            if (!processName.empty()) {
+                Process* process = consoleManager.getProcess(processName);
+                if (process) {
+                    consoleManager.switchToScreen(process);
+                }
+            }
+            else {
+                std::cout << "Please specify a process name to resume.\n";
+            }
+        }
+        else if (flag == "-ls") {
+            // List screens/processes
+            auto& processes = consoleManager.getProcesses();
+            std::cout << "Processes:\n";
+            for (const auto& pair : processes) {
+                std::cout << pair.first << std::endl;
             }
         }
         else {
             std::cout << "Invalid flag for screen command.\n";
+            std::cout << "Usage:\n";
+            std::cout << "  screen -s [process_name] : Start a new process\n";
+            std::cout << "  screen -r [process_name] : Resume an existing process\n";
+            std::cout << "  screen -ls               : List all processes\n";
         }
     }
     else if (command == "scheduler-test") {
