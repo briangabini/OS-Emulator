@@ -6,7 +6,7 @@ int main() {
 	ConsoleManager::initialize();
 	GlobalScheduler::initialize();
 
-	GlobalScheduler::getInstance()->create10DummyProcesses();
+	GlobalScheduler::getInstance()->test_init100Processes();
 
 	// switch to main console
 	ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);

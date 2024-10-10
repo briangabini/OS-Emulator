@@ -32,7 +32,7 @@ void GlobalScheduler::tick() const {
 	scheduler->execute();
 }
 
-std::shared_ptr<Process> GlobalScheduler::createUniqueProcess(std::string processName) {
+std::shared_ptr<Process> GlobalScheduler::createProcess(std::string processName) {
 	if (processes.find(processName) != processes.end()) {
 		return nullptr;
 	}
@@ -40,7 +40,6 @@ std::shared_ptr<Process> GlobalScheduler::createUniqueProcess(std::string proces
 	static int nextPid = 1;
 	std::shared_ptr<Process> newProcess = std::make_shared<Process>(nextPid++, processName);
 
-	// Week 6
 	for (int i = 0; i < 100; i++) {
 		newProcess->addCommand(ICommand::PRINT);
 	}
@@ -54,81 +53,21 @@ std::shared_ptr<Process> GlobalScheduler::createUniqueProcess(std::string proces
 	return newProcess;
 }
 
-void GlobalScheduler::create10DummyProcesses() {
+void GlobalScheduler::test_init100Processes() {
 	for (int i = 0; i < 10; i++) {
-		GlobalScheduler::getInstance()->createUniqueProcess("process_" + std::to_string(i));
+		GlobalScheduler::getInstance()->createProcess("process_" + std::to_string(i));
 	}
 }
 
 
 std::shared_ptr<Process> GlobalScheduler::findProcess(String& name) const {
 	auto it = processes.find(name);
-	if (it != processes.end()) {
-		return it->second;
-	}
-	return nullptr;
+	return (it != processes.end()) ? it->second : nullptr;
 }
 
-void GlobalScheduler::test_init10Processes() {
-	for (int i = 1; i <= 10; ++i) {
-		String processName = std::format("process_{}", i);
-		auto process = createUniqueProcess(processName);
-		process->test_generate100PrintCommands();
-	}
-}
-
-bool GlobalScheduler::allProcessesFinished() const {
-	for (const auto& [name, process] : processes) {
-		if (process->getState() != Process::FINISHED) {
-			return false;
-		}
-	}
-	return true;
-}
-
+// from video
 void GlobalScheduler::run() {
 	this->scheduler->execute();
-}
-
-void GlobalScheduler::listProcesses() const {
-	if (processes.empty()) {
-		std::cout << "No processes found. \n";
-		return;
-	}
-
-	for (const auto& p : processes) {
-		auto process = p.second;
-
-		std::string status;
-		if (process->isFinished()) {
-			status = "Finished";
-		}
-
-		else {
-			status = "Core: " + std::to_string(process->getCPUCoreID());
-		}
-
-		int currentLinesOfCode = process->getCommandCounter();
-		int totalLinesOfCode = process->getLinesOfCode();
-
-		std::string coreIdOutput;
-		if (process->isFinished()) {
-			coreIdOutput = "Finished";
-		}
-		else if (process->getCPUCoreID() == -1) {
-			coreIdOutput = "N/A";
-		}
-		else {
-			coreIdOutput = std::to_string(process->getCPUCoreID());
-		}
-
-		std::cout << "Process Name: " << process->getName()
-			<< " | PID: " << process->getPID()
-			<< " | Status: " << (process->isFinished() ? "Finished" : "Not Finished")
-			<< " | Core ID: " << coreIdOutput
-			<< " | Lines of Code: " << currentLinesOfCode << "/" << totalLinesOfCode
-			<< "\n";
-	}
 }
 
 void GlobalScheduler::monitorProcesses() const {
