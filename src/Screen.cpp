@@ -43,6 +43,12 @@ void Screen::run() {
                 // Create PrintCommand and add to process
                 process->addCommand(new PrintCommand(message));
                 std::cout << "Print command added to process.\n";
+
+                if (process->isCompleted()) {
+                    // Reset completed status and reschedule
+                    process->resetCompleted();
+                    consoleManager.getScheduler()->addProcess(process);
+                }
             }
             else {
                 std::cout << "Unknown command: " << command << std::endl;

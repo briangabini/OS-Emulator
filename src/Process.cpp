@@ -118,3 +118,8 @@ void Process::setCompleted(bool value) {
     std::lock_guard<std::mutex> lock(stateMutex);
     completed = value;
 }
+
+void Process::resetCompleted() {
+    std::lock_guard<std::mutex> lock(stateMutex);
+    completed = false;
+}

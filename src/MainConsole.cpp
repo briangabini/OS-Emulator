@@ -18,12 +18,15 @@ MainConsole::MainConsole(ConsoleManager& manager)
     : consoleManager(manager) {}
 
 void MainConsole::run() {
+    consoleManager.setCurrentPrompt("Main> ");
     std::string input;
     while (true) {
-        std::cout << "Main> ";
+        consoleManager.printPrompt();
         std::getline(std::cin, input);
 
         if (input == "exit") {
+            consoleManager.stopSchedulerTest();
+            consoleManager.stopScheduler();
             break;
         }
         else if (input == "clear") {
@@ -65,12 +68,79 @@ void MainConsole::handleCommand(const std::string& input) {
             }
         }
         else if (flag == "-ls") {
-            // List screens/processes
+            // Implement screen -ls command
             auto& processes = consoleManager.getProcesses();
-            std::cout << "Processes:\n";
+            Scheduler* scheduler = consoleManager.getScheduler();
+            auto runningProcesses = scheduler->getRunningProcesses();
+
+            std::vector<Process*> running;
+            std::vector<Process*> finished;
+
             for (const auto& pair : processes) {
-                std::cout << pair.first << std::endl;
+                Process* process = pair.second;
+                if (runningProcesses.find(process) != runningProcesses.end()) {
+                    running.push_back(process);
+                }
+                else if (process->isCompleted()) {
+                    finished.push_back(process);
+                }
+                else {
+                    // Process is not running and not completed; ignoring for now
+                }
             }
+
+            std::cout << "-------------------------------------------\n";
+            std::cout << "Running processes:\n";
+
+            for (Process* process : running) {
+                int coreId = runningProcesses[process];
+                std::string processName = process->getName();
+                std::time_t creationTime = process->getCreationTime();
+                std::tm creationTm;
+#ifdef _WIN32
+                localtime_s(&creationTm, &creationTime);
+#else
+                localtime_r(&creationTime, &creationTm);
+#endif
+                char timeBuffer[30];
+                std::strftime(timeBuffer, sizeof(timeBuffer), "%m/%d/%Y %I:%M:%S%p", &creationTm);
+                std::string timeStr = timeBuffer;
+
+                int currentLine = process->getCurrentLine();
+                int totalLines = process->getTotalLines();
+
+                // Print in the format:
+                // processName  (creationTime)  Core: coreId   currentLine / totalLines
+                std::cout << std::left << std::setw(15) << processName
+                    << "(" << timeStr << ")    "
+                    << "Core: " << coreId << "     "
+                    << currentLine << " / " << totalLines << "\n";
+            }
+
+            std::cout << "\nFinished processes:\n";
+            for (Process* process : finished) {
+                std::string processName = process->getName();
+                std::time_t creationTime = process->getCreationTime();
+                std::tm creationTm;
+#ifdef _WIN32
+                localtime_s(&creationTm, &creationTime);
+#else
+                localtime_r(&creationTime, &creationTm);
+#endif
+                char timeBuffer[30];
+                std::strftime(timeBuffer, sizeof(timeBuffer), "%m/%d/%Y %I:%M:%S%p", &creationTm);
+                std::string timeStr = timeBuffer;
+
+                int totalLines = process->getTotalLines();
+
+                // Print in the format:
+                // processName  (creationTime)  Finished   totalLines / totalLines
+                std::cout << std::left << std::setw(15) << processName
+                    << "(" << timeStr << ")    "
+                    << "Finished     "
+                    << totalLines << " / " << totalLines << "\n";
+            }
+            std::cout << "-------------------------------------------\n";
         }
         else {
             std::cout << "Invalid flag for screen command.\n";
@@ -80,11 +150,23 @@ void MainConsole::handleCommand(const std::string& input) {
             std::cout << "  screen -ls               : List all processes\n";
         }
     }
+    else if (command == "scheduler-init") {
+        consoleManager.startScheduler();
+    }
+    else if (command == "scheduler-pause") {
+        consoleManager.pauseScheduler();
+    }
+    else if (command == "scheduler-resume") {
+        consoleManager.resumeScheduler();
+    }
+    else if (command == "scheduler-10") {
+        consoleManager.startScheduler10();
+    }
     else if (command == "scheduler-test") {
-        std::cout << "Command 'scheduler-test' recognized. Doing something.\n";
+        consoleManager.startSchedulerTest();
     }
     else if (command == "scheduler-stop") {
-        std::cout << "Command 'scheduler-stop' recognized. Doing something.\n";
+        consoleManager.stopSchedulerTest();
     }
     else if (command == "report-util") {
         std::cout << "Command 'report-util' recognized. Doing something.\n";

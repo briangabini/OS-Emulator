@@ -1,3 +1,17 @@
 Process name: process
 Logs:
-(10/11/2024 01:47:06AM) Core:0 "Process finished execution."
+(10/11/2024 06:17:55PM) Core:0 "hello"
+(10/11/2024 06:17:55PM) Core:0 "hi there"
+(10/11/2024 06:17:55PM) Core:0 "wassup"
+(10/11/2024 06:17:55PM) Core:0 "yo"
+(10/11/2024 06:17:55PM) Core:0 "a"
+(10/11/2024 06:17:55PM) Core:0 "b"
+(10/11/2024 06:17:55PM) Core:0 "c"
+(10/11/2024 06:17:55PM) Core:0 "d"
+(10/11/2024 06:17:55PM) Core:0 "e"
+(10/11/2024 06:17:56PM) Core:0 "f"
+(10/11/2024 06:17:56PM) Core:0 "Process finished execution."
+(10/11/2024 06:18:29PM) Core:0 "hi"
+(10/11/2024 06:18:29PM) Core:0 "Process finished execution."
+(10/11/2024 06:19:29PM) Core:0 "goodbye"
+(10/11/2024 06:19:29PM) Core:0 "Process finished execution."

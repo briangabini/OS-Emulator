@@ -30,6 +30,7 @@ public:
 
     void incrementCurrentLine();
     void setCompleted(bool value);
+    void resetCompleted();
 
     // For Scheduler access
     mutable std::mutex stateMutex;
