@@ -20,15 +20,6 @@ void AScheduler::addProcess(std::shared_ptr<Process> process)
     readyQueue.push(process);
 }
 
-// std::shared_ptr<Process> AScheduler::findProcess(std::string processName) {
-//     for (auto& process : processes) {
-//         if (process->getName() == processName) {
-//             return process;
-//         }
-//     }
-//     return nullptr;
-// }
-
 void AScheduler::run()
 {
     init();

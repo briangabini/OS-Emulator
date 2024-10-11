@@ -24,7 +24,6 @@ public:
 	AScheduler(SchedulingAlgorithm schedulingAlgo);
 
 	void addProcess(std::shared_ptr<Process> process);
-	//std::shared_ptr<Process> findProcess(std::string processName);
 	void run() override;
 	void stop();
 

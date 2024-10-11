@@ -1,37 +1,45 @@
+// FCFSScheduler.cpp
 #include "FCFSScheduler.h"
 #include "SchedulerWorker.h"
 #include <iostream>
 
 FCFSScheduler::FCFSScheduler()
-	: AScheduler(SchedulingAlgorithm::FCFS) {
+    : AScheduler(SchedulingAlgorithm::FCFS) {
 }
 
 void FCFSScheduler::init() {
-	//for (auto& process : processes) {
-	//	readyQueue.push(process);
-	//}
+    // Additional setup if needed
 }
 
 std::shared_ptr<SchedulerWorker> FCFSScheduler::findAvailableWorker() {
-	for (auto& worker : schedulerWorkers) {
-		if (!worker->isRunning()) {
-			return worker;
-		}
-	}
-	return nullptr;
+    for (auto& worker : schedulerWorkers) {
+        if (!worker->isRunning()) {
+            return worker;
+        }
+    }
+    return nullptr;
 }
 
 void FCFSScheduler::execute() {
-	while (!readyQueue.empty()) {
-		std::shared_ptr<Process> currentProcess = readyQueue.front();
-		readyQueue.pop();
+    while (running) {
+        std::shared_ptr<Process> currentProcess = nullptr;
 
-		std::shared_ptr<SchedulerWorker> worker = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            if (!readyQueue.empty()) {
+                currentProcess = readyQueue.front();
+                readyQueue.pop();
+            }
+        }
 
-		while (!(worker = findAvailableWorker())) {
-			sleep(200);
-		}
-		worker->update(true);
-		worker->assignProcess(currentProcess);
-	}
+        if (currentProcess) {
+            std::shared_ptr<SchedulerWorker> worker = nullptr;
+
+            while (!(worker = findAvailableWorker())) {
+                IETThread::sleep(200);
+            }
+
+            worker->assignProcess(currentProcess);
+        }
+    }
 }

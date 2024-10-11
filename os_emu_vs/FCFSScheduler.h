@@ -1,6 +1,8 @@
+// FCFSScheduler.h
 #pragma once
 #include "AScheduler.h"
 #include <queue>
+#include <mutex>
 
 class FCFSScheduler : public AScheduler {
 public:
@@ -11,4 +13,5 @@ public:
 
 private:
     std::shared_ptr<SchedulerWorker> findAvailableWorker();
+    std::mutex queueMutex;
 };

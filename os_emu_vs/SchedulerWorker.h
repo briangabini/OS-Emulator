@@ -1,12 +1,15 @@
+// SchedulerWorker.h
 #pragma once
 #include "IETThread.h"
 #include "Process.h"
 #include <memory>
+#include <mutex>
+#include <condition_variable>
 
 class SchedulerWorker : public IETThread {
 public:
-    SchedulerWorker() {};
-	SchedulerWorker(int cpuCoreId) : cpuCoreId(cpuCoreId){};
+    SchedulerWorker() {}
+    SchedulerWorker(int cpuCoreId) : cpuCoreId(cpuCoreId) {}
     ~SchedulerWorker() = default;
 
     void update(bool running);
@@ -18,4 +21,6 @@ private:
     int cpuCoreId;
     std::shared_ptr<Process> currentProcess = nullptr;
     bool running = false;
+    std::mutex processMutex;
+    std::condition_variable processCV;
 };

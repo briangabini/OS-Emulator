@@ -1,37 +1,42 @@
-#include "GlobalScheduler.h"
+// SchedulerWorker.cpp
 #include "SchedulerWorker.h"
 #include <iostream>
 
 void SchedulerWorker::update(bool isRunning) {
-	this->running = isRunning;
+    this->running = isRunning;
 }
 
 void SchedulerWorker::assignProcess(std::shared_ptr<Process> process) {
-	this->currentProcess = process;
-	this->update(true);
+    {
+        std::lock_guard<std::mutex> lock(processMutex);
+        this->currentProcess = process;
+        this->update(true);
+    }
+    processCV.notify_one();
 }
 
 void SchedulerWorker::run() {
-	while (true) {
-		if (currentProcess) {
-			currentProcess->setState(currentProcess->RUNNING);
-			currentProcess->setCpuCoreId(cpuCoreId);
+    while (true) {
+        std::unique_lock<std::mutex> lock(processMutex);
+        processCV.wait(lock, [this] { return currentProcess != nullptr || !running; });
 
-			while (!currentProcess->isFinished()) {
-				currentProcess->executeCurrentCommand();
-				if (currentProcess->getCommandCounter() == currentProcess->getLinesOfCode() - 1) {
-					currentProcess->setState(currentProcess->FINISHED);
-				}
-				currentProcess->moveToNextLine();
-				sleep(250);
-			}
-			currentProcess = nullptr;
-			running = false;
-		}
-	}
+        if (currentProcess) {
+            currentProcess->setState(currentProcess->RUNNING);
+            currentProcess->setCpuCoreId(cpuCoreId);
+
+
+            while (!currentProcess->isFinished() && running) {
+                currentProcess->executeCurrentCommand();
+                currentProcess->moveToNextLine();
+                IETThread::sleep(50);                   // this is here because printing is trivial (constant time)
+            }
+            currentProcess->setState(currentProcess->FINISHED);
+            currentProcess = nullptr;
+			this->update(false);
+        }
+    }
 }
 
-
 bool SchedulerWorker::isRunning() {
-	return running;
+    return running;
 }
