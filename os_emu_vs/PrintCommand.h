@@ -4,10 +4,10 @@
 
 class PrintCommand : public ICommand {
 public:
-    PrintCommand(int pid, String& toPrint);
-    void execute() override;
+	PrintCommand(int pid, String& toPrint);
+	void execute(int cpuCoreId) override;
 
 private:
-    String toPrint;
-    void logToFile(const String& message);
+	String toPrint;
+	void logToFile(const String& message);
 };

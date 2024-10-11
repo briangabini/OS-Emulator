@@ -8,8 +8,8 @@ PrintCommand::PrintCommand(int pid, String& toPrint) : ICommand(pid, PRINT) {
 	this->toPrint = toPrint;
 }
 
-void PrintCommand::execute() {
-	ICommand::execute();
+void PrintCommand::execute(int cpuCoreId) {
+	//ICommand::execute();
 
 	// Get the current time
 	auto now = std::chrono::system_clock::now();
@@ -23,12 +23,12 @@ void PrintCommand::execute() {
 #endif
 
 	// Get the CPU core ID (assuming a method getCPUCoreID exists in Process)
-	int cpuCoreID = -1; // Replace with actual method to get CPU core ID
+	//int cpuCoreID = -1; // Replace with actual method to get CPU core ID
 
 	// Format the message
 	std::ostringstream oss;
 	oss << "(" << std::put_time(&now_tm, "%m/%d/%Y %I:%M:%S%p") << ") "
-		<< "Core:" << cpuCoreID << " \"" << this->toPrint << "\"\n";
+		<< "Core:" << cpuCoreId << " \"" << this->toPrint << "\"\n";
 
 	// Log to file
 	logToFile(oss.str());
