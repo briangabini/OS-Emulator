@@ -5,6 +5,7 @@
 #include <iostream>
 #include <thread>
 #include "os_emu_vs.h"
+#include "RRScheduler.h"
 
 
 GlobalScheduler* GlobalScheduler::sharedInstance = nullptr;
@@ -14,7 +15,7 @@ GlobalScheduler::GlobalScheduler(SchedulingAlgorithm algo) {
 		scheduler = std::make_shared<FCFSScheduler>();
 	}
 	else if (algo == SchedulingAlgorithm::ROUND_ROBIN) {
-		// scheduler = std::make_shared<RRScheduler()>;
+		 scheduler = std::make_shared<RRScheduler>();
 	}
 
 	this->start();
@@ -24,7 +25,7 @@ GlobalScheduler::GlobalScheduler(SchedulingAlgorithm algo) {
 void GlobalScheduler::initialize()
 {
 	if (sharedInstance == nullptr) {
-		sharedInstance = new GlobalScheduler(SchedulingAlgorithm::FCFS);
+		sharedInstance = new GlobalScheduler(SchedulingAlgorithm::ROUND_ROBIN);
 	}
 }
 

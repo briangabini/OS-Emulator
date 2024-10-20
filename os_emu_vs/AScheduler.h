@@ -37,6 +37,12 @@ public:
 	virtual void init() = 0;
 	virtual void execute() = 0;
 
+	SchedulingAlgorithm getSchedulingAlgo()
+	{
+		return schedulingAlgo;
+
+	}
+
 	friend class GlobalScheduler;
 
 

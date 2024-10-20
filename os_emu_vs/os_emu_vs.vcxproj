@@ -147,6 +147,7 @@
     <ClCompile Include="os_emu_vs.cpp" />
     <ClCompile Include="PrintCommand.cpp" />
     <ClCompile Include="Process.cpp" />
+    <ClCompile Include="RRScheduler.cpp" />
     <ClCompile Include="SchedulerWorker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +164,7 @@
     <ClInclude Include="os_emu_vs.h" />
     <ClInclude Include="PrintCommand.h" />
     <ClInclude Include="Process.h" />
+    <ClInclude Include="RRScheduler.h" />
     <ClInclude Include="SchedulerWorker.h" />
     <ClInclude Include="TypedefRepo.h" />
   </ItemGroup>

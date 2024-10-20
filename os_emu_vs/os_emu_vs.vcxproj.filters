@@ -67,6 +67,9 @@
     <ClCompile Include="IETThread.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
+    <ClCompile Include="RRScheduler.cpp">
+      <Filter>Scheduling</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ICommand.h">
@@ -113,6 +116,9 @@
     </ClInclude>
     <ClInclude Include="SchedulerWorker.h">
       <Filter>Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="RRScheduler.h">
+      <Filter>Scheduling</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

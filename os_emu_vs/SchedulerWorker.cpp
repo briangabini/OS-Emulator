@@ -39,11 +39,42 @@ void SchedulerWorker::run() {
 			process->setCpuCoreId(cpuCoreId);
 			scheduler->incrementActiveWorkers();
 
-			while (!process->isFinished() && running) {
-				process->executeCurrentCommand();
-				process->moveToNextLine();
-				IETThread::sleep(50);                       // Simulate execution delay
+			SchedulingAlgorithm algo = scheduler->getSchedulingAlgo();
+
+			if (algo == SchedulingAlgorithm::FCFS)
+			{
+				while (!process->isFinished() && running) {
+					process->executeCurrentCommand();
+					process->moveToNextLine();
+					IETThread::sleep(50);                       // Simulate execution delay
+				}
 			}
+			else if (algo == SchedulingAlgorithm::ROUND_ROBIN)
+			{
+				const int timeSlice = 5000;		// 5 seconds
+				auto startTime = std::chrono::steady_clock::now();
+
+				while (!process->isFinished() && running)
+				{
+					process->executeCurrentCommand();
+					process->moveToNextLine();
+					IETThread::sleep(50);                       // Simulate execution delay
+
+					auto currentTime = std::chrono::steady_clock::now();
+					auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
+
+					if (elapsedTime >= timeSlice) {
+						break;
+					}
+				}
+
+				if (!process->isFinished())
+				{
+					std::unique_lock<std::mutex> lock(scheduler->queueMutex);
+					scheduler->readyQueue.push(process);
+				}
+			}
+
 
 			if (process->isFinished()) {
 				process->setState(Process::FINISHED);
