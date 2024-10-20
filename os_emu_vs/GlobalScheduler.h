@@ -23,14 +23,25 @@ public:
 	void logToFile() const;
 	void tick() const;
 
+
+    // for scheduler-test
+    void startSchedulerTest();
+    void stopSchedulerTest();
+
 private:
-	GlobalScheduler();
-	~GlobalScheduler() = default;
-	GlobalScheduler(GlobalScheduler const&) {};
-	GlobalScheduler& operator=(GlobalScheduler const&) {};
-	static GlobalScheduler* sharedInstance;
-	std::shared_ptr<AScheduler> scheduler;
+    GlobalScheduler();
+    ~GlobalScheduler();
+    GlobalScheduler(GlobalScheduler const&) {};
+    GlobalScheduler& operator=(GlobalScheduler const&) {};
+
+    static GlobalScheduler* sharedInstance;
+    std::shared_ptr<AScheduler> scheduler;
 	std::unordered_map<String, std::shared_ptr<Process>> processes;
+
+    // for scheduler-test
+    bool schedulerTestRunning = false;
+    std::thread processGeneratorThread;
+    void generateProcesses();
 	mutable std::string lastMonitorOutput;
 
 };

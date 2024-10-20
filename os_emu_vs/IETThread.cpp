@@ -9,7 +9,7 @@ IETThread::~IETThread()
 	if (thread.joinable())
 	{
 		running = false;
-		thread.join();
+		thread.detach();			// TODO: fix the locking to stop waiting after
 	}
 }
 

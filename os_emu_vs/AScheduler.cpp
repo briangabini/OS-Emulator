@@ -16,12 +16,12 @@ AScheduler::AScheduler(SchedulingAlgorithm schedulingAlgo)
 }
 
 void AScheduler::addProcess(std::shared_ptr<Process> process) {
-	{
-		std::lock_guard<std::mutex> lock(queueMutex);
-		readyQueue.push(process);
-		std::cout << "Process #" << process->getPID() << " added. Queue size: " << readyQueue.size() << std::endl;
-	}
-	queueCV.notify_all(); // Notifies a waiting worker thread
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        readyQueue.push(process);
+        //std::cout << "Process #" << process->getPID() << " added. Queue size: " << readyQueue.size() << std::endl;
+    }
+    queueCV.notify_all(); // Notifies a waiting worker thread
 }
 
 void AScheduler::incrementActiveWorkers()
@@ -55,9 +55,4 @@ void AScheduler::run()
 	{
 		execute();
 	}
-}
-
-void AScheduler::stop()
-{
-	running = false;
 }

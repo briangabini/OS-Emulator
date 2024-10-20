@@ -35,7 +35,6 @@ public:
 	int getActiveWorkersCount() const;
 	double getCpuUtilization() const;
 	void run() override;
-	void stop();
 
 	virtual void init() = 0;
 	virtual void execute() = 0;

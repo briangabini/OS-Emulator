@@ -18,7 +18,7 @@ void SchedulerWorker::run() {
 			std::unique_lock<std::mutex> lock(scheduler->queueMutex);
 
 			// wait when there is no process in the queue
-			scheduler->queueCV.wait(lock, [this] { return !scheduler->readyQueue.empty(); });
+			scheduler->queueCV.wait(lock, [this] { return !scheduler->readyQueue.empty() || !scheduler->running; }); // not empty, or not running
 
 			//std::cout << "Worker " << cpuCoreId << " is running" << std::endl;
 
