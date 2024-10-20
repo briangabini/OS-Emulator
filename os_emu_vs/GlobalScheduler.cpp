@@ -8,8 +8,15 @@
 
 
 GlobalScheduler* GlobalScheduler::sharedInstance = nullptr;
-GlobalScheduler::GlobalScheduler() {
-	scheduler = std::make_shared<FCFSScheduler>();
+GlobalScheduler::GlobalScheduler(SchedulingAlgorithm algo) {
+
+	if (algo == SchedulingAlgorithm::FCFS) {
+		scheduler = std::make_shared<FCFSScheduler>();
+	}
+	else if (algo == SchedulingAlgorithm::ROUND_ROBIN) {
+		// scheduler = std::make_shared<RRScheduler()>;
+	}
+
 	this->start();
 	scheduler->start();
 }
@@ -17,7 +24,7 @@ GlobalScheduler::GlobalScheduler() {
 void GlobalScheduler::initialize()
 {
 	if (sharedInstance == nullptr) {
-		sharedInstance = new GlobalScheduler();
+		sharedInstance = new GlobalScheduler(SchedulingAlgorithm::FCFS);
 	}
 }
 
