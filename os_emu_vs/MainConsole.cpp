@@ -132,8 +132,6 @@ namespace MainConsoleUtil {
 			return;
 		}
 
-		std::cout << command << " command recognized. Doing something.\n";
-
 		if (command == "clear") {
 			clearScreen();
 		}
@@ -149,10 +147,12 @@ namespace MainConsoleUtil {
 		}
 		else if (command == "exit") {
 			ConsoleManager::getInstance()->exitApplication();
-		} else if (command == "scheduler-test")
+		}
+		else if (command == "scheduler-test")
 		{
 			GlobalScheduler::getInstance()->startSchedulerTest();
-		} else if (command == "scheduler-stop")
+		}
+		else if (command == "scheduler-stop")
 		{
 			GlobalScheduler::getInstance()->stopSchedulerTest();
 		}
@@ -186,7 +186,7 @@ void MainConsole::process() {
 		MainConsoleUtil::getUserInput(userInput);
 		MainConsoleUtil::onEvent(userInput);
 
-		 //for debugging
+		//for debugging
 		std::cout << "Cpu cycles: " << cpuCycles << '\n';
 	}
 }
