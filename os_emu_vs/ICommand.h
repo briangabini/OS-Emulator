@@ -13,7 +13,7 @@ public:
 
 	ICommand(int pid, CommandType commandType);
 	CommandType getCommandType() const;
-	virtual void execute();
+	virtual void execute(int cpuCoreId);
 
 protected:
 	int pid;
@@ -31,7 +31,7 @@ inline ICommand::ICommand(int pid, CommandType commandType)
 	this->commandType = commandType;
 }
 
-inline void ICommand::execute()
+inline void ICommand::execute(int cpuCoreId)
 {
 	// Do nothing
 }
