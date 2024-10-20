@@ -5,6 +5,7 @@
 #include <thread>
 #include "os_emu_vs.h"
 
+
 GlobalScheduler* GlobalScheduler::sharedInstance = nullptr;
 GlobalScheduler::GlobalScheduler() {
 	scheduler = std::make_shared<FCFSScheduler>();
@@ -57,7 +58,7 @@ void GlobalScheduler::generateProcesses()
 
 		if (cpuCycles % 20 == 0 && !processCreatedInCurrentCycle)
 		{
-			createProcess("process_");
+			createProcess("process_", Mode::KERNEL);
 			processCreatedInCurrentCycle = true;
 		}
 		else if (cpuCycles % 20 != 0)
@@ -72,16 +73,23 @@ void GlobalScheduler::tick() const {
 	scheduler->execute();
 }
 
-std::shared_ptr<Process> GlobalScheduler::createProcess(std::string processName) {
+std::shared_ptr<Process> GlobalScheduler::createProcess(std::string processName, Mode mode) {
 	if (processes.find(processName) != processes.end()) {
 		return nullptr;
 	}
 
 	static int nextPid = 1;
-	const String newProcessName = processName + std::to_string(nextPid);
+	String newProcessName;
+	if (mode == Mode::KERNEL)
+	{
+		newProcessName = processName + std::to_string(nextPid);
+	} else if (mode == Mode::USER) {
+		newProcessName = processName;
+	}
+
 	std::shared_ptr<Process> newProcess = std::make_shared<Process>(nextPid++, newProcessName);
 
-	newProcess->addCommand(ICommand::PRINT, 10);
+	newProcess->addCommand(ICommand::PRINT);
 
 	processes[newProcessName] = newProcess;
 

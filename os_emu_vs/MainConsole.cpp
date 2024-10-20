@@ -96,12 +96,12 @@ namespace MainConsoleUtil {
 					return;
 				}
 
-				//const auto newProcess = std::make_shared<Process>(processName);
-				//const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, processName);
+				const auto newProcess = GlobalScheduler::getInstance()->createProcess(processName, Mode::USER);
+				const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, processName);
 
 				try {
-					//ConsoleManager::getInstance()->registerScreen(newBaseScreen);
-					//ConsoleManager::getInstance()->switchToScreen(processName);
+					ConsoleManager::getInstance()->registerScreen(newBaseScreen);
+					ConsoleManager::getInstance()->switchToScreen(processName);
 				}
 				catch (const std::exception& e) {
 					return;

@@ -27,7 +27,7 @@ public:
     Process(int pid, String name);
     Process() = default;
 
-    void addCommand(ICommand::CommandType commandType, int numInstructions);
+    void addCommand(ICommand::CommandType commandType, int numInstructions = 100);
     void executeCurrentCommand() const;
     void moveToNextLine();
 
@@ -41,13 +41,9 @@ public:
     String getName() const;
 	std::chrono::time_point<std::chrono::system_clock> getCreationTime() const;
 
-    void test_generate100PrintCommands();
-
     // setters
     void setState(ProcessState state);
     void setCpuCoreId(int _cpuCoreId);
-
-    //void test_generateRandomCommands(int limit);
 
 private:
 	int pid;

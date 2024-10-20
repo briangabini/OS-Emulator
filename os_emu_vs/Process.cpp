@@ -10,7 +10,6 @@ Process::Process(int pid, String name)
 void Process::addCommand(ICommand::CommandType commandType, int numInstructions)
 {
 
-	//commandList.push_back(std::make_shared<ICommand>(pid, commandType));
 	for (int i = 0; i < numInstructions; i++)
 	{
 		if (commandType == ICommand::CommandType::PRINT) {
@@ -67,14 +66,6 @@ String Process::getName() const
 
 std::chrono::time_point<std::chrono::system_clock> Process::getCreationTime() const {
 	return creationTime;
-}
-
-void Process::test_generate100PrintCommands() {
-	for (int i = 0; i < 100; ++i) {
-		String message = "Hello world from " + name + "!";
-		auto printCommand = std::make_shared<PrintCommand>(pid, message);
-		commandList.push_back(printCommand);
-	}
 }
 
 void Process::setState(Process::ProcessState state) {

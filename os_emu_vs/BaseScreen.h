@@ -22,6 +22,10 @@ public:
 
     std::string getTimestamp() const;
 
+	static void setActiveScreen(bool boolVal) {
+		activeScreen = boolVal;
+	}
+
 private:
     void printProcessInfo() const;
     std::shared_ptr<Process> attachedProcess;
@@ -29,4 +33,7 @@ private:
     std::string timestamp;
 
     std::string getCurrentTimestamp() const;
+
+    static bool activeScreen;
+
 };

@@ -10,6 +10,6 @@ void FCFSScheduler::init() {
 
 void FCFSScheduler::execute() {
     while (running) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate waiting or other periodic tasks
+        std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // Simulate waiting or other periodic tasks
     }
 }

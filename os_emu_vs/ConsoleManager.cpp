@@ -60,7 +60,7 @@ void ConsoleManager::switchConsole(const String& consoleName)
 		system("cls");
 		this->previousConsole = this->currentConsole;
 		this->currentConsole = this->consoleTable[consoleName];
-		// this->currentConsole->onEnabled();
+		//this->currentConsole->onEnabled();
 	}
 	else
 	{
@@ -115,6 +115,7 @@ void ConsoleManager::returnToPreviousConsole()
 		system("cls");
 		this->currentConsole = this->previousConsole;
 		this->previousConsole = nullptr;
+		this->currentConsole->onEnabled();
 	}
 	else
 	{

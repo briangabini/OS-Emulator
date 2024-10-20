@@ -8,6 +8,12 @@
 #include "Process.h"
 #include "IETThread.h"
 
+// create 2 mode enums kernel and user
+enum class Mode {
+	KERNEL,
+	USER
+};
+
 class GlobalScheduler : public IETThread {
 public:
 	static GlobalScheduler* getInstance();
@@ -15,7 +21,7 @@ public:
     static void destroy();
 	void run() override;
 
-    std::shared_ptr<Process> createProcess(String processName);
+    std::shared_ptr<Process> createProcess(String processName, Mode mode);
 	std::shared_ptr<Process> findProcess(String& name) const;
 
     void test_init100Processes();

@@ -8,11 +8,16 @@
 
 #define _WIN32
 
+// Definition of the static member variable
+bool BaseScreen::activeScreen = true;
+
 namespace {
 	void onEvent(const std::string_view command) {
 
 		if (command == "exit") {
-			ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
+			 //ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
+			ConsoleManager::getInstance()->returnToPreviousConsole();
+			BaseScreen::setActiveScreen(false);
 		}
 	}
 
@@ -55,7 +60,7 @@ void BaseScreen::onEnabled() {
 
 void BaseScreen::process() {
 	std::string userInput;
-	while (true) {
+	while (activeScreen) {
 		getUserInput(userInput);
 		onEvent(userInput);
 	}
