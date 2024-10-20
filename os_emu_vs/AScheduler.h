@@ -1,13 +1,13 @@
 #pragma once
-#include <string>
-#include <queue>
-#include <vector>
-#include <mutex>
-#include <condition_variable>
-#include <memory>
 #include "IETThread.h"
 #include "Process.h"
 #include "SchedulerWorker.h"
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <string>
+#include <vector>
 
 static const std::string DEBUG_SCHEDULER_NAME = "DebugScheduler";
 static const std::string FCFS_SCHEDULER_NAME = "FCFSScheduler";
@@ -30,6 +30,10 @@ public:
 	virtual ~AScheduler() = default;
 
 	void addProcess(std::shared_ptr<Process> process);
+	void incrementActiveWorkers();
+	void decrementActiveWorkers();
+	int getActiveWorkersCount() const;
+	double getCpuUtilization() const;
 	void run() override;
 	void stop();
 
@@ -47,6 +51,7 @@ protected:
 	std::vector<std::shared_ptr<SchedulerWorker>> schedulerWorkers;
 	std::mutex queueMutex;
 	std::condition_variable queueCV;
+	int activeWorkers = 0;
 
 	friend class SchedulerWorker;
 };
