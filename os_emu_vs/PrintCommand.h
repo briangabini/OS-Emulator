@@ -5,7 +5,7 @@
 class PrintCommand : public ICommand {
 public:
 	PrintCommand(int pid, String& toPrint);
-	void execute(int cpuCoreId) override;
+	void execute() override;
 
 private:
 	String toPrint;

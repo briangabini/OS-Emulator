@@ -22,7 +22,7 @@ void Process::addCommand(ICommand::CommandType commandType, int numInstructions)
 
 void Process::executeCurrentCommand() const
 {
-	this->commandList[this->commandCounter]->execute(cpuCoreId);
+	this->commandList[this->commandCounter]->execute();
 }
 
 void Process::moveToNextLine()
