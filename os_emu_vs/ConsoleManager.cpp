@@ -19,6 +19,7 @@ void ConsoleManager::initialize() {
 	if (sharedInstance == nullptr) {
 		sharedInstance = new ConsoleManager();
 	}
+	sharedInstance->switchConsole(MAIN_CONSOLE);
 }
 
 void ConsoleManager::destroy()
@@ -59,7 +60,7 @@ void ConsoleManager::switchConsole(const String& consoleName)
 		system("cls");
 		this->previousConsole = this->currentConsole;
 		this->currentConsole = this->consoleTable[consoleName];
-		this->currentConsole->onEnabled();
+		// this->currentConsole->onEnabled();
 	}
 	else
 	{

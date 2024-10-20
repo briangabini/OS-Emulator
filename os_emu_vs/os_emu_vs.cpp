@@ -2,27 +2,45 @@
 #include "ConsoleManager.h"
 #include "GlobalScheduler.h"
 
+#include <iostream>
+
+int cpuCycles = 0;
+
 int main() {
 	ConsoleManager::initialize();
 	GlobalScheduler::initialize();
 
-	GlobalScheduler::getInstance()->test_init100Processes();
+	// GlobalScheduler::getInstance()->test_init100Processes();
 
 	//std::this_thread::sleep_for(std::chrono::seconds(5));
 	// switch to main console
-	ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
+	// ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
 
-	/*bool running = true;
+	bool running = true;
+
+	// start incrementing cpuCycle in another thread
+	std::thread cpuThread([&running]() {
+		while (running) {
+			cpuCycles++;
+			std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 0.1 second
+		}
+		});
+
 	while (running) {
-		ConsoleManager::getInstance()->process();
+
 		ConsoleManager::getInstance()->drawConsole();
+		ConsoleManager::getInstance()->process();
 
 		running = ConsoleManager::getInstance()->isRunning();
-	}*/
+	}
+
+	cpuThread.join();
 
 	// clean up
 	ConsoleManager::destroy();
 	GlobalScheduler::destroy();
+
+	std::cout << "Exiting the program..." << '\n';
 
 	return 0;
 }

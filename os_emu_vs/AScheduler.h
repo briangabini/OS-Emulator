@@ -31,7 +31,6 @@ public:
 
 	void addProcess(std::shared_ptr<Process> process);
 	void run() override;
-	void stop();
 
 	virtual void init() = 0;
 	virtual void execute() = 0;

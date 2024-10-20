@@ -27,7 +27,7 @@ public:
     Process(int pid, String name);
     Process() = default;
 
-    void addCommand(ICommand::CommandType commandType);
+    void addCommand(ICommand::CommandType commandType, int numInstructions);
     void executeCurrentCommand() const;
     void moveToNextLine();
 

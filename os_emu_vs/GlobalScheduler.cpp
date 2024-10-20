@@ -3,13 +3,13 @@
 #include <format>
 #include <iostream>
 #include <thread>
+#include "os_emu_vs.h"
 
 GlobalScheduler* GlobalScheduler::sharedInstance = nullptr;
 GlobalScheduler::GlobalScheduler() {
 	scheduler = std::make_shared<FCFSScheduler>();
 	this->start();
 	scheduler->start();
-	// test_init10Processes();
 }
 
 void GlobalScheduler::initialize()
@@ -28,6 +28,46 @@ void GlobalScheduler::destroy() {
 	sharedInstance = nullptr;
 }
 
+GlobalScheduler::~GlobalScheduler()
+{
+	stopSchedulerTest();
+}
+
+void GlobalScheduler::startSchedulerTest()
+{
+	schedulerTestRunning = true;
+	processGeneratorThread = std::thread(&GlobalScheduler::generateProcesses, this);
+}
+
+void GlobalScheduler::stopSchedulerTest()
+{
+	schedulerTestRunning = false;
+	if (processGeneratorThread.joinable())
+	{
+		processGeneratorThread.join();
+	}
+}
+
+void GlobalScheduler::generateProcesses()
+{
+	bool processCreatedInCurrentCycle = false;
+
+	while (schedulerTestRunning)
+	{
+
+		if (cpuCycles % 20 == 0 && !processCreatedInCurrentCycle)
+		{
+			createProcess("process_");
+			processCreatedInCurrentCycle = true;
+		}
+		else if (cpuCycles % 20 != 0)
+		{
+			processCreatedInCurrentCycle = false;
+		}
+	}
+}
+
+
 void GlobalScheduler::tick() const {
 	scheduler->execute();
 }
@@ -38,13 +78,12 @@ std::shared_ptr<Process> GlobalScheduler::createProcess(std::string processName)
 	}
 
 	static int nextPid = 1;
-	std::shared_ptr<Process> newProcess = std::make_shared<Process>(nextPid++, processName);
+	const String newProcessName = processName + std::to_string(nextPid);
+	std::shared_ptr<Process> newProcess = std::make_shared<Process>(nextPid++, newProcessName);
 
-	for (int i = 0; i < 100; i++) {
-		newProcess->addCommand(ICommand::PRINT);
-	}
+	newProcess->addCommand(ICommand::PRINT, 10);
 
-	processes[processName] = newProcess;
+	processes[newProcessName] = newProcess;
 
 	if (scheduler) {
 		scheduler->addProcess(newProcess);
@@ -52,13 +91,6 @@ std::shared_ptr<Process> GlobalScheduler::createProcess(std::string processName)
 
 	return newProcess;
 }
-
-void GlobalScheduler::test_init100Processes() {
-	for (int i = 0; i < 10; i++) {
-		GlobalScheduler::getInstance()->createProcess("process_" + std::to_string(i));
-	}
-}
-
 
 std::shared_ptr<Process> GlobalScheduler::findProcess(String& name) const {
 	auto it = processes.find(name);

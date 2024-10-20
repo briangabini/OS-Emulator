@@ -7,13 +7,16 @@
 Process::Process(int pid, String name)
 	: pid(pid), name(std::move(name)), commandCounter(0), currentState(READY), creationTime(std::chrono::system_clock::now()) {}
 
-void Process::addCommand(ICommand::CommandType commandType)
+void Process::addCommand(ICommand::CommandType commandType, int numInstructions)
 {
 
 	//commandList.push_back(std::make_shared<ICommand>(pid, commandType));
-	if (commandType == ICommand::CommandType::PRINT) {
-		String message = "Sample text";
-		commandList.push_back(std::make_shared<PrintCommand>(pid, message));
+	for (int i = 0; i < numInstructions; i++)
+	{
+		if (commandType == ICommand::CommandType::PRINT) {
+			String message = "Sample text";
+			commandList.push_back(std::make_shared<PrintCommand>(pid, message));
+		}
 	}
 }
 
