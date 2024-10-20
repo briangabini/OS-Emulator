@@ -1,11 +1,11 @@
 #include "PrintCommand.h"
-#include <iostream>
-#include <fstream>
 #include <chrono>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
 
 PrintCommand::PrintCommand(int pid, String& toPrint) : ICommand(pid, PRINT) {
-    this->toPrint = toPrint;
+	this->toPrint = toPrint;
 }
 
 void PrintCommand::execute() {

@@ -1,12 +1,12 @@
 #pragma once
-#include <memory>
-#include <unordered_map>
-#include <string>
-#include <atomic>
-#include <thread>
 #include "AScheduler.h"
-#include "Process.h"
 #include "IETThread.h"
+#include "Process.h"
+#include <atomic>
+#include <memory>
+#include <string>
+#include <thread>
+#include <unordered_map>
 
 // create 2 mode enums kernel and user
 enum class Mode {
@@ -17,15 +17,16 @@ enum class Mode {
 class GlobalScheduler : public IETThread {
 public:
 	static GlobalScheduler* getInstance();
-    static void initialize();
-    static void destroy();
+	static void initialize();
+	static void destroy();
 	void run() override;
 
     std::shared_ptr<Process> createProcess(String processName, Mode mode);
 	std::shared_ptr<Process> findProcess(String& name) const;
 
-    void test_init100Processes();
-    void monitorProcesses() const;
+	void test_init100Processes();
+	void monitorProcesses() const;
+	void logToFile() const;
 	void tick() const;
 
 
@@ -47,6 +48,7 @@ private:
     bool schedulerTestRunning = false;
     std::thread processGeneratorThread;
     void generateProcesses();
+	mutable std::string lastMonitorOutput;
 
 };
 

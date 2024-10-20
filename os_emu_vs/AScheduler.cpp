@@ -2,17 +2,17 @@
 #include <iostream>
 
 AScheduler::AScheduler(SchedulingAlgorithm schedulingAlgo)
-    : schedulingAlgo(schedulingAlgo)
+	: schedulingAlgo(schedulingAlgo)
 {
-    for (int i = 0; i < workersCount; i++)
-    {
-        // Initialize worker
-        auto worker = std::make_shared<SchedulerWorker>(i, this);
-        schedulerWorkers.push_back(worker);
+	for (int i = 0; i < workersCount; i++)
+	{
+		// Initialize worker
+		auto worker = std::make_shared<SchedulerWorker>(i, this);
+		schedulerWorkers.push_back(worker);
 
-        // Start the worker
-        worker->start();
-    }
+		// Start the worker
+		worker->start();
+	}
 }
 
 void AScheduler::addProcess(std::shared_ptr<Process> process) {
@@ -24,11 +24,35 @@ void AScheduler::addProcess(std::shared_ptr<Process> process) {
     queueCV.notify_all(); // Notifies a waiting worker thread
 }
 
+void AScheduler::incrementActiveWorkers()
+{
+	activeWorkers++;
+}
+
+void AScheduler::decrementActiveWorkers()
+{
+	activeWorkers--;
+}
+
+int AScheduler::getActiveWorkersCount() const
+{
+	return activeWorkers;
+}
+
+double AScheduler::getCpuUtilization() const
+{
+	double cpuUtilization = 0;
+	cpuUtilization = (activeWorkers / static_cast<double>(workersCount)) * 100;
+
+	return cpuUtilization;
+}
+
+
 void AScheduler::run()
 {
-    init();
-    while (running)
-    {
-        execute();
-    }
+	init();
+	while (running)
+	{
+		execute();
+	}
 }

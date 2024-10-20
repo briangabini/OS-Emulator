@@ -1,12 +1,12 @@
-#include "MainConsole.h"
-#include <iostream>
-#include <array>
-#include <vector>
-#include <sstream>
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
 #include "GlobalScheduler.h"
+#include "MainConsole.h"
 #include "TypedefRepo.h"
+#include <array>
+#include <iostream>
+#include <sstream>
+#include <vector>
 
 #include "os_emu_vs.h"
 
@@ -45,11 +45,11 @@ namespace {
 	inline void clearScreen() {
 		std::cout << std::flush;
 
-	#ifdef windows
+#ifdef windows
 		std::system("cls");
-	#else
+#else
 		std::system("clear");
-	#endif
+#endif
 	}
 }
 
@@ -115,7 +115,8 @@ namespace MainConsoleUtil {
 				}
 
 				ConsoleManager::getInstance()->switchToScreen(processName);
-			} else if (flag == "-ls")
+			}
+			else if (flag == "-ls")
 			{
 				GlobalScheduler::getInstance()->monitorProcesses();
 			}
@@ -138,9 +139,13 @@ namespace MainConsoleUtil {
 		}
 		else if (command == "nvidia-smi") {
 			//printNvidiaSmiOutput();
-		} else if (command == "marquee")
+		}
+		else if (command == "marquee")
 		{
 			ConsoleManager::getInstance()->switchConsole(MARQUEE_CONSOLE);
+		}
+		else if (command == "report-util") {
+			GlobalScheduler::getInstance()->logToFile();
 		}
 		else if (command == "exit") {
 			ConsoleManager::getInstance()->exitApplication();

@@ -1,6 +1,7 @@
 #include "FCFSScheduler.h"
 #include "GlobalScheduler.h"
 #include <format>
+#include <fstream>
 #include <iostream>
 #include <thread>
 #include "os_emu_vs.h"
@@ -111,20 +112,36 @@ void GlobalScheduler::run() {
 }
 
 void GlobalScheduler::monitorProcesses() const {
-	std::cout << "---------------------------------------\n";
-	std::cout << "Running processes:\n";
+	std::ostringstream oss;
+	oss << "CPU utilization: " << scheduler->getCpuUtilization() << "%\n";
+	oss << "Cores used: " << scheduler->getActiveWorkersCount() << "\n";
+	oss << "Cores available: " << scheduler->workersCount - scheduler->getActiveWorkersCount() << "\n\n";
+
+	oss << "---------------------------------------\n";
+	oss << "Running processes:\n";
+
 	for (const auto& [name, process] : processes) {
 		if (process->getState() != Process::FINISHED) {
-			std::cout << name << "\t" << formatTimestamp(process->getCreationTime()) << "\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : "\t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\n";
+			oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : "\t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\n";
 		}
 	}
-	std::cout << "\nFinished processes:\n";
+	oss << "\nFinished processes:\n";
 	for (const auto& [name, process] : processes) {
 		if (process->getState() == Process::FINISHED) {
-			std::cout << name << "\t" << formatTimestamp(process->getCreationTime()) << "\tFinished\t" << process->getLinesOfCode() << " / " << process->getLinesOfCode() << "\n";
+			oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\tFinished\t" << process->getLinesOfCode() << " / " << process->getLinesOfCode() << "\n";
 		}
 	}
-	std::cout << "---------------------------------------\n";
+	oss << "---------------------------------------\n";
+
+	lastMonitorOutput = oss.str();
+	std::cout << lastMonitorOutput;
+}
+
+void GlobalScheduler::logToFile() const {
+	std::ofstream logFile("report.txt", std::ios_base::app);
+	if (logFile.is_open()) {
+		logFile << lastMonitorOutput;
+	}
 }
 
 std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
