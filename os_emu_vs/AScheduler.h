@@ -9,23 +9,21 @@
 #include <string>
 #include <vector>
 
-static const std::string DEBUG_SCHEDULER_NAME = "DebugScheduler";
+//static const std::string DEBUG_SCHEDULER_NAME = "DebugScheduler";
+//static const std::string SJF_NOPREEMPT_SCHEDULER_NAME = "SJF-NoPreempt-Scheduler";
+//static const std::string SJF_PREEMPT_SCHEDULER_NAME = "SJF-Preempt-Scheduler";
 static const std::string FCFS_SCHEDULER_NAME = "FCFSScheduler";
-static const std::string SJF_NOPREEMPT_SCHEDULER_NAME = "SJF-NoPreempt-Scheduler";
-static const std::string SJF_PREEMPT_SCHEDULER_NAME = "SJF-Preempt-Scheduler";
+static const std::string RR_SCHEDULER_NAME = "RoundRobinScheduler";
 
 class SchedulerWorker;
 
+enum SchedulingAlgorithm {
+	FCFS,
+	ROUND_ROBIN
+};
+
 class AScheduler : public IETThread {
 public:
-	enum SchedulingAlgorithm {
-		FCFS,
-		ROUND_ROBIN
-		// DEBUG,
-		// SHORTEST_JOB_FIRST_NONPREEMPTIVE,
-		// SHORTEST_JOB_FIRST_PREEMPTIVE,
-	};
-
 	AScheduler(SchedulingAlgorithm schedulingAlgo);
 	virtual ~AScheduler() = default;
 

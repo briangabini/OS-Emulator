@@ -24,7 +24,6 @@ public:
     std::shared_ptr<Process> createProcess(String processName, Mode mode);
 	std::shared_ptr<Process> findProcess(String& name) const;
 
-	void test_init100Processes();
 	void monitorProcesses() const;
 	void logToFile() const;
 	void tick() const;
@@ -35,7 +34,7 @@ public:
     void stopSchedulerTest();
 
 private:
-    GlobalScheduler();
+    GlobalScheduler(SchedulingAlgorithm algo);
     ~GlobalScheduler();
     GlobalScheduler(GlobalScheduler const&) {};
     GlobalScheduler& operator=(GlobalScheduler const&) {};
@@ -49,7 +48,6 @@ private:
     std::thread processGeneratorThread;
     void generateProcesses();
 	mutable std::string lastMonitorOutput;
-
 };
 
 std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_clock>& timePoint);
