@@ -8,6 +8,7 @@ int main() {
 
 	GlobalScheduler::getInstance()->test_init100Processes();
 
+	//std::this_thread::sleep_for(std::chrono::seconds(5));
 	// switch to main console
 	ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
 

@@ -1,38 +1,54 @@
-// SchedulerWorker.cpp
 #include "SchedulerWorker.h"
+#include "AScheduler.h"
 #include <iostream>
 
 void SchedulerWorker::update(bool isRunning) {
     this->running = isRunning;
 }
 
-void SchedulerWorker::assignProcess(std::shared_ptr<Process> process) {
-    {
-        std::lock_guard<std::mutex> lock(processMutex);
-        this->currentProcess = process;
-        this->update(true);
-    }
-    processCV.notify_one();
-}
-
 void SchedulerWorker::run() {
+	//std::cout << "SchedulerWorker #" << this->cpuCoreId << " Waiting... " << "running : " << running << std::endl;
+
     while (true) {
-        std::unique_lock<std::mutex> lock(processMutex);
-        processCV.wait(lock, [this] { return currentProcess != nullptr || !running; });
+        std::shared_ptr<Process> process;
 
-        if (currentProcess) {
-            currentProcess->setState(currentProcess->RUNNING);
-            currentProcess->setCpuCoreId(cpuCoreId);
+        {
+			//std::cout << "Worker " << cpuCoreId << " is waiting" << std::endl;
 
+            std::unique_lock<std::mutex> lock(scheduler->queueMutex);
 
-            while (!currentProcess->isFinished() && running) {
-                currentProcess->executeCurrentCommand();
-                currentProcess->moveToNextLine();
-                IETThread::sleep(50);                   // this is here because printing is trivial (constant time)
+			// wait when there is no process in the queue
+			scheduler->queueCV.wait(lock, [this] { return !scheduler->readyQueue.empty(); });
+
+			//std::cout << "Worker " << cpuCoreId << " is running" << std::endl;
+
+            if (!scheduler->running && scheduler->readyQueue.empty()) {
+                return; // Exit if the scheduler stops running and there's no work left
             }
-            currentProcess->setState(currentProcess->FINISHED);
-            currentProcess = nullptr;
-			this->update(false);
+
+            if (!scheduler->readyQueue.empty()) {
+				//std::cout << "ready queue not empty, size: " << scheduler->readyQueue.size() << std::endl;
+                process = scheduler->readyQueue.front();
+                scheduler->readyQueue.pop();
+            }
+        }
+
+        // Process execution
+        if (process) {
+            process->setState(Process::RUNNING);
+            process->setCpuCoreId(cpuCoreId);
+
+            while (!process->isFinished() && running) {
+                process->executeCurrentCommand();
+                process->moveToNextLine();
+                IETThread::sleep(50);                       // Simulate execution delay
+            }
+
+            if (process->isFinished()) {
+                process->setState(Process::FINISHED);
+            }
+
+            //this->update(false); // Mark the worker as free
         }
     }
 }

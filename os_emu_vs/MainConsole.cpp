@@ -117,7 +117,6 @@ namespace {
 			} else if (flag == "-ls")
 			{
 				GlobalScheduler::getInstance()->monitorProcesses();
-				//GlobalScheduler::getInstance()->listProcesses();
 			}
 			else {
 				std::cout << "Error: Invalid screen command flag.\n";
