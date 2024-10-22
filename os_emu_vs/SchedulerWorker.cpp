@@ -1,7 +1,7 @@
 #include "AScheduler.h"
+#include "os_emu_vs.h"
 #include "SchedulerWorker.h"
 #include <iostream>
-#include "os_emu_vs.h"
 
 void SchedulerWorker::run() {
 	//std::cout << "SchedulerWorker #" << this->cpuCoreId << " Waiting... " << "running : " << running << std::endl;
@@ -70,6 +70,7 @@ void SchedulerWorker::run() {
 
 					if (cpuCycles >= endCpuCycle)
 					{
+						scheduler->decrementActiveWorkers();
 						break;
 					}
 				}
