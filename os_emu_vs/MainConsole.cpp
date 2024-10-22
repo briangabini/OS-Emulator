@@ -190,9 +190,27 @@ void MainConsole::onEnabled() {
 
 void MainConsole::process() {
 	std::string userInput;
+	bool initialized = false;
+
 	while (ConsoleManager::getInstance()->isRunning()) {
 		MainConsoleUtil::getUserInput(userInput);
-		MainConsoleUtil::onEvent(userInput);
+
+		if (!initialized)
+		{
+			if (userInput == "initialize")
+			{
+				MainConsoleUtil::onEvent(userInput);
+				initialized = true;
+			}
+			else
+			{
+				std::cout << "Please initialize the program first.\n";
+			}
+		} else
+		{
+			MainConsoleUtil::onEvent(userInput);
+		}
+
 
 		//for debugging
 		std::cout << "Cpu cycles: " << cpuCycles << '\n';
