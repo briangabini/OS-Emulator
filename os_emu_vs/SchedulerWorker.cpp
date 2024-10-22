@@ -1,7 +1,8 @@
-#include "AScheduler.h"
-#include "os_emu_vs.h"
 #include "SchedulerWorker.h"
+#include "AScheduler.h"
 #include <iostream>
+#include "os_emu_vs.h"
+#include "GlobalConfig.h"
 
 void SchedulerWorker::run() {
 	//std::cout << "SchedulerWorker #" << this->cpuCoreId << " Waiting... " << "running : " << running << std::endl;
@@ -39,30 +40,37 @@ void SchedulerWorker::run() {
 
 			SchedulingAlgorithm algo = scheduler->getSchedulingAlgo();
 
+			int execDelay = GlobalConfig::getInstance()->getDelayPerExec();
+			int quantumCycle = GlobalConfig::getInstance()->getQuantumCycles();
+
+			int endExecDelay;
+			int endCpuCycle;
+
 			if (algo == SchedulingAlgorithm::FCFS)
 			{
 				while (!process->isFinished() && running) {
 					process->executeCurrentCommand();
 					process->moveToNextLine();
-					IETThread::sleep(50);                       // Simulate execution delay
+
+					// busy waiting
+					endExecDelay = cpuCycles + execDelay;
+					while (cpuCycles < endExecDelay)
+					{
+					}
 				}
 			}
 			else if (algo == SchedulingAlgorithm::ROUND_ROBIN)
 			{
 
-				int quantumCycle = 100;
-				int endCpuCycle = cpuCycles + quantumCycle;
+				endCpuCycle = cpuCycles + quantumCycle;
 
 				while (!process->isFinished() && running)
 				{
 					process->executeCurrentCommand();
 					process->moveToNextLine();
 
-					int execDelay = 3; // Simulate execution delay
-					int endExecDelay = cpuCycles + execDelay;
-
-
 					// busy waiting
+					endExecDelay = cpuCycles + execDelay;
 					while (cpuCycles < endExecDelay)
 					{
 					}

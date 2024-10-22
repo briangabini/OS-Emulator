@@ -139,7 +139,8 @@ namespace MainConsoleUtil {
 
 		if (command == "initialize") {
 			GlobalConfig::initialize();
-			GlobalConfig::getInstance()->loadConfigFromFile("config.txt");
+			GlobalConfig::getInstance()->loadConfigFromFile("config_test.txt");
+			GlobalScheduler::initialize();
 		}
 		else if (command == "clear") {
 			clearScreen();

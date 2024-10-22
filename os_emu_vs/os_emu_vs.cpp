@@ -8,12 +8,6 @@ int cpuCycles = 0;
 
 int main() {
 	ConsoleManager::initialize();
-	GlobalScheduler::initialize();
-
-	// GlobalScheduler::getInstance()->test_init100Processes();
-
-	//std::this_thread::sleep_for(std::chrono::seconds(5));
-
 	bool running = true;
 
 	// start incrementing cpuCycle in another thread

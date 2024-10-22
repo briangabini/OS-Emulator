@@ -89,11 +89,12 @@ void GlobalConfig::parseLine(const std::string& line)
                 numCpu = std::stoi(value);
             }
             else if (key == "scheduler") {
-                if (value == "rr")
+				std::cout << value << "\n";
+                if (value == "\"rr\"")
                 {
 					scheduler = SchedulingAlgorithm::ROUND_ROBIN;
 				}
-                else if (value == "fcfs")
+                else if (value == "\"fcfs\"")
                 {
                     scheduler = SchedulingAlgorithm::FCFS;
                 }

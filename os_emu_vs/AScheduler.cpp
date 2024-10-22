@@ -1,9 +1,13 @@
 #include "AScheduler.h"
 #include <iostream>
 
+#include "GlobalConfig.h"
+
 AScheduler::AScheduler(SchedulingAlgorithm schedulingAlgo)
 	: schedulingAlgo(schedulingAlgo)
 {
+	workersCount = GlobalConfig::getInstance()->getNumCpu();
+
 	for (int i = 0; i < workersCount; i++)
 	{
 		// Initialize worker
