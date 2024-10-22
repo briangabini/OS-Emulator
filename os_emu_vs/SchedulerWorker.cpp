@@ -1,8 +1,8 @@
-#include "SchedulerWorker.h"
 #include "AScheduler.h"
-#include <iostream>
-#include "os_emu_vs.h"
 #include "GlobalConfig.h"
+#include "os_emu_vs.h"
+#include "SchedulerWorker.h"
+#include <iostream>
 
 void SchedulerWorker::run() {
 	//std::cout << "SchedulerWorker #" << this->cpuCoreId << " Waiting... " << "running : " << running << std::endl;
@@ -36,6 +36,7 @@ void SchedulerWorker::run() {
 		if (process) {
 			process->setState(Process::RUNNING);
 			process->setCpuCoreId(cpuCoreId);
+
 			scheduler->incrementActiveWorkers();
 
 			SchedulingAlgorithm algo = scheduler->getSchedulingAlgo();
@@ -61,7 +62,6 @@ void SchedulerWorker::run() {
 			}
 			else if (algo == SchedulingAlgorithm::ROUND_ROBIN)
 			{
-
 				endCpuCycle = cpuCycles + quantumCycle;
 
 				while (!process->isFinished() && running)
@@ -75,10 +75,8 @@ void SchedulerWorker::run() {
 					{
 					}
 
-
 					if (cpuCycles >= endCpuCycle)
 					{
-						scheduler->decrementActiveWorkers();
 						break;
 					}
 				}
@@ -92,9 +90,8 @@ void SchedulerWorker::run() {
 
 			if (process->isFinished()) {
 				process->setState(Process::FINISHED);
-				scheduler->decrementActiveWorkers();
 			}
-
+			scheduler->decrementActiveWorkers();
 			this->update(false); // Mark the worker as free
 		}
 	}
