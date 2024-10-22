@@ -50,14 +50,23 @@ void SchedulerWorker::run() {
 			else if (algo == SchedulingAlgorithm::ROUND_ROBIN)
 			{
 
-				int quantumCycle = 10;
+				int quantumCycle = 100;
 				int endCpuCycle = cpuCycles + quantumCycle;
 
 				while (!process->isFinished() && running)
 				{
 					process->executeCurrentCommand();
 					process->moveToNextLine();
-					IETThread::sleep(50);                       // Simulate execution delay
+
+					int execDelay = 3; // Simulate execution delay
+					int endExecDelay = cpuCycles + execDelay;
+
+
+					// busy waiting
+					while (cpuCycles < endExecDelay)
+					{
+					}
+
 
 					if (cpuCycles >= endCpuCycle)
 					{
