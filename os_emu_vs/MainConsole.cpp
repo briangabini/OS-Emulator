@@ -4,6 +4,7 @@
 #include "MainConsole.h"
 #include "TypedefRepo.h"
 #include <array>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -40,6 +41,62 @@ namespace {
 		return std::ranges::find_if(commands, [&command](std::string_view cmd) {
 			return command == cmd;
 			}) != commands.end();
+	}
+
+	inline void openConfigFile() {
+		std::ifstream file("config.txt");
+
+		int numCpu = 0;
+		std::string scheduler;
+		int quantumCycles = 0;
+		int batchProcessFreq = 0;
+		int minIns = 0;
+		int maxIns = 0;
+		int delayPerExec = 0;
+
+		if (file.is_open()) {
+			std::string line;
+			while (std::getline(file, line)) {
+				if (!line.empty()) {
+					std::istringstream configWord(line);
+					std::string key;
+					if (configWord >> key) {
+						if (key == "num-cpu") {
+							configWord >> numCpu;
+							std::cout << "num-cpu: " << numCpu << '\n';
+						}
+						else if (key == "scheduler") {
+							configWord >> scheduler;
+							std::cout << "scheduler: " << scheduler << '\n';
+						}
+						else if (key == "quantum-cycles") {
+							configWord >> quantumCycles;
+							std::cout << "quantum-cycles: " << quantumCycles << '\n';
+						}
+						else if (key == "batch-process-freq") {
+							configWord >> batchProcessFreq;
+							std::cout << "batch-process-freq: " << batchProcessFreq << '\n';
+						}
+						else if (key == "min-ins") {
+							configWord >> minIns;
+							std::cout << "min-ins: " << minIns << '\n';
+						}
+						else if (key == "max-ins") {
+							configWord >> maxIns;
+							std::cout << "max-ins: " << maxIns << '\n';
+						}
+						else if (key == "delay-per-exec") {
+							configWord >> delayPerExec;
+							std::cout << "delay-per-exec: " << delayPerExec << '\n';
+						}
+					}
+				}
+			}
+			file.close();
+		}
+		else {
+			std::cerr << "Unable to open file\n";
+		}
 	}
 
 	inline void clearScreen() {
@@ -132,9 +189,10 @@ namespace MainConsoleUtil {
 			return;
 		}
 
-		std::cout << command << " command recognized. Doing something.\n";
-
-		if (command == "clear") {
+		if (command == "initialize") {
+			openConfigFile();
+		}
+		else if (command == "clear") {
 			clearScreen();
 		}
 		else if (command == "nvidia-smi") {
@@ -149,10 +207,12 @@ namespace MainConsoleUtil {
 		}
 		else if (command == "exit") {
 			ConsoleManager::getInstance()->exitApplication();
-		} else if (command == "scheduler-test")
+		}
+		else if (command == "scheduler-test")
 		{
 			GlobalScheduler::getInstance()->startSchedulerTest();
-		} else if (command == "scheduler-stop")
+		}
+		else if (command == "scheduler-stop")
 		{
 			GlobalScheduler::getInstance()->stopSchedulerTest();
 		}
@@ -186,7 +246,7 @@ void MainConsole::process() {
 		MainConsoleUtil::getUserInput(userInput);
 		MainConsoleUtil::onEvent(userInput);
 
-		 //for debugging
+		//for debugging
 		std::cout << "Cpu cycles: " << cpuCycles << '\n';
 	}
 }

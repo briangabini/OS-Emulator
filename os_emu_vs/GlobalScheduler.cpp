@@ -1,5 +1,6 @@
 #include "FCFSScheduler.h"
 #include "GlobalScheduler.h"
+#include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
@@ -92,7 +93,8 @@ std::shared_ptr<Process> GlobalScheduler::createProcess(std::string processName,
 	if (mode == Mode::KERNEL)
 	{
 		newProcessName = processName + std::to_string(nextPid);
-	} else if (mode == Mode::USER) {
+	}
+	else if (mode == Mode::USER) {
 		newProcessName = processName;
 	}
 
@@ -130,13 +132,13 @@ void GlobalScheduler::monitorProcesses() const {
 
 	for (const auto& [name, process] : processes) {
 		if (process->getState() != Process::FINISHED) {
-			oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : "\t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\n";
+			oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : " \t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\n";
 		}
 	}
 	oss << "\nFinished processes:\n";
 	for (const auto& [name, process] : processes) {
 		if (process->getState() == Process::FINISHED) {
-			oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\tFinished\t" << process->getLinesOfCode() << " / " << process->getLinesOfCode() << "\n";
+			oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tFinished\t" << process->getLinesOfCode() << " / " << process->getLinesOfCode() << "\n";
 		}
 	}
 	oss << "---------------------------------------\n";
@@ -146,10 +148,13 @@ void GlobalScheduler::monitorProcesses() const {
 }
 
 void GlobalScheduler::logToFile() const {
-	std::ofstream logFile("report.txt", std::ios_base::app);
+	std::ofstream logFile("report.txt", std::ofstream::trunc);
 	if (logFile.is_open()) {
 		logFile << lastMonitorOutput;
 	}
+	logFile.close();
+	std::filesystem::path filePath = std::filesystem::absolute("report.txt");
+	std::cout << "Report generated at " << filePath.string() << "!\n";
 }
 
 std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
