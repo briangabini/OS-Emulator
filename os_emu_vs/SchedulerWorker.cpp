@@ -78,6 +78,7 @@ void SchedulerWorker::run() {
 
 					if (cpuCycles >= endCpuCycle)
 					{
+						scheduler->decrementActiveWorkers();
 						break;
 					}
 				}
