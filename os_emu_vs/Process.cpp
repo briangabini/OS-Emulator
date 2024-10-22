@@ -1,16 +1,20 @@
-#include "Process.h"
-#include <string>
-
+#include "GlobalConfig.h"
 #include "PrintCommand.h"
+#include "Process.h"
 #include "TypedefRepo.h"
+#include <string>
+#include <utility>
 
 Process::Process(int pid, String name)
 	: pid(pid), name(std::move(name)), commandCounter(0), currentState(READY), creationTime(std::chrono::system_clock::now()) {}
 
-void Process::addCommand(ICommand::CommandType commandType, int numInstructions)
+void Process::addCommand(ICommand::CommandType commandType)
 {
+	GlobalConfig* config = GlobalConfig::getInstance();
 
-	for (int i = 0; i < numInstructions; i++)
+	unsigned int randIns = rand() % (config->getMaxIns() - config->getMinIns() + 1) + config->getMinIns();
+
+	for (int i = 0; i < randIns; i++)
 	{
 		if (commandType == ICommand::CommandType::PRINT) {
 			String message = "Sample text";

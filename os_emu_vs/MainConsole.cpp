@@ -1,15 +1,15 @@
 
+#include "BaseScreen.h"
+#include "ConsoleManager.h"
+#include "GlobalConfig.h"
+#include "GlobalScheduler.h"
 #include "MainConsole.h"
+#include "TypedefRepo.h"
 #include <array>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include "BaseScreen.h"
-#include "ConsoleManager.h"
-#include "GlobalScheduler.h"
-#include "TypedefRepo.h"
-#include "GlobalConfig.h"
 
 
 #include "os_emu_vs.h"
@@ -70,6 +70,7 @@ namespace MainConsoleUtil {
 		}
 		return tokens;
 	}
+	bool initialized = false;
 
 	void onEvent(const std::string_view command) {
 		std::vector<String> tokens = splitCommand(String(command));
@@ -190,23 +191,23 @@ void MainConsole::onEnabled() {
 
 void MainConsole::process() {
 	std::string userInput;
-	bool initialized = false;
 
 	while (ConsoleManager::getInstance()->isRunning()) {
 		MainConsoleUtil::getUserInput(userInput);
 
-		if (!initialized)
+		if (!MainConsoleUtil::initialized)
 		{
 			if (userInput == "initialize")
 			{
 				MainConsoleUtil::onEvent(userInput);
-				initialized = true;
+				MainConsoleUtil::initialized = true;
 			}
 			else
 			{
 				std::cout << "Please initialize the program first.\n";
 			}
-		} else
+		}
+		else
 		{
 			MainConsoleUtil::onEvent(userInput);
 		}
