@@ -1,0 +1,10 @@
+CPU utilization: 0%
+Cores used: 0
+Cores available: 4
+
+---------------------------------------
+Running processes:
+
+Finished processes:
+carlNigger	(10/20/2024 10:10:52PM)	Finished	100 / 100
+---------------------------------------

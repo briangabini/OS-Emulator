@@ -1,10 +1,7 @@
 #include "AScheduler.h"
 #include "SchedulerWorker.h"
 #include <iostream>
-
-void SchedulerWorker::update(bool isRunning) {
-	this->running = isRunning;
-}
+#include "os_emu_vs.h"
 
 void SchedulerWorker::run() {
 	//std::cout << "SchedulerWorker #" << this->cpuCoreId << " Waiting... " << "running : " << running << std::endl;
@@ -30,6 +27,7 @@ void SchedulerWorker::run() {
 				//std::cout << "ready queue not empty, size: " << scheduler->readyQueue.size() << std::endl;
 				process = scheduler->readyQueue.front();
 				scheduler->readyQueue.pop();
+				this->update(true);
 			}
 		}
 
@@ -51,8 +49,9 @@ void SchedulerWorker::run() {
 			}
 			else if (algo == SchedulingAlgorithm::ROUND_ROBIN)
 			{
-				const int timeSlice = 5000;		// 5 seconds
-				auto startTime = std::chrono::steady_clock::now();
+
+				int quantumCycle = 10;
+				int endCpuCycle = cpuCycles + quantumCycle;
 
 				while (!process->isFinished() && running)
 				{
@@ -60,14 +59,11 @@ void SchedulerWorker::run() {
 					process->moveToNextLine();
 					IETThread::sleep(50);                       // Simulate execution delay
 
-					auto currentTime = std::chrono::steady_clock::now();
-					auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
-
-					if (elapsedTime >= timeSlice) {
+					if (cpuCycles >= endCpuCycle)
+					{
 						break;
 					}
 				}
-
 				if (!process->isFinished())
 				{
 					std::unique_lock<std::mutex> lock(scheduler->queueMutex);
@@ -81,11 +77,12 @@ void SchedulerWorker::run() {
 				scheduler->decrementActiveWorkers();
 			}
 
-			//this->update(false); // Mark the worker as free
+			this->update(false); // Mark the worker as free
 		}
 	}
 }
 
-bool SchedulerWorker::isRunning() {
-	return running;
+
+void SchedulerWorker::update(bool running) {
+	this->running = running;
 }
