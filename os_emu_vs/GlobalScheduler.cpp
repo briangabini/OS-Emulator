@@ -5,6 +5,8 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
+
+#include "GlobalConfig.h"
 #include "os_emu_vs.h"
 #include "RRScheduler.h"
 
@@ -25,8 +27,20 @@ GlobalScheduler::GlobalScheduler(SchedulingAlgorithm algo) {
 
 void GlobalScheduler::initialize()
 {
+	SchedulingAlgorithm algo = GlobalConfig::getInstance()->getScheduler();
+
+	/*if (algo == SchedulingAlgorithm::ROUND_ROBIN)
+	{
+		std::cout << "Round Robin Scheduler\n";
+	}
+	else if (algo == SchedulingAlgorithm::FCFS)
+	{
+		std::cout << "FCFS Scheduler\n";
+	}*/
+
+
 	if (sharedInstance == nullptr) {
-		sharedInstance = new GlobalScheduler(SchedulingAlgorithm::ROUND_ROBIN);
+		sharedInstance = new GlobalScheduler(algo);
 	}
 }
 
@@ -63,10 +77,12 @@ void GlobalScheduler::generateProcesses()
 {
 	bool processCreatedInCurrentCycle = false;
 
+	int batchProcessFrequency = GlobalConfig::getInstance()->getBatchProcessFreq();
+
 	while (schedulerTestRunning)
 	{
 
-		if (cpuCycles % 20 == 0 && !processCreatedInCurrentCycle)
+		if (cpuCycles % batchProcessFrequency == 0 && !processCreatedInCurrentCycle)
 		{
 			createProcess("process_", Mode::KERNEL);
 			processCreatedInCurrentCycle = true;
