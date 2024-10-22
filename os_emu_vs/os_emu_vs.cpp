@@ -32,10 +32,6 @@ int main() {
 		running = ConsoleManager::getInstance()->isRunning();
 	}
 
-	 // switch to main console
-	 //ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
-
-
 	cpuThread.join();
 
 	// clean up

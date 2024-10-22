@@ -49,7 +49,7 @@ public:
 protected:
 	SchedulingAlgorithm schedulingAlgo;
 	bool running = true;
-	int workersCount = 1;
+	int workersCount = 4;
 	std::queue<std::shared_ptr<Process>> readyQueue;
 	std::vector<std::shared_ptr<SchedulerWorker>> schedulerWorkers;
 	std::mutex queueMutex;
