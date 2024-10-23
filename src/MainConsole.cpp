@@ -4,6 +4,7 @@
 #include "Screen.h"
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 #include <ctime>
 
@@ -85,7 +86,7 @@ void MainConsole::handleCommand(const std::string& input) {
         else if (flag == "-ls") {
             auto& processes = consoleManager.getProcesses();
             Scheduler* scheduler = consoleManager.getScheduler();
-            auto runningProcesses = scheduler->getRunningProcesses();
+            auto runningProcesses = scheduler ? scheduler->getRunningProcesses() : std::map<Process*, int>();
 
             std::vector<Process*> running;
             std::vector<Process*> finished;
@@ -103,7 +104,22 @@ void MainConsole::handleCommand(const std::string& input) {
                 }
             }
 
-            std::cout << "-------------------------------------------\n";
+            // Display CPU utilization and core information
+            if (scheduler) {
+                int totalCores = scheduler->getTotalCores();
+                int busyCores = scheduler->getBusyCores();
+                int availableCores = totalCores - busyCores;
+                double cpuUtilization = ((double)busyCores / totalCores) * 100.0;
+
+                std::cout << "\nCPU utilization: " << std::fixed << std::setprecision(2) << cpuUtilization << "%\n";
+                std::cout << "Cores used: " << busyCores << "\n";
+                std::cout << "Cores available: " << availableCores << "\n";
+            }
+            else {
+                std::cout << "\nScheduler is not initialized.\n";
+            }
+
+            std::cout << "\n-------------------------------------------\n";
             std::cout << "Running processes:\n";
 
             for (Process* process : running) {
@@ -148,7 +164,7 @@ void MainConsole::handleCommand(const std::string& input) {
                     << "Finished     "
                     << totalLines << " / " << totalLines << "\n";
             }
-            std::cout << "-------------------------------------------\n";
+            std::cout << "-------------------------------------------\n\n";
         }
         else {
             std::cout << "Invalid flag for screen command.\n";
@@ -177,7 +193,102 @@ void MainConsole::handleCommand(const std::string& input) {
         consoleManager.stopSchedulerTest();
     }
     else if (command == "report-util") {
-        std::cout << "Command 'report-util' recognized. Doing something.\n";
+        std::ofstream logfile("csopesy-log.txt", std::ios::app);
+
+        if (!logfile.is_open()) {
+            std::cout << "Failed to open csopesy-log.txt for writing.\n";
+            return;
+        }
+
+        std::time_t now = std::time(nullptr);
+        char buffer[26];
+        ctime_s(buffer, sizeof(buffer), &now);
+        logfile << "Report generated at: " << buffer << "\n";
+
+        auto& processes = consoleManager.getProcesses();
+        Scheduler* scheduler = consoleManager.getScheduler();
+        auto runningProcesses = scheduler ? scheduler->getRunningProcesses() : std::map<Process*, int>();
+
+        std::vector<Process*> running;
+        std::vector<Process*> finished;
+
+        for (const auto& pair : processes) {
+            Process* process = pair.second;
+            if (runningProcesses.find(process) != runningProcesses.end()) {
+                running.push_back(process);
+            }
+            else if (process->isCompleted()) {
+                finished.push_back(process);
+            }
+            else {
+                // Process is not running and not completed; ignoring for now
+            }
+        }
+
+        // Display CPU utilization and core information
+        if (scheduler) {
+            int totalCores = scheduler->getTotalCores();
+            int busyCores = scheduler->getBusyCores();
+            int availableCores = totalCores - busyCores;
+            double cpuUtilization = ((double)busyCores / totalCores) * 100.0;
+
+            logfile << "CPU Utilization: " << std::fixed << std::setprecision(2) << cpuUtilization << "%\n";
+            logfile << "Cores Used: " << busyCores << "\n";
+            logfile << "Cores Available: " << availableCores << "\n";
+        }
+        else {
+            logfile << "\nScheduler is not initialized.\n";
+        }
+
+        logfile << "\n-------------------------------------------\n";
+        logfile << "Running processes:\n";
+
+        for (Process* process : running) {
+            int coreId = runningProcesses[process];
+            std::string processName = process->getName();
+            std::time_t creationTime = process->getCreationTime();
+            std::tm creationTm;
+
+            localtime_s(&creationTm, &creationTime);
+
+            char timeBuffer[30];
+            std::strftime(timeBuffer, sizeof(timeBuffer), "%m/%d/%Y %I:%M:%S%p", &creationTm);
+            std::string timeStr = timeBuffer;
+
+            int currentLine = process->getCurrentLine();
+            int totalLines = process->getTotalLines();
+
+            // Format: processName  (creationTime)  Core: coreId   currentLine / totalLines
+            logfile << std::left << std::setw(15) << processName
+                << "(" << timeStr << ")    "
+                << "Core: " << coreId << "     "
+                << currentLine << " / " << totalLines << "\n";
+        }
+
+        logfile << "\nFinished processes:\n";
+        for (Process* process : finished) {
+            std::string processName = process->getName();
+            std::time_t creationTime = process->getCreationTime();
+            std::tm creationTm;
+
+            localtime_s(&creationTm, &creationTime);
+
+            char timeBuffer[30];
+            std::strftime(timeBuffer, sizeof(timeBuffer), "%m/%d/%Y %I:%M:%S%p", &creationTm);
+            std::string timeStr = timeBuffer;
+
+            int totalLines = process->getTotalLines();
+
+            // Format: processName  (creationTime)  Finished   totalLines / totalLines
+            logfile << std::left << std::setw(15) << processName
+                << "(" << timeStr << ")    "
+                << "Finished     "
+                << totalLines << " / " << totalLines << "\n";
+        }
+
+        logfile << "-------------------------------------------\n\n\n";
+        logfile.close();
+        std::cout << "Utilization report saved to csopesy-log.txt.\n";
     }
     else if (command == "initialize") {
         std::cout << "System is already initialized.\n";

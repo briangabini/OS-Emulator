@@ -23,6 +23,9 @@ public:
     bool isRunning() const override;
     bool isPaused() const override;
 
+    int getTotalCores() const override;
+    int getBusyCores() const override;
+
     std::map<Process*, int> getRunningProcesses() const override;
 
 private:

@@ -16,5 +16,8 @@ public:
     virtual bool isRunning() const = 0;
     virtual bool isPaused() const = 0;
 
+    virtual int getTotalCores() const = 0;
+    virtual int getBusyCores() const = 0;
+
     virtual std::map<Process*, int> getRunningProcesses() const = 0;
 };

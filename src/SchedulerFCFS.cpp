@@ -154,6 +154,21 @@ void SchedulerFCFS::workerLoop(int coreId) {
     }
 }
 
+int SchedulerFCFS::getTotalCores() const {
+    return numCores;
+}
+
+int SchedulerFCFS::getBusyCores() const {
+    int busyCores = 0;
+    for (const Worker* worker : workers) {
+        std::lock_guard<std::mutex> lock(worker->mtx);
+        if (worker->busy) {
+            busyCores++;
+        }
+    }
+    return busyCores;
+}
+
 std::map<Process*, int> SchedulerFCFS::getRunningProcesses() const {
     std::map<Process*, int> runningProcesses;
     for (const Worker* worker : workers) {

@@ -186,6 +186,21 @@ void SchedulerRR::workerLoop(int coreId) {
     }
 }
 
+int SchedulerRR::getTotalCores() const {
+    return numCores;
+}
+
+int SchedulerRR::getBusyCores() const {
+    int busyCores = 0;
+    for (const Worker* worker : workers) {
+        std::lock_guard<std::mutex> lock(worker->mtx);
+        if (worker->busy) {
+            busyCores++;
+        }
+    }
+    return busyCores;
+}
+
 std::map<Process*, int> SchedulerRR::getRunningProcesses() const {
     std::map<Process*, int> runningProcesses;
     for (const Worker* worker : workers) {
