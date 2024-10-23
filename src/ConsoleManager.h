@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Config.h"
 #include "Console.h"
 #include "Process.h"
 #include "Scheduler.h"
@@ -19,8 +20,6 @@ public:
     void start();
     void switchToMainConsole();
     void switchToScreen(Process* process);
-    void switchToMarquee();
-    void switchToMarqueeNT();
 
     void createProcess(const std::string& name);
     Process* getProcess(const std::string& name);
@@ -43,6 +42,10 @@ public:
     void setCurrentPrompt(const std::string& prompt);
     std::mutex& getIOMutex();
 
+    // Initialization methods
+    bool isInitialized() const;
+    bool initialize();
+
 private:
     MainConsole* mainConsole;
     std::map<std::string, Process*> processes;
@@ -60,4 +63,7 @@ private:
     // Console output management
     std::string currentPrompt;
     std::mutex ioMutex;
+
+    // Initialization flag
+    bool initialized;
 };

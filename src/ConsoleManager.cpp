@@ -1,28 +1,56 @@
 #include "ConsoleManager.h"
 #include "MainConsole.h"
 #include "Screen.h"
-#include "Marquee.h"
-#include "MarqueeNT.h"
 #include "SchedulerFCFS.h"
-#include "Command.h"
+#include "SchedulerRR.h"
+#include "PrintCommand.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <fstream>
+#include <sstream>
 
 ConsoleManager::ConsoleManager()
-    : testing(false) {
+    : testing(false), initialized(false), scheduler(nullptr) {
     mainConsole = new MainConsole(*this);
-    scheduler = new SchedulerFCFS(4, *this); // Declare 4 cores
 }
 
 ConsoleManager::~ConsoleManager() {
     stopSchedulerTest();
-    scheduler->stop();
-    delete scheduler;
+    if (scheduler) {
+        scheduler->stop();
+        delete scheduler;
+    }
     delete mainConsole;
     for (auto& pair : processes) {
         delete pair.second;
     }
+}
+
+bool ConsoleManager::initialize() {
+    Config& config = Config::getInstance();
+    if (!config.loadConfig("config.txt")) {
+        std::cerr << "Failed to load configuration." << std::endl;
+        return false;
+    }
+
+    if (config.getSchedulerType() == "fcfs") {
+        scheduler = new SchedulerFCFS(config.getNumCpu(), *this);
+    }
+    else if (config.getSchedulerType() == "rr") {
+        scheduler = new SchedulerRR(config.getNumCpu(), config.getQuantumCycles(), *this);
+    }
+    else {
+        std::cerr << "Unknown scheduler type in configuration." << std::endl;
+        return false;
+    }
+
+    initialized = true;
+    return true;
+}
+
+bool ConsoleManager::isInitialized() const {
+    return initialized;
 }
 
 void ConsoleManager::safePrint(const std::string& message) {
@@ -57,16 +85,6 @@ void ConsoleManager::switchToMainConsole() {
 void ConsoleManager::switchToScreen(Process* process) {
     Screen screen(*this, process);
     screen.run();
-}
-
-void ConsoleManager::switchToMarquee() {
-    Marquee marquee(*this);
-    marquee.run();
-}
-
-void ConsoleManager::switchToMarqueeNT() {
-    MarqueeNT marqueeNT(*this);
-    marqueeNT.run();
 }
 
 void ConsoleManager::createProcess(const std::string& name) {
@@ -111,6 +129,10 @@ void ConsoleManager::startScheduler() {
 }
 
 void ConsoleManager::stopScheduler() {
+    if (!scheduler) {
+        std::cout << "Scheduler is not initialized.\n";
+        return;
+    }
     if (!scheduler->isRunning()) {
         std::cout << "Scheduler is not running.\n";
         return;
@@ -151,6 +173,10 @@ void ConsoleManager::startSchedulerTest() {
         std::cout << "Scheduler test is already running.\n";
         return;
     }
+    if (!scheduler->isRunning()) {
+        std::cout << "Scheduler is not running. Starting scheduler.\n";
+        startScheduler();
+    }
     testing = true;
     testThread = std::thread(&ConsoleManager::schedulerTestLoop, this);
     std::cout << "Scheduler test started.\n";
@@ -164,16 +190,19 @@ void ConsoleManager::stopSchedulerTest() {
             return;
         }
         testing = false;
+        testCV.notify_all();
     }
-    testCV.notify_all();
     if (testThread.joinable()) {
         testThread.join();
+        std::cout << "Scheduler test stopped.\n";
     }
-    std::cout << "Scheduler test stopped.\n";
 }
 
 void ConsoleManager::schedulerTestLoop() {
+    Config& config = Config::getInstance();
     int processCounter = 1;
+    unsigned int freq = config.getBatchProcessFreq();
+
     while (true) {
         {
             std::unique_lock<std::mutex> lock(testMutex);
@@ -187,14 +216,17 @@ void ConsoleManager::schedulerTestLoop() {
 
             // Add dummy commands to the process
             Process* process = getProcess(processName);
-            process->addCommand(new PrintCommand("Hello from " + processName));
+            unsigned int numIns = config.getMinIns() + rand() % (config.getMaxIns() - config.getMinIns() + 1);
+            for (unsigned int j = 0; j < numIns; ++j) {
+                process->addCommand(new PrintCommand("Hello from " + processName + " Instruction " + std::to_string(j + 1)));
+            }
 
-            std::cout << "Generated dummy process: " << processName << "\n";
+            std::cout << "Generated dummy process: " << processName << " with " << numIns << " instructions.\n";
         }
 
-        // Wait for some time before generating the next batch
+        // Wait for 'batchProcessFreq' CPU cycles (simulated with seconds)
         std::unique_lock<std::mutex> lock(testMutex);
-        testCV.wait_for(lock, std::chrono::seconds(5), [this]() { return !testing; });
+        testCV.wait_for(lock, std::chrono::milliseconds(freq), [this]() { return !testing; });
         if (!testing) break;
     }
 }
@@ -206,7 +238,6 @@ void ConsoleManager::startScheduler10() {
         std::string processName = "process" + std::to_string(i);
         createProcess(processName);
 
-        // Add 100 print commands to the process
         Process* process = getProcess(processName);
         for (int j = 1; j <= 100; ++j) {
             process->addCommand(new PrintCommand("Message " + std::to_string(j) + " from " + processName));

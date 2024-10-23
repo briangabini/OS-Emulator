@@ -65,11 +65,9 @@ void Process::log(const std::string& message, int coreId) {
         // Get current time
         std::time_t now = std::time(nullptr);
         std::tm now_tm;
-#ifdef _WIN32
+
         localtime_s(&now_tm, &now);
-#else
-        localtime_r(&now, &now_tm);
-#endif
+
         logfile << "(" << std::put_time(&now_tm, "%m/%d/%Y %I:%M:%S%p") << ") ";
         logfile << "Core:" << coreId << " \"" << message << "\"\n";
         logfile.close();
@@ -78,7 +76,6 @@ void Process::log(const std::string& message, int coreId) {
         std::cerr << "Unable to open log file for process " << name << std::endl;
     }
 }
-
 
 std::time_t Process::getCreationTime() const {
     return std::chrono::system_clock::to_time_t(creationTime);

@@ -1,16 +1,18 @@
-#include "Command.h"
+#include "PrintCommand.h"
 #include "Process.h"
 #include <thread>
 #include <chrono>
+#include "Config.h"
 
 PrintCommand::PrintCommand(const std::string& message)
     : message(message) {}
 
 void PrintCommand::execute(Process* process, int coreId) {
-    // Simulate execution time
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    unsigned int delay = Config::getInstance().getDelaysPerExec();
+    if (delay > 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+    }
 
-    // Log the message
     process->log(message, coreId);
 }
 

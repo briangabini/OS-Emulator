@@ -12,7 +12,6 @@ public:
 
 private:
     void handleCommand(const std::string& input);
-    void displayNvidiaSmi();
 
     ConsoleManager& consoleManager;
 };
