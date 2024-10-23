@@ -1,7 +1,7 @@
 num-cpu 8
 scheduler "rr"
 quantum-cycles 5
-batch-process-freq 1
+batch-process-freq 1000
 min-ins 1000
 max-ins 2000
 delay-per-exec 10

@@ -79,10 +79,12 @@ void ConsoleManager::start() {
 }
 
 void ConsoleManager::switchToMainConsole() {
+    system("CLS");
     mainConsole->run();
 }
 
 void ConsoleManager::switchToScreen(Process* process) {
+    system("CLS");
     Screen screen(*this, process);
     screen.run();
 }
@@ -224,7 +226,7 @@ void ConsoleManager::schedulerTestLoop() {
             std::cout << "Generated dummy process: " << processName << " with " << numIns << " instructions.\n";
         }
 
-        // Wait for 'batchProcessFreq' CPU cycles (simulated with seconds)
+        // Wait for 'batchProcessFreq' CPU cycles
         std::unique_lock<std::mutex> lock(testMutex);
         testCV.wait_for(lock, std::chrono::milliseconds(freq), [this]() { return !testing; });
         if (!testing) break;

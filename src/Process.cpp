@@ -6,9 +6,12 @@
 #include <iomanip>
 #include <mutex>
 
+int Process::nextId = 1;
+
 Process::Process(const std::string& name)
     : name(name), currentLine(0), totalLines(0), completed(false) {
     creationTime = std::chrono::system_clock::now();
+    id = nextId++;
 
     // Initialize the log file
     std::ofstream logfile(name + ".txt", std::ios::out);
@@ -26,6 +29,10 @@ Process::~Process() {
         delete commandQueue.front();
         commandQueue.pop();
     }
+}
+
+int Process::getId() const {
+    return id;
 }
 
 const std::string& Process::getName() const {

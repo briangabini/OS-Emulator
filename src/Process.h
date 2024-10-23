@@ -4,9 +4,7 @@
 #include <queue>
 #include <mutex>
 #include <chrono>
-#include <ctime>
 #include <vector>
-#include <mutex>
 
 class Command;
 
@@ -16,38 +14,41 @@ public:
     ~Process();
 
     const std::string& getName() const;
+    int getId() const;
+
     void addCommand(Command* cmd);
     Command* getNextCommand();
 
     void log(const std::string& message, int coreId);
 
-    // Methods for process information
     std::time_t getCreationTime() const;
+
     int getCurrentLine() const;
     int getTotalLines() const;
     std::string getCurrentCodeLine() const;
-    bool isCompleted() const;
 
-    void incrementCurrentLine();
+    bool isCompleted() const;
     void setCompleted(bool value);
     void resetCompleted();
-
-    // For Scheduler access
-    mutable std::mutex stateMutex;
+    void incrementCurrentLine();
 
 private:
     std::string name;
+    int id;
+
+    static int nextId;
+
     std::queue<Command*> commandQueue;
-    std::mutex queueMutex;
+    mutable std::mutex queueMutex;
 
-    // For logging
-    std::mutex logMutex;
-
-    // Process state
     std::chrono::system_clock::time_point creationTime;
+
+    std::vector<std::string> codeLines;
     int currentLine;
     int totalLines;
     bool completed;
 
-    std::vector<std::string> codeLines;
+    mutable std::mutex stateMutex;
+
+    std::mutex logMutex;
 };
