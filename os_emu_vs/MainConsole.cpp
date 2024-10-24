@@ -139,7 +139,7 @@ namespace MainConsoleUtil {
 
 		if (command == "initialize") {
 			GlobalConfig::initialize();
-			GlobalConfig::getInstance()->loadConfigFromFile("config_test.txt");
+			GlobalConfig::getInstance()->loadConfigFromFile("config.txt");
 			GlobalScheduler::initialize();
 		}
 		else if (command == "clear") {

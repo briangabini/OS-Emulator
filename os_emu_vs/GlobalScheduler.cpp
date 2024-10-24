@@ -18,7 +18,7 @@ GlobalScheduler::GlobalScheduler(SchedulingAlgorithm algo) {
 		scheduler = std::make_shared<FCFSScheduler>();
 	}
 	else if (algo == SchedulingAlgorithm::ROUND_ROBIN) {
-		 scheduler = std::make_shared<RRScheduler>();
+		scheduler = std::make_shared<RRScheduler>();
 	}
 
 	this->start();
@@ -82,12 +82,12 @@ void GlobalScheduler::generateProcesses()
 	while (schedulerTestRunning)
 	{
 
-		if (cpuCycles % batchProcessFrequency == 0 && !processCreatedInCurrentCycle)
+		if (cpuCycles % (batchProcessFrequency + 1) == 0 && !processCreatedInCurrentCycle)
 		{
 			createProcess("process_", Mode::KERNEL);
 			processCreatedInCurrentCycle = true;
 		}
-		else if (cpuCycles % 20 != 0)
+		else if (cpuCycles % (batchProcessFrequency + 1) != 0)
 		{
 			processCreatedInCurrentCycle = false;
 		}

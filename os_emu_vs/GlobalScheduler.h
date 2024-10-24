@@ -3,10 +3,10 @@
 #include "IETThread.h"
 #include "Process.h"
 #include <atomic>
+#include <map>
 #include <memory>
 #include <string>
 #include <thread>
-#include <unordered_map>
 
 // create 2 mode enums kernel and user
 enum class Mode {
@@ -21,7 +21,7 @@ public:
 	static void destroy();
 	void run() override;
 
-    std::shared_ptr<Process> createProcess(String processName, Mode mode);
+	std::shared_ptr<Process> createProcess(String processName, Mode mode);
 	std::shared_ptr<Process> findProcess(String& name) const;
 
 	void monitorProcesses() const;
@@ -29,24 +29,46 @@ public:
 	void tick() const;
 
 
-    // for scheduler-test
-    void startSchedulerTest();
-    void stopSchedulerTest();
+	// for scheduler-test
+	void startSchedulerTest();
+	void stopSchedulerTest();
 
 private:
-    GlobalScheduler(SchedulingAlgorithm algo);
-    ~GlobalScheduler();
-    GlobalScheduler(GlobalScheduler const&) {};
-    GlobalScheduler& operator=(GlobalScheduler const&) {};
+	GlobalScheduler(SchedulingAlgorithm algo);
+	~GlobalScheduler();
+	GlobalScheduler(GlobalScheduler const&) {};
+	GlobalScheduler& operator=(GlobalScheduler const&) {};
 
-    static GlobalScheduler* sharedInstance;
-    std::shared_ptr<AScheduler> scheduler;
-	std::unordered_map<String, std::shared_ptr<Process>> processes;
+	static GlobalScheduler* sharedInstance;
+	std::shared_ptr<AScheduler> scheduler;
 
-    // for scheduler-test
-    bool schedulerTestRunning = false;
-    std::thread processGeneratorThread;
-    void generateProcesses();
+	struct CompareByProcessNumber {
+		bool operator()(const String& lhs, const String& rhs) const {
+			auto extractNumber = [](const String& str) {
+				size_t pos = str.find('_');
+				if (pos != String::npos) {
+					try {
+						return std::stoi(str.substr(pos + 1));
+					}
+					catch (const std::invalid_argument& e) {
+						return 0;
+					}
+					catch (const std::out_of_range& e) {
+						return 0;
+					}
+				}
+				return 0;
+				};
+			return extractNumber(lhs) < extractNumber(rhs);
+		}
+	};
+
+	std::map<String, std::shared_ptr<Process>, CompareByProcessNumber> processes;
+
+	// for scheduler-test
+	bool schedulerTestRunning = false;
+	std::thread processGeneratorThread;
+	void generateProcesses();
 	mutable std::string lastMonitorOutput;
 };
 

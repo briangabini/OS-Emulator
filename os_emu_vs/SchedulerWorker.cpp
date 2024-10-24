@@ -29,6 +29,7 @@ void SchedulerWorker::run() {
 				process = scheduler->readyQueue.front();
 				scheduler->readyQueue.pop();
 				this->update(true);
+				scheduler->incrementActiveWorkers();
 			}
 		}
 
@@ -36,8 +37,6 @@ void SchedulerWorker::run() {
 		if (process) {
 			process->setState(Process::RUNNING);
 			process->setCpuCoreId(cpuCoreId);
-
-			scheduler->incrementActiveWorkers();
 
 			SchedulingAlgorithm algo = scheduler->getSchedulingAlgo();
 
@@ -71,8 +70,9 @@ void SchedulerWorker::run() {
 
 					// busy waiting
 					endExecDelay = cpuCycles + execDelay;
-					while (cpuCycles < endExecDelay)
+					while (cpuCycles % (endExecDelay + 1) != 0)
 					{
+
 					}
 
 					if (cpuCycles >= endCpuCycle)
@@ -91,8 +91,9 @@ void SchedulerWorker::run() {
 			if (process->isFinished()) {
 				process->setState(Process::FINISHED);
 			}
-			scheduler->decrementActiveWorkers();
+
 			this->update(false); // Mark the worker as free
+			scheduler->decrementActiveWorkers();
 		}
 	}
 }
