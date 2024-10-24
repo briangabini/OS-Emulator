@@ -51,15 +51,27 @@ private:
 						return std::stoi(str.substr(pos + 1));
 					}
 					catch (const std::invalid_argument& e) {
-						return 0;
+						return -1;
 					}
 					catch (const std::out_of_range& e) {
-						return 0;
+						return -1;
 					}
 				}
-				return 0;
+				return -1;
 				};
-			return extractNumber(lhs) < extractNumber(rhs);
+
+			int lhsNumber = extractNumber(lhs);
+			int rhsNumber = extractNumber(rhs);
+
+			if (lhsNumber != -1 && rhsNumber != -1) {
+				return lhsNumber < rhsNumber;
+			}
+			else if (lhsNumber == -1 && rhsNumber == -1) {
+				return lhs < rhs;
+			}
+			else {
+				return lhsNumber != -1;
+			}
 		}
 	};
 
