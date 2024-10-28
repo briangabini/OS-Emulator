@@ -45,6 +45,7 @@ bool ConsoleManager::initialize() {
         return false;
     }
 
+    startScheduler();
     initialized = true;
     return true;
 }
@@ -181,7 +182,9 @@ void ConsoleManager::startSchedulerTest() {
     }
     testing = true;
     testThread = std::thread(&ConsoleManager::schedulerTestLoop, this);
-    std::cout << "Scheduler test started.\n";
+
+    int batchProcessFreq = Config::getInstance().getBatchProcessFreq();
+    std::cout << "Scheduler test started. Generating dummy processes every " << batchProcessFreq << " CPU cycles...\n";
 }
 
 void ConsoleManager::stopSchedulerTest() {
@@ -223,7 +226,7 @@ void ConsoleManager::schedulerTestLoop() {
                 process->addCommand(new PrintCommand("Hello from " + processName + " Instruction " + std::to_string(j + 1)));
             }
 
-            std::cout << "Generated dummy process: " << processName << " with " << numIns << " instructions.\n";
+            // std::cout << "Generated dummy process: " << processName << " with " << numIns << " instructions.\n";
         }
 
         // Wait for 'batchProcessFreq' CPU cycles

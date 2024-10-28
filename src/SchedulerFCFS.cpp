@@ -141,6 +141,12 @@ void SchedulerFCFS::workerLoop(int coreId) {
 
             cmd->execute(process, coreId);
             delete cmd;
+
+            // Delay before executing the next instruction
+            unsigned int delay = Config::getInstance().getDelaysPerExec();
+            if (delay > 0) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+            }
         }
 
         // Process finished

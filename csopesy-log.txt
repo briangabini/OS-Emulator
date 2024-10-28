@@ -21,3 +21,89 @@ process9       (10/24/2024 02:34:29AM)    Finished     100 / 100
 -------------------------------------------
 
 
+Report generated at: Mon Oct 28 19:41:00 2024
+
+CPU Utilization: 75.00%
+Cores Used: 6
+Cores Available: 2
+
+-------------------------------------------
+Running processes:
+process1       (10/28/2024 07:40:47PM)    Core: 7     92 / 100
+process2       (10/28/2024 07:40:47PM)    Core: 1     89 / 100
+process3       (10/28/2024 07:40:47PM)    Core: 6     96 / 100
+process5       (10/28/2024 07:40:47PM)    Core: 3     94 / 100
+process7       (10/28/2024 07:40:47PM)    Core: 4     86 / 100
+process8       (10/28/2024 07:40:47PM)    Core: 0     89 / 100
+
+Finished processes:
+-------------------------------------------
+
+
+Report generated at: Mon Oct 28 19:44:18 2024
+
+CPU Utilization: 25.00%
+Cores Used: 2
+Cores Available: 6
+
+-------------------------------------------
+Running processes:
+process10      (10/28/2024 07:44:01PM)    Core: 2     56 / 100
+process9       (10/28/2024 07:44:01PM)    Core: 1     56 / 100
+
+Finished processes:
+process1       (10/28/2024 07:44:01PM)    Finished     100 / 100
+process2       (10/28/2024 07:44:01PM)    Finished     100 / 100
+process3       (10/28/2024 07:44:01PM)    Finished     100 / 100
+process4       (10/28/2024 07:44:01PM)    Finished     100 / 100
+process5       (10/28/2024 07:44:01PM)    Finished     100 / 100
+process6       (10/28/2024 07:44:01PM)    Finished     100 / 100
+process7       (10/28/2024 07:44:01PM)    Finished     100 / 100
+process8       (10/28/2024 07:44:01PM)    Finished     100 / 100
+-------------------------------------------
+
+
+Report generated at: Mon Oct 28 19:48:32 2024
+
+CPU Utilization: 100.00%
+Cores Used: 8
+Cores Available: 0
+
+-------------------------------------------
+Running processes:
+process1       (10/28/2024 07:48:29PM)    Core: 0     22 / 100
+process2       (10/28/2024 07:48:29PM)    Core: 1     23 / 100
+process3       (10/28/2024 07:48:29PM)    Core: 2     22 / 100
+process4       (10/28/2024 07:48:29PM)    Core: 3     22 / 100
+process5       (10/28/2024 07:48:29PM)    Core: 4     23 / 100
+process6       (10/28/2024 07:48:29PM)    Core: 5     23 / 100
+process7       (10/28/2024 07:48:29PM)    Core: 6     23 / 100
+process8       (10/28/2024 07:48:29PM)    Core: 7     22 / 100
+
+Finished processes:
+-------------------------------------------
+
+
+Report generated at: Mon Oct 28 19:48:57 2024
+
+CPU Utilization: 0.00%
+Cores Used: 0
+Cores Available: 8
+
+-------------------------------------------
+Running processes:
+
+Finished processes:
+process1       (10/28/2024 07:48:29PM)    Finished     100 / 100
+process10      (10/28/2024 07:48:29PM)    Finished     100 / 100
+process2       (10/28/2024 07:48:29PM)    Finished     100 / 100
+process3       (10/28/2024 07:48:29PM)    Finished     100 / 100
+process4       (10/28/2024 07:48:29PM)    Finished     100 / 100
+process5       (10/28/2024 07:48:29PM)    Finished     100 / 100
+process6       (10/28/2024 07:48:29PM)    Finished     100 / 100
+process7       (10/28/2024 07:48:29PM)    Finished     100 / 100
+process8       (10/28/2024 07:48:29PM)    Finished     100 / 100
+process9       (10/28/2024 07:48:29PM)    Finished     100 / 100
+-------------------------------------------
+
+

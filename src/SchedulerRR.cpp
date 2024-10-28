@@ -160,7 +160,7 @@ void SchedulerRR::workerLoop(int coreId) {
             cmd->execute(process, coreId);
             delete cmd;
 
-            // Simulate execution time per instruction
+            // Delay before executing the next instruction
             unsigned int delay = Config::getInstance().getDelaysPerExec();
             if (delay > 0) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(delay));

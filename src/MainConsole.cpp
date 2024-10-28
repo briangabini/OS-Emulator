@@ -174,9 +174,6 @@ void MainConsole::handleCommand(const std::string& input) {
             std::cout << "  screen -ls               : List all processes\n";
         }
     }
-    else if (command == "scheduler-init") {
-        consoleManager.startScheduler();
-    }
     else if (command == "scheduler-pause") {
         consoleManager.pauseScheduler();
     }
