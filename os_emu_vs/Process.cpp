@@ -12,7 +12,8 @@ void Process::addCommand(ICommand::CommandType commandType)
 {
 	GlobalConfig* config = GlobalConfig::getInstance();
 
-	unsigned int randIns = rand() % (config->getMaxIns() - config->getMinIns() + 1) + config->getMinIns();
+	unsigned int randIns = rand()
+		(config->getMaxIns() - config->getMinIns() + 1) + config->getMinIns();
 
 	for (int i = 0; i < randIns; i++)
 	{

@@ -54,7 +54,7 @@ void SchedulerWorker::run() {
 
 					// busy waiting
 					endExecDelay = cpuCycles + execDelay;
-					while (cpuCycles < endExecDelay)
+					while (cpuCycles % (endExecDelay + 1) != 0)
 					{
 					}
 				}
