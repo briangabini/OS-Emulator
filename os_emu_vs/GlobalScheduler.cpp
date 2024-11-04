@@ -6,6 +6,8 @@
 #include <iostream>
 #include <thread>
 
+#include "BaseScreen.h"
+#include "ConsoleManager.h"
 #include "GlobalConfig.h"
 #include "os_emu_vs.h"
 #include "RRScheduler.h"
@@ -84,8 +86,17 @@ void GlobalScheduler::generateProcesses()
 
 		if (cpuCycles % (batchProcessFrequency + 1) == 0 && !processCreatedInCurrentCycle)
 		{
-			createProcess("process_", Mode::KERNEL);
+			const auto newProcess = createProcess("process_", Mode::KERNEL);
+			const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, newProcess->getName());
+
 			processCreatedInCurrentCycle = true;
+
+			try {
+				ConsoleManager::getInstance()->registerScreen(newBaseScreen);
+			}
+			catch (const std::exception& e) {
+				return;
+			}
 		}
 		else if (cpuCycles % (batchProcessFrequency + 1) != 0)
 		{

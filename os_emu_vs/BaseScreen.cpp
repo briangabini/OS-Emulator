@@ -60,13 +60,19 @@ void BaseScreen::printProcessInfo() const {
 }
 
 void BaseScreen::printProcessSMI() const {
-	std::cout << "Process: " << attachedProcess->getName() << '\n';
+	if (attachedProcess->isFinished()) {
+		std::cout << "Finished!" << '\n';
+	}
+	else {
+		std::cout << "Process: " << attachedProcess->getName() << '\n';
 
-	std::cout << "ID: " << attachedProcess->getPID() << "\n\n";
+		std::cout << "ID: " << attachedProcess->getPID() << "\n\n";
 
-	std::cout << "Current instruction line: " << attachedProcess->getCommandCounter() << '\n';
+		std::cout << "Current instruction line: " << attachedProcess->getCommandCounter() << '\n';
 
-	std::cout << "Lines of code: " << attachedProcess->getLinesOfCode() << '\n';
+		std::cout << "Lines of code: " << attachedProcess->getLinesOfCode() << '\n';
+	}
+
 
 }
 
