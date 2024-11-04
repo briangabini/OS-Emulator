@@ -8,6 +8,9 @@ Group Members:
 
 ## Instructions to run:
 
- 1. Clone repository to local machine (https://github.com/kiefferdy/csnetwk-file-system.git)
+ 1. Clone repository to local machine: ```git clone https://github.com/briangabini/OS-Emulator.git```
  2. Open project in local IDE and select master branch
  3. Run repository
+
+## Other Details
+Main File: os_emu_vs.cpp
