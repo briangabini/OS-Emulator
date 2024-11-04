@@ -1,4 +1,5 @@
 #include "AScheduler.h"
+#include "ConsoleManager.h"
 #include "GlobalConfig.h"
 #include "os_emu_vs.h"
 #include "SchedulerWorker.h"
@@ -90,6 +91,7 @@ void SchedulerWorker::run() {
 
 			if (process->isFinished()) {
 				process->setState(Process::FINISHED);
+				ConsoleManager::getInstance()->unregisterScreen(process->getName());
 			}
 
 			this->update(false); // Mark the worker as free
