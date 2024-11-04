@@ -8,6 +8,6 @@ Group Members:
 
 ## Instructions to run:
 
- - Clone repository to local machine (https://github.com/kiefferdy/csnetwk-file-system.git)
- - Switch to master branch
- - Run repository
+ 1. Clone repository to local machine (https://github.com/kiefferdy/csnetwk-file-system.git)
+ 2. Open project in local IDE and select master branch
+ 3. Run repository
