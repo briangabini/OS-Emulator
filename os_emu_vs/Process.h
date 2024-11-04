@@ -1,21 +1,62 @@
 #pragma once
+#include "ICommand.h"
+#include "TypedefRepo.h"
+#include <chrono>
 #include <string>
 #include <vector>
-#include <chrono>
 
 class Process {
+
 public:
-    explicit Process(const std::string& name);
-    Process() = default;
+	/*struct RequirementFlags
+	{
+		bool requireFiles;
+		int numFiles;
+		bool requireMemory;
+		int memoryRequired;
+	};*/
 
-    std::string getName() const;
-    int getCurrentLine() const;
-    int getTotalLines() const;
+	enum ProcessState
+	{
+		READY,
+		RUNNING,
+		WAITING,
+		FINISHED
+	};
 
-    friend std::ostream& operator<<(std::ostream& out, const Process& process);
+	Process(int pid, String name);
+	Process() = default;
+
+	void addCommand(ICommand::CommandType commandType);
+	void executeCurrentCommand() const;
+	void moveToNextLine();
+
+	bool isFinished() const;
+	// int getRemainingTime() const;
+	int getCommandCounter() const;
+	int getLinesOfCode() const;
+	int getPID() const;
+	int getCPUCoreID() const;
+	ProcessState getState() const;
+	String getName() const;
+	std::chrono::time_point<std::chrono::system_clock> getCreationTime() const;
+
+	// setters
+	void setState(ProcessState state);
+	void setCpuCoreId(int _cpuCoreId);
 
 private:
-    std::string name;
-    int currentLine;
-    int totalLines;
+	int pid;
+	String name;
+	typedef std::vector<std::shared_ptr<ICommand>> CommandList;
+	CommandList commandList;
+
+	int commandCounter;
+	int cpuCoreId = -1;
+	ProcessState currentState;
+	std::chrono::time_point<std::chrono::system_clock> creationTime;
+
+	// RequirementFlags requirements;
+	// friend class ResourceEmulator
+	friend class FCFSScheduler;
 };
