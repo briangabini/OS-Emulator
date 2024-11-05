@@ -1,9 +1,6 @@
 #include "Process.h"
 #include "PrintCommand.h"
 #include "GlobalConfig.h"
-#include "TypedefRepo.h"
-#include <string>
-#include <utility>
 
 Process::Process(int pid, String name)
 	: 

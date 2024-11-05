@@ -26,6 +26,9 @@
     <Filter Include="Threading">
       <UniqueIdentifier>{1b4b9282-fe95-498a-8174-707a2c32fef6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{22055a47-dcbb-483e-b94b-2c3acaeeff87}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="os_emu_vs.cpp">
@@ -125,6 +128,9 @@
     </ClInclude>
     <ClInclude Include="GlobalConfig.h">
       <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="IMemoryAllocator.h">
+      <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
