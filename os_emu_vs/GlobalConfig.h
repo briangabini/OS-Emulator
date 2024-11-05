@@ -24,6 +24,10 @@ public:
     bool isCalledOnce() const;
     void loadConfigFromFile(const std::string& filename);
 
+	int getMaxOverallMemory() const;
+	int getMemoryPerFrame() const;
+	int getMemoryPerProcess() const;
+
 private:
     GlobalConfig() = default;
     ~GlobalConfig() = default;
@@ -43,4 +47,9 @@ private:
 
     // to ensure that it will only load once
     bool calledOnce = false;
+
+    // week 8
+    int maxOverallMemory;
+    int memoryPerFrame;
+    int memoryPerProcess;
 };

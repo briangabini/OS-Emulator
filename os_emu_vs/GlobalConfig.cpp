@@ -51,6 +51,18 @@ bool GlobalConfig::isCalledOnce() const {
 	return calledOnce;
 }
 
+int GlobalConfig::getMaxOverallMemory() const {
+	return maxOverallMemory;
+}
+
+int GlobalConfig::getMemoryPerFrame() const {
+	return memoryPerFrame;
+}
+
+int GlobalConfig::getMemoryPerProcess() const {
+	return memoryPerProcess;
+}
+
 void GlobalConfig::loadConfigFromFile(const std::string& filename)
 {
 	if (calledOnce)
@@ -109,6 +121,15 @@ void GlobalConfig::parseLine(const std::string& line)
 			}
 			else if (key == "max-ins") {
 				maxIns = std::stoi(value);
+			}
+			else if (key == "max-overall-memory") {
+				maxOverallMemory = std::stoi(value);
+			}
+			else if (key == "memory-per-frame") {
+				memoryPerFrame = std::stoi(value);
+			}
+			else if (key == "memory-per-process") {
+				memoryPerProcess = std::stoi(value);
 			}
 			else if (key == "delay-per-exec") {
 				delayPerExec = std::stoi(value);
