@@ -1,12 +1,18 @@
-#include "GlobalConfig.h"
-#include "PrintCommand.h"
 #include "Process.h"
+#include "PrintCommand.h"
+#include "GlobalConfig.h"
 #include "TypedefRepo.h"
 #include <string>
 #include <utility>
 
 Process::Process(int pid, String name)
-	: pid(pid), name(std::move(name)), commandCounter(0), currentState(READY), creationTime(std::chrono::system_clock::now()) {}
+	: 
+	pid(pid), name(std::move(name)), 
+	commandCounter(0), 
+	currentState(READY), 
+	creationTime(std::chrono::system_clock::now()),
+	memoryRequired(GlobalConfig::getInstance()->getMemoryPerProcess())
+	{}
 
 void Process::addCommand(ICommand::CommandType commandType)
 {
@@ -81,12 +87,10 @@ void Process::setCpuCoreId(int _cpuCoreId) {
 	this->cpuCoreId = _cpuCoreId;
 }
 
-//void Process::test_generateRandomCommands(int limit)
+void Process::setMemoryRequired(int memoryRequired) {
+	this->memoryRequired = memoryRequired;
+}
 
-//std::ostream& operator<<(std::ostream& out, const Process& process) {
-//	out << "Screen - Process: " << process.getName() << "\n";
-//	out << "Instruction: " << process.getCurrentLine() << " / " << process.getTotalLines() << "\n";
-//
-//	return out;
-//}
-
+int Process::getMemoryRequired() const {
+	return memoryRequired;
+}

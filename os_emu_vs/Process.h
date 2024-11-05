@@ -32,7 +32,6 @@ public:
 	void moveToNextLine();
 
 	bool isFinished() const;
-	// int getRemainingTime() const;
 	int getCommandCounter() const;
 	int getLinesOfCode() const;
 	int getPID() const;
@@ -44,6 +43,10 @@ public:
 	// setters
 	void setState(ProcessState state);
 	void setCpuCoreId(int _cpuCoreId);
+
+	// week 8
+	void setMemoryRequired(int memoryRequired);
+	int getMemoryRequired() const;
 
 private:
 	int pid;
@@ -59,4 +62,7 @@ private:
 	// RequirementFlags requirements;
 	// friend class ResourceEmulator
 	friend class FCFSScheduler;
+
+	// week 8
+	int memoryRequired;
 };
