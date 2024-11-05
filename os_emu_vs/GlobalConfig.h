@@ -21,6 +21,11 @@ public:
     int getMaxIns() const;
     int getDelayPerExec() const;
 
+    // week 8
+	int getMaxOverallMemory() const;
+    int getMemoryPerFrame() const;
+    int getMemoryPerProcess() const;
+
     bool isCalledOnce() const;
     void loadConfigFromFile(const std::string& filename);
 
@@ -40,6 +45,11 @@ private:
     int minIns;
     int maxIns;
     int delayPerExec;
+
+    // week 8
+    int maxOverallMemory;
+    int memoryPerFrame;
+    int memoryPerProcess;
 
     // to ensure that it will only load once
     bool calledOnce = false;

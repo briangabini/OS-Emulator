@@ -113,6 +113,15 @@ void GlobalConfig::parseLine(const std::string& line)
 			else if (key == "delay-per-exec") {
 				delayPerExec = std::stoi(value);
 			}
+			else if (key == "max-overall-mem") {
+				maxOverallMemory = std::stoi(value);
+			} 
+			else if (key == "mem-per-frame") {
+				memoryPerFrame = std::stoi(value);
+			} 
+			else if (key == "mem-per-proc") {
+				memoryPerProcess = std::stoi(value);
+			}
 			else {
 				// Handle unknown key
 				std::cerr << "Unknown configuration key: " << key << std::endl;
