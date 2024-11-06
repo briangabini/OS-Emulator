@@ -76,6 +76,9 @@
     <ClCompile Include="GlobalConfig.cpp">
       <Filter>Util</Filter>
     </ClCompile>
+    <ClCompile Include="FlatMemoryAllocator.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ICommand.h">
@@ -130,6 +133,9 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="IMemoryAllocator.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="FlatMemoryAllocator.h">
       <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>

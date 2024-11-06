@@ -140,6 +140,7 @@
     <ClCompile Include="BaseScreen.cpp" />
     <ClCompile Include="ConsoleManager.cpp" />
     <ClCompile Include="FCFSScheduler.cpp" />
+    <ClCompile Include="FlatMemoryAllocator.cpp" />
     <ClCompile Include="GlobalConfig.cpp" />
     <ClCompile Include="GlobalScheduler.cpp" />
     <ClCompile Include="IETThread.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="BaseScreen.h" />
     <ClInclude Include="ConsoleManager.h" />
     <ClInclude Include="FCFSScheduler.h" />
+    <ClInclude Include="FlatMemoryAllocator.h" />
     <ClInclude Include="GlobalConfig.h" />
     <ClInclude Include="GlobalScheduler.h" />
     <ClInclude Include="ICommand.h" />
