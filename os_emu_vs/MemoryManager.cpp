@@ -1,15 +1,18 @@
 #include "MemoryManager.h"
 #include <algorithm>
-#include <filesystem>
+#include <stdexcept>
 
 MemoryManager* MemoryManager::sharedInstance = nullptr;
 
 MemoryManager* MemoryManager::getInstance() {
+    if (!sharedInstance) {
+        throw std::runtime_error("MemoryManager not initialized");
+    }
     return sharedInstance;
 }
 
 void MemoryManager::initialize() {
-    if (sharedInstance == nullptr) {
+    if (!sharedInstance) {
         sharedInstance = new MemoryManager();
     }
 }
@@ -19,63 +22,89 @@ void MemoryManager::destroy() {
     sharedInstance = nullptr;
 }
 
-void MemoryManager::initMemory(size_t totalMem, size_t frameSize, size_t procMemSize) {
+void MemoryManager::initMemory(size_t totalMem, size_t frameSz, size_t procMemSize) {
     std::lock_guard<std::mutex> lock(memoryMutex);
 
     totalMemory = totalMem;
-    this->frameSize = frameSize;
+    frameSize = frameSz;
     processMemorySize = procMemSize;
     currentQuantum = 0;
 
-    // Initialize with one free block spanning all memory
+    // Start with one large free block
     memoryBlocks.clear();
     memoryBlocks.emplace_back(0, totalMemory, true);
-}
-
-bool MemoryManager::allocateMemory(const std::string& processName) {
-    std::lock_guard<std::mutex> lock(memoryMutex);
-
-    // First-fit allocation
-    for (auto& block : memoryBlocks) {
-        if (block.isFree && block.size >= processMemorySize) {
-            // If block is exactly the right size
-            if (block.size == processMemorySize) {
-                block.isFree = false;
-                block.processName = processName;
-                return true;
-            }
-
-            // Split block
-            size_t remainingSize = block.size - processMemorySize;
-            block.size = processMemorySize;
-            block.isFree = false;
-            block.processName = processName;
-
-            // Create new free block with remaining space
-            memoryBlocks.emplace(
-                std::next(std::find_if(memoryBlocks.begin(), memoryBlocks.end(),
-                    [&](const MemoryBlock& b) { return b.startAddress == block.startAddress; })),
-                block.startAddress + processMemorySize,
-                remainingSize,
-                true
-            );
-
-            return true;
-        }
-    }
-    return false;
 }
 
 void MemoryManager::deallocateMemory(const std::string& processName) {
     std::lock_guard<std::mutex> lock(memoryMutex);
 
+    if (processName.empty()) {
+        return;
+    }
+
     for (auto it = memoryBlocks.begin(); it != memoryBlocks.end(); ++it) {
         if (!it->isFree && it->processName == processName) {
             it->isFree = true;
             it->processName.clear();
+        }
+    }
 
-            mergeAdjacentFreeBlocks();
-            break;
+    mergeAdjacentFreeBlocks();
+}
+
+bool MemoryManager::allocateMemory(const std::string& processName) {
+    std::lock_guard<std::mutex> lock(memoryMutex);
+
+    if (processName.empty()) {
+        return false;
+    }
+
+    // Check if process already has memory allocated
+    for (const auto& block : memoryBlocks) {
+        if (!block.isFree && block.processName == processName) {
+            return false;
+        }
+    }
+
+    // Find suitable block
+    for (auto it = memoryBlocks.begin(); it != memoryBlocks.end(); ++it) {
+        if (it->isFree && it->size >= processMemorySize) {
+            if (it->size == processMemorySize) {
+                it->isFree = false;
+                it->processName = processName;
+                return true;
+            }
+
+            // Split block
+            size_t remainingSize = it->size - processMemorySize;
+            it->size = processMemorySize;
+            it->isFree = false;
+            it->processName = processName;
+
+            memoryBlocks.emplace(std::next(it),
+                it->startAddress + processMemorySize,
+                remainingSize,
+                true);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void MemoryManager::mergeAdjacentFreeBlocks() {
+    if (memoryBlocks.empty()) return;
+
+    auto current = memoryBlocks.begin();
+    while (current != memoryBlocks.end() && std::next(current) != memoryBlocks.end()) {
+        auto next = std::next(current);
+        if (current->isFree && next->isFree) {
+            current->size += next->size;
+            memoryBlocks.erase(next);
+        }
+        else {
+            ++current;
         }
     }
 }
@@ -105,26 +134,22 @@ size_t MemoryManager::getProcessCount() const {
         [](const MemoryBlock& block) { return !block.isFree; });
 }
 
-void MemoryManager::mergeAdjacentFreeBlocks() {
-    auto it = memoryBlocks.begin();
-    while (it != memoryBlocks.end() && std::next(it) != memoryBlocks.end()) {
-        if (it->isFree && std::next(it)->isFree) {
-            it->size += std::next(it)->size;
-            memoryBlocks.erase(std::next(it));
-        }
-        else {
-            ++it;
-        }
-    }
+bool MemoryManager::isContiguousBlockAvailable(size_t size) const {
+    return std::any_of(memoryBlocks.begin(), memoryBlocks.end(),
+        [size](const MemoryBlock& block) { return block.isFree && block.size >= size; });
 }
 
 std::string MemoryManager::generateTimestamp() const {
     auto now = std::chrono::system_clock::now();
-    auto now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm tm_buf;
-    localtime_s(&tm_buf, &now_c);
+    auto time = std::chrono::system_clock::to_time_t(now);
+    std::tm timeinfo;
+#ifdef _WIN32
+    localtime_s(&timeinfo, &time);
+#else
+    localtime_r(&time, &timeinfo);
+#endif
     std::stringstream ss;
-    ss << std::put_time(&tm_buf, "%m/%d/%Y %H:%M:%S");
+    ss << std::put_time(&timeinfo, "%Y-%m-%d %H:%M:%S");
     return ss.str();
 }
 
@@ -132,38 +157,31 @@ void MemoryManager::generateMemorySnapshot(size_t quantumNumber) {
     std::lock_guard<std::mutex> lock(memoryMutex);
 
     std::stringstream filename;
-    filename << "memory_stamp_" << std::setw(2) << std::setfill('0') << quantumNumber << ".txt";
+    filename << "memory_snapshot_" << std::setw(4) << std::setfill('0') << quantumNumber << ".txt";
 
     std::ofstream outFile(filename.str());
-    if (!outFile.is_open()) {
-        throw std::runtime_error("Could not create memory snapshot file");
+    if (!outFile) {
+        throw std::runtime_error("Failed to create memory snapshot file");
     }
 
-    // Write header information
+    outFile << "Memory Snapshot - Quantum " << quantumNumber << "\n";
     outFile << "Timestamp: " << generateTimestamp() << "\n";
-    outFile << "Number of processes in memory: " << getProcessCount() << "\n";
-    outFile << "Total external fragmentation in KB: " << getExternalFragmentation() / 1024 << "\n\n";
+    outFile << "Total Memory: " << totalMemory << " bytes\n";
+    outFile << "Free Memory: " << getFreeMemory() << " bytes\n";
+    outFile << "Process Count: " << getProcessCount() << "\n";
+    outFile << "External Fragmentation: " << getExternalFragmentation() << " bytes\n\n";
 
-    // Write memory map
-    outFile << "----end---- = " << totalMemory << "\n";
-
-    // Print each memory block
+    outFile << "Memory Map:\n";
+    outFile << "------------\n";
     for (const auto& block : memoryBlocks) {
-        outFile << block.startAddress + block.size << "\n";
+        outFile << "Address: " << std::setw(10) << block.startAddress
+            << " Size: " << std::setw(10) << block.size
+            << " Status: " << (block.isFree ? "Free" : "Used");
         if (!block.isFree) {
-            outFile << block.processName << "\n";
+            outFile << " Process: " << block.processName;
         }
+        outFile << "\n";
     }
 
-    outFile << "----start----- = 0\n";
     outFile.close();
-}
-
-bool MemoryManager::isContiguousBlockAvailable(size_t size) const {
-    for (const auto& block : memoryBlocks) {
-        if (block.isFree && block.size >= size) {
-            return true;
-        }
-    }
-    return false;
 }
