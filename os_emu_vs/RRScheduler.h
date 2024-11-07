@@ -1,10 +1,13 @@
 #pragma once
 #include "AScheduler.h"
+#include "MemoryManager.h"
 
 class RRScheduler : public AScheduler {
 public:
-    RRScheduler ();
+    RRScheduler();
     void init() override;
     void execute() override;
+
+private:
+    size_t quantumCount = 0;
 };
-#pragma once

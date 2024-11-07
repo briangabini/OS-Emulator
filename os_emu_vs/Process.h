@@ -1,6 +1,7 @@
 #pragma once
 #include "ICommand.h"
 #include "TypedefRepo.h"
+#include "MemoryManager.h"
 #include <chrono>
 #include <string>
 #include <vector>
@@ -44,6 +45,9 @@ public:
 	// setters
 	void setState(ProcessState state);
 	void setCpuCoreId(int _cpuCoreId);
+	bool allocateMemory();
+	void deallocateMemory();
+	bool hasMemory() const;
 
 private:
 	int pid;
@@ -59,4 +63,5 @@ private:
 	// RequirementFlags requirements;
 	// friend class ResourceEmulator
 	friend class FCFSScheduler;
+	bool hasMemoryAllocated = false;
 };

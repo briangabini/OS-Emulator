@@ -36,6 +36,23 @@ void SchedulerWorker::run() {
 
 		// Process execution
 		if (process) {
+
+			if (!process->hasMemory()) {
+                if (!process->allocateMemory()) {
+                    std::unique_lock<std::mutex> lock(scheduler->queueMutex);
+                    scheduler->readyQueue.push(process);
+                    this->update(false);
+                    scheduler->decrementActiveWorkers();
+                    continue;
+                }
+            }
+
+			if (process->isFinished()) {
+				process->setState(Process::FINISHED);
+				process->deallocateMemory(); // Add memory deallocation
+				ConsoleManager::getInstance()->unregisterScreen(process->getName());
+			}
+
 			process->setState(Process::RUNNING);
 			process->setCpuCoreId(cpuCoreId);
 

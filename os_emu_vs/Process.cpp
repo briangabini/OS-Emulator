@@ -81,6 +81,24 @@ void Process::setCpuCoreId(int _cpuCoreId) {
 	this->cpuCoreId = _cpuCoreId;
 }
 
+bool Process::allocateMemory() {
+	if (!hasMemoryAllocated) {
+		hasMemoryAllocated = MemoryManager::getInstance()->allocateMemory(name);
+	}
+	return hasMemoryAllocated;
+}
+
+void Process::deallocateMemory() {
+	if (hasMemoryAllocated) {
+		MemoryManager::getInstance()->deallocateMemory(name);
+		hasMemoryAllocated = false;
+	}
+}
+
+bool Process::hasMemory() const {
+	return hasMemoryAllocated;
+}
+
 //void Process::test_generateRandomCommands(int limit)
 
 //std::ostream& operator<<(std::ostream& out, const Process& process) {

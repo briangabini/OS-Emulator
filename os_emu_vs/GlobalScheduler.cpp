@@ -69,9 +69,15 @@ void GlobalScheduler::startSchedulerTest()
 void GlobalScheduler::stopSchedulerTest()
 {
 	schedulerTestRunning = false;
-	if (processGeneratorThread.joinable())
-	{
+	if (processGeneratorThread.joinable()) {
 		processGeneratorThread.join();
+	}
+
+	// Add memory cleanup for all processes
+	for (const auto& [name, process] : processes) {
+		if (process->hasMemory()) {
+			process->deallocateMemory();
+		}
 	}
 }
 
@@ -169,6 +175,13 @@ void GlobalScheduler::monitorProcesses() const {
 		}
 	}
 	oss << "---------------------------------------\n";
+
+	oss << "Memory Status:\n";
+	oss << "Memory Usage: " << (MemoryManager::getInstance()->getTotalMemory() -
+		MemoryManager::getInstance()->getFreeMemory()) / 1024 << "KB / "
+		<< MemoryManager::getInstance()->getTotalMemory() / 1024 << "KB\n";
+	oss << "External Fragmentation: " << MemoryManager::getInstance()->getExternalFragmentation() / 1024 << "KB\n";
+	oss << "Processes in Memory: " << MemoryManager::getInstance()->getProcessCount() << "\n\n";
 
 	lastMonitorOutput = oss.str();
 	std::cout << lastMonitorOutput;

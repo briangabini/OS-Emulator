@@ -1,6 +1,7 @@
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
 #include "Process.h"
+#include "GlobalConfig.h"
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -65,15 +66,16 @@ void BaseScreen::printProcessSMI() const {
 	}
 	else {
 		std::cout << "Process: " << attachedProcess->getName() << '\n';
-
 		std::cout << "ID: " << attachedProcess->getPID() << "\n\n";
-
 		std::cout << "Current instruction line: " << attachedProcess->getCommandCounter() << '\n';
-
 		std::cout << "Lines of code: " << attachedProcess->getLinesOfCode() << '\n';
+
+		// Add memory status
+		std::cout << "Memory Status: " << (attachedProcess->hasMemory() ? "Allocated" : "Waiting for memory") << '\n';
+		if (attachedProcess->hasMemory()) {
+			std::cout << "Memory Size: " << GlobalConfig::getInstance()->getMemPerProc() / 1024 << "KB\n";
+		}
 	}
-
-
 }
 
 void BaseScreen::onEnabled() {

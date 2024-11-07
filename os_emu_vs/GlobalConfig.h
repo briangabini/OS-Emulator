@@ -9,9 +9,9 @@
 class GlobalConfig
 {
 public:
-	static GlobalConfig* getInstance();
-	static void initialize();
-	static void destroy();
+    static GlobalConfig* getInstance();
+    static void initialize();
+    static void destroy();
 
     int getNumCpu() const;
     SchedulingAlgorithm getScheduler() const;
@@ -21,14 +21,18 @@ public:
     int getMaxIns() const;
     int getDelayPerExec() const;
 
+    size_t getMaxOverallMem() const;
+    size_t getMemPerFrame() const;
+    size_t getMemPerProc() const;
+
     bool isCalledOnce() const;
     void loadConfigFromFile(const std::string& filename);
 
 private:
     GlobalConfig() = default;
     ~GlobalConfig() = default;
-	GlobalConfig(GlobalConfig const&) {};                   // copy constructor is private, disallow creation of a new instance
-	GlobalConfig& operator=(GlobalConfig const&) {};        // assignment operator is private, disallow assignment
+    GlobalConfig(GlobalConfig const&) {};                   // copy constructor is private
+    GlobalConfig& operator=(GlobalConfig const&) {};        // assignment operator is private
     static GlobalConfig* sharedInstance;
 
     void parseLine(const std::string& line);
@@ -41,6 +45,9 @@ private:
     int maxIns;
     int delayPerExec;
 
-    // to ensure that it will only load once
+    size_t maxOverallMem;
+    size_t memPerFrame;
+    size_t memPerProc;
+
     bool calledOnce = false;
 };
