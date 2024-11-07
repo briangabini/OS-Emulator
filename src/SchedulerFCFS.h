@@ -26,7 +26,9 @@ public:
     int getTotalCores() const override;
     int getBusyCores() const override;
 
-    std::map<Process*, int> getRunningProcesses() const;
+    std::map<Process*, int> getRunningProcesses() const override;
+    std::vector<Process*> getQueuedProcesses() const override;
+    std::vector<Process*> getFinishedProcesses() const override;
 
 private:
     void schedulerLoop();
@@ -36,9 +38,9 @@ private:
     std::vector<std::thread> workerThreads;
     std::thread schedulerThread;
 
-    std::queue<Process*> processQueue;
     mutable std::mutex queueMutex;
     std::condition_variable queueCV;
+    std::queue<Process*> processQueue;
 
     bool running;
     bool paused;
@@ -57,4 +59,7 @@ private:
     std::vector<Worker*> workers;
 
     ConsoleManager& consoleManager;
+
+    std::vector<Process*> allProcesses;
+    mutable std::mutex allProcessesMutex;
 };

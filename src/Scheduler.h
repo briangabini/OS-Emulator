@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include "Process.h"
 
 class Process;
@@ -20,4 +21,6 @@ public:
     virtual int getBusyCores() const = 0;
 
     virtual std::map<Process*, int> getRunningProcesses() const = 0;
+    virtual std::vector<Process*> getQueuedProcesses() const = 0;
+    virtual std::vector<Process*> getFinishedProcesses() const = 0;
 };

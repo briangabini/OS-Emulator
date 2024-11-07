@@ -32,6 +32,9 @@ public:
     void resetCompleted();
     void incrementCurrentLine();
 
+    static void setLoggingEnabled(bool enabled);
+    static bool isLoggingEnabled();
+
 private:
     std::string name;
     int id;
@@ -51,4 +54,6 @@ private:
     mutable std::mutex stateMutex;
 
     std::mutex logMutex;
+
+    static bool loggingEnabled;
 };

@@ -20,9 +20,15 @@ SchedulerFCFS::~SchedulerFCFS() {
 }
 
 void SchedulerFCFS::addProcess(Process* process) {
-    std::unique_lock<std::mutex> lock(queueMutex);
-    processQueue.push(process);
-    queueCV.notify_one();
+    {
+        std::unique_lock<std::mutex> lock(queueMutex);
+        processQueue.push(process);
+        queueCV.notify_one();
+    }
+    {
+        std::lock_guard<std::mutex> lock(allProcessesMutex);
+        allProcesses.push_back(process);
+    }
 }
 
 void SchedulerFCFS::start() {
@@ -184,4 +190,27 @@ std::map<Process*, int> SchedulerFCFS::getRunningProcesses() const {
         }
     }
     return runningProcesses;
+}
+
+std::vector<Process*> SchedulerFCFS::getQueuedProcesses() const {
+    std::vector<Process*> queuedProcesses;
+    std::unique_lock<std::mutex> lock(queueMutex);
+    std::queue<Process*> tempQueue = processQueue;
+    while (!tempQueue.empty()) {
+        queuedProcesses.push_back(tempQueue.front());
+        tempQueue.pop();
+    }
+    return queuedProcesses;
+}
+
+std::vector<Process*> SchedulerFCFS::getFinishedProcesses() const {
+    std::vector<Process*> finishedProcesses;
+    std::lock_guard<std::mutex> lock(allProcessesMutex);
+    auto runningProcesses = getRunningProcesses();
+    for (Process* process : allProcesses) {
+        if (process->isCompleted() && runningProcesses.find(process) == runningProcesses.end()) {
+            finishedProcesses.push_back(process);
+        }
+    }
+    return finishedProcesses;
 }

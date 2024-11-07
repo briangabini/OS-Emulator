@@ -7,20 +7,23 @@
 #include <mutex>
 
 int Process::nextId = 1;
+bool Process::loggingEnabled = false;
 
 Process::Process(const std::string& name)
     : name(name), currentLine(0), totalLines(0), completed(false) {
     creationTime = std::chrono::system_clock::now();
     id = nextId++;
 
-    // Initialize the log file
-    std::ofstream logfile(name + ".txt", std::ios::out);
-    if (logfile.is_open()) {
-        logfile << "Process name: " << name << "\nLogs:\n";
-        logfile.close();
-    }
-    else {
-        std::cerr << "Unable to create log file for process " << name << std::endl;
+    if (loggingEnabled) {
+        // Initialize process log file only if logging is enabled
+        std::ofstream logfile(name + ".txt", std::ios::out);
+        if (logfile.is_open()) {
+            logfile << "Process name: " << name << "\nLogs:\n";
+            logfile.close();
+        }
+        else {
+            std::cerr << "Unable to create log file for process " << name << std::endl;
+        }
     }
 }
 
@@ -64,6 +67,8 @@ Command* Process::getNextCommand() {
 }
 
 void Process::log(const std::string& message, int coreId) {
+    if (!loggingEnabled) return;
+
     std::lock_guard<std::mutex> lock(logMutex);
     // Open the process's log file and append the message
     std::ofstream logfile(name + ".txt", std::ios::app);
@@ -126,4 +131,12 @@ void Process::setCompleted(bool value) {
 void Process::resetCompleted() {
     std::lock_guard<std::mutex> lock(stateMutex);
     completed = false;
+}
+
+void Process::setLoggingEnabled(bool enabled) {
+    loggingEnabled = enabled;
+}
+
+bool Process::isLoggingEnabled() {
+    return loggingEnabled;
 }
