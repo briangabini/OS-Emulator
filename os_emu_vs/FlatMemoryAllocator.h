@@ -1,12 +1,13 @@
 #pragma once
 #include "IMemoryAllocator.h"
-#include <vector>
-#include <unordered_map>
+#include <map>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 // FlatMemoryAllocator class implementing IMemoryAllocator
 class FlatMemoryAllocator : public IMemoryAllocator {
-public: 
+public:
 	explicit FlatMemoryAllocator(size_t maximumSize);
 	virtual ~FlatMemoryAllocator();
 
@@ -18,7 +19,7 @@ private:
 	size_t maximumSize;
 	size_t allocatedSize;
 	std::vector<char> memory;
-	std::unordered_map<size_t, bool> allocationMap;
+	std::vector<bool> allocationMap;
 
 	void initializeMemory();
 	bool canAllocateAt(size_t index, size_t size) const;

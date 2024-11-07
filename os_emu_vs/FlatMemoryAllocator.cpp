@@ -1,10 +1,10 @@
 #include "FlatMemoryAllocator.h"
-#include <vector>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 /* PUBLIC METHODS */
-FlatMemoryAllocator::FlatMemoryAllocator(size_t maximumSize) 
+FlatMemoryAllocator::FlatMemoryAllocator(size_t maximumSize)
 	: maximumSize(maximumSize), allocatedSize(0)
 {
 	memory.reserve(maximumSize);
@@ -55,7 +55,8 @@ bool FlatMemoryAllocator::canAllocateAt(size_t index, size_t size) const {
 
 void FlatMemoryAllocator::allocateAt(size_t index, size_t size) {
 	// Mark the memory block as allocated
-	//std::fill(allocationMap.begin() + index, allocationMap.begin() + index + size, true);
+	std::fill(allocationMap.begin() + index, allocationMap.begin() + index + size, true);
+	allocatedSize += size;
 }
 
 void FlatMemoryAllocator::deallocateAt(size_t index) {
