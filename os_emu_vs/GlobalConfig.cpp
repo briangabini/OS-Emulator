@@ -122,13 +122,13 @@ void GlobalConfig::parseLine(const std::string& line)
 			else if (key == "max-ins") {
 				maxIns = std::stoi(value);
 			}
-			else if (key == "max-overall-memory") {
+			else if (key == "max-overall-mem") {
 				maxOverallMemory = std::stoi(value);
 			}
-			else if (key == "memory-per-frame") {
+			else if (key == "mem-per-frame") {
 				memoryPerFrame = std::stoi(value);
 			}
-			else if (key == "memory-per-process") {
+			else if (key == "mem-per-proc") {
 				memoryPerProcess = std::stoi(value);
 			}
 			else if (key == "delay-per-exec") {

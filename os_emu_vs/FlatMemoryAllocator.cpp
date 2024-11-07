@@ -1,19 +1,40 @@
 #include "FlatMemoryAllocator.h"
+#include "GlobalConfig.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+FlatMemoryAllocator* FlatMemoryAllocator::sharedInstance = nullptr;
 /* PUBLIC METHODS */
 FlatMemoryAllocator::FlatMemoryAllocator(size_t maximumSize)
-	: maximumSize(maximumSize), allocatedSize(0)
+	: maximumSize(maximumSize), allocatedSize(0), memory(maximumSize, '.')
 {
-	memory.reserve(maximumSize);
-	initializeMemory();
+	for (size_t i = 0; i < maximumSize; ++i) {
+		allocationMap[i] = false;
+	}
 }
 
 FlatMemoryAllocator::~FlatMemoryAllocator()
 {
 	memory.clear();
+}
+
+void FlatMemoryAllocator::initialize()
+{
+	int maxSize = GlobalConfig::getInstance()->getMaxOverallMemory();
+
+	if (sharedInstance == nullptr) {
+		sharedInstance = new FlatMemoryAllocator(maxSize);
+	}
+}
+
+FlatMemoryAllocator* FlatMemoryAllocator::getInstance() {
+	return sharedInstance;
+}
+
+void FlatMemoryAllocator::destroy() {
+	delete sharedInstance;
+	sharedInstance = nullptr;
 }
 
 void* FlatMemoryAllocator::allocate(size_t size)
@@ -45,7 +66,9 @@ std::string FlatMemoryAllocator::visualizeMemory() {
 /* PRIVATE METHODS */
 void FlatMemoryAllocator::initializeMemory() {
 	std::fill(memory.begin(), memory.end(), '.');	// '.' represents unallocated memory
-	std::fill(allocationMap.begin(), allocationMap.end(), false);
+	for (size_t i = 0; i < maximumSize; ++i) {
+		allocationMap[i] = false;
+	}
 }
 
 bool FlatMemoryAllocator::canAllocateAt(size_t index, size_t size) const {
@@ -55,7 +78,9 @@ bool FlatMemoryAllocator::canAllocateAt(size_t index, size_t size) const {
 
 void FlatMemoryAllocator::allocateAt(size_t index, size_t size) {
 	// Mark the memory block as allocated
-	std::fill(allocationMap.begin() + index, allocationMap.begin() + index + size, true);
+	for (size_t i = index; i < index + size; ++i) {
+		allocationMap[i] = true;
+	}
 	allocatedSize += size;
 }
 

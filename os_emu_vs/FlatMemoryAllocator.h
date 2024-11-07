@@ -10,6 +10,9 @@ class FlatMemoryAllocator : public IMemoryAllocator {
 public:
 	explicit FlatMemoryAllocator(size_t maximumSize);
 	virtual ~FlatMemoryAllocator();
+	static FlatMemoryAllocator* getInstance();
+	static void initialize();
+	static void destroy();
 
 	void* allocate(size_t size) override;
 	void deallocate(void* ptr) override;
@@ -19,10 +22,11 @@ private:
 	size_t maximumSize;
 	size_t allocatedSize;
 	std::vector<char> memory;
-	std::vector<bool> allocationMap;
+	std::unordered_map<size_t, bool> allocationMap;
 
 	void initializeMemory();
 	bool canAllocateAt(size_t index, size_t size) const;
 	void allocateAt(size_t index, size_t size);
 	void deallocateAt(size_t index);
+	static FlatMemoryAllocator* sharedInstance;
 };

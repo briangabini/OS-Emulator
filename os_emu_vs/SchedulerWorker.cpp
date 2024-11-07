@@ -1,5 +1,6 @@
 #include "AScheduler.h"
 #include "ConsoleManager.h"
+#include "FlatMemoryAllocator.h"
 #include "GlobalConfig.h"
 #include "os_emu_vs.h"
 #include "SchedulerWorker.h"
@@ -36,6 +37,14 @@ void SchedulerWorker::run() {
 
 		// Process execution
 		if (process) {
+			void* allocatedMemory = FlatMemoryAllocator::getInstance()->allocate(process->getMemoryRequired());
+			if (allocatedMemory == nullptr) {
+				// Not enough memory, move process to the tail of the queue
+				std::lock_guard<std::mutex> lock(scheduler->queueMutex);
+				scheduler->readyQueue.push(process);
+				continue;
+			}
+
 			process->setState(Process::RUNNING);
 			process->setCpuCoreId(cpuCoreId);
 
@@ -90,6 +99,7 @@ void SchedulerWorker::run() {
 
 
 			if (process->isFinished()) {
+				FlatMemoryAllocator::getInstance()->deallocate(allocatedMemory);
 				process->setState(Process::FINISHED);
 				ConsoleManager::getInstance()->unregisterScreen(process->getName());
 			}

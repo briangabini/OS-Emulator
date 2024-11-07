@@ -8,6 +8,7 @@
 
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
+#include "FlatMemoryAllocator.h"
 #include "GlobalConfig.h"
 #include "os_emu_vs.h"
 #include "RRScheduler.h"
@@ -126,6 +127,12 @@ std::shared_ptr<Process> GlobalScheduler::createProcess(std::string processName,
 	}
 
 	std::shared_ptr<Process> newProcess = std::make_shared<Process>(nextPid++, newProcessName);
+
+	// Set the memory required by assigning the memory per process to the process
+	newProcess->setMemoryRequired(GlobalConfig::getInstance()->getMemoryPerProcess());
+
+	// processSize contains the memory required by the process initialized above^
+	size_t processSize = newProcess->getMemoryRequired();
 
 	newProcess->addCommand(ICommand::PRINT);
 
