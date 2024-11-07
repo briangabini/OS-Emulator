@@ -34,6 +34,7 @@ private:
     void schedulerLoop();
     void workerLoop(int coreId);
 
+    int cpuCycles = 0;
     int numCores;
     std::vector<std::thread> workerThreads;
     std::thread schedulerThread;

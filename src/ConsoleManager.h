@@ -9,6 +9,7 @@
 #include <string>
 #include <thread>
 #include <condition_variable>
+#include <atomic>
 
 class MainConsole;
 
@@ -16,6 +17,9 @@ class ConsoleManager {
 public:
     ConsoleManager();
     ~ConsoleManager();
+
+    void startCpuCycleCounter();
+    void stopCpuCycleCounter();
 
     void start();
     void switchToMainConsole();
@@ -42,7 +46,6 @@ public:
     void setCurrentPrompt(const std::string& prompt);
     std::mutex& getIOMutex();
 
-    // Initialization methods
     bool isInitialized() const;
     bool initialize();
 
@@ -50,6 +53,14 @@ private:
     MainConsole* mainConsole;
     std::map<std::string, Process*> processes;
     std::mutex processMutex;
+
+    // For CPU cycle functionality
+    std::atomic<unsigned int> cpuCycles;
+    std::thread cpuCycleThread;
+    bool cpuCycleRunning;
+    std::mutex cpuCycleMutex;
+    std::condition_variable cpuCycleCV;
+    void cpuCycleLoop();
 
     Scheduler* scheduler;
 
@@ -64,6 +75,5 @@ private:
     std::string currentPrompt;
     std::mutex ioMutex;
 
-    // Initialization flag
     bool initialized;
 };

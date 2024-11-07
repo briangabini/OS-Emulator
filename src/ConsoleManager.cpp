@@ -11,12 +11,13 @@
 #include <sstream>
 
 ConsoleManager::ConsoleManager()
-    : testing(false), initialized(false), scheduler(nullptr) {
+    : testing(false), initialized(false), scheduler(nullptr), cpuCycles(0), cpuCycleRunning(false) {
     mainConsole = new MainConsole(*this);
 }
 
 ConsoleManager::~ConsoleManager() {
     stopSchedulerTest();
+    stopCpuCycleCounter();
     if (scheduler) {
         scheduler->stop();
         delete scheduler;
@@ -46,12 +47,42 @@ bool ConsoleManager::initialize() {
     }
 
     startScheduler();
+    startCpuCycleCounter();
     initialized = true;
     return true;
 }
 
 bool ConsoleManager::isInitialized() const {
     return initialized;
+}
+
+void ConsoleManager::startCpuCycleCounter() {
+    std::lock_guard<std::mutex> lock(cpuCycleMutex);
+    if (cpuCycleRunning) return;
+    cpuCycleRunning = true;
+    cpuCycleThread = std::thread(&ConsoleManager::cpuCycleLoop, this);
+}
+
+void ConsoleManager::stopCpuCycleCounter() {
+    {
+        std::lock_guard<std::mutex> lock(cpuCycleMutex);
+        if (!cpuCycleRunning) return;
+        cpuCycleRunning = false;
+    }
+    cpuCycleCV.notify_all();
+    if (cpuCycleThread.joinable()) {
+        cpuCycleThread.join();
+    }
+}
+
+void ConsoleManager::cpuCycleLoop() {
+    while (true) {
+        {
+            std::unique_lock<std::mutex> lock(cpuCycleMutex);
+            if (!cpuCycleRunning) break;
+        }
+        cpuCycles++;
+    }
 }
 
 void ConsoleManager::safePrint(const std::string& message) {
@@ -207,6 +238,7 @@ void ConsoleManager::schedulerTestLoop() {
     Config& config = Config::getInstance();
     int processCounter = 1;
     unsigned int freq = config.getBatchProcessFreq();
+    unsigned int nextProcessCycle = cpuCycles.load() + freq;
 
     while (true) {
         {
@@ -214,27 +246,31 @@ void ConsoleManager::schedulerTestLoop() {
             if (!testing) break;
         }
 
-        // Generate a batch of dummy processes
-        for (int i = 0; i < 5; ++i) {
-            std::string processName = "dummyProcess" + std::to_string(processCounter++);
-            createProcess(processName);
-
-            // Add dummy commands to the process
-            Process* process = getProcess(processName);
-            unsigned int numIns = config.getMinIns() + rand() % (config.getMaxIns() - config.getMinIns() + 1);
-            for (unsigned int j = 0; j < numIns; ++j) {
-                process->addCommand(new PrintCommand("Hello from " + processName + " Instruction " + std::to_string(j + 1)));
+        // Wait until cpuCycles >= nextProcessCycle
+        while (cpuCycles.load() < nextProcessCycle) {
+            {
+                std::unique_lock<std::mutex> lock(testMutex);
+                if (!testing) return;
             }
-
-            // std::cout << "Generated dummy process: " << processName << " with " << numIns << " instructions.\n";
+            // Small sleep to prevent busy-waiting
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
 
-        // Wait for 'batchProcessFreq' CPU cycles
-        std::unique_lock<std::mutex> lock(testMutex);
-        testCV.wait_for(lock, std::chrono::milliseconds(freq), [this]() { return !testing; });
-        if (!testing) break;
+        // Generate a new dummy process
+        std::string processName = "dummyProcess" + std::to_string(processCounter++);
+        createProcess(processName);
+
+        // Add dummy commands to the process
+        Process* process = getProcess(processName);
+        unsigned int numIns = config.getMinIns() + rand() % (config.getMaxIns() - config.getMinIns() + 1);
+        for (unsigned int j = 0; j < numIns; ++j) {
+            process->addCommand(new PrintCommand("Hello from " + processName + " Instruction " + std::to_string(j + 1)));
+        }
+
+        nextProcessCycle += freq;
     }
 }
+
 
 void ConsoleManager::startScheduler10() {
     std::lock_guard<std::mutex> lock(testMutex);

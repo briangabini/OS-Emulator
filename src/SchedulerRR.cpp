@@ -85,7 +85,7 @@ void SchedulerRR::schedulerLoop() {
 
     while (running) {
 
-        // For pausing
+        // For 'scheduler-pause'
         {
             std::unique_lock<std::mutex> lock(pauseMutex);
             pauseCV.wait(lock, [this]() { return !paused || !running; });
@@ -110,16 +110,19 @@ void SchedulerRR::schedulerLoop() {
             }
         }
 
-        // Prevent busy-waiting
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // Small sleep to prevent busy-waiting
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
 void SchedulerRR::workerLoop(int coreId) {
     Worker* worker = workers[coreId];
+    Config& config = Config::getInstance();
+    unsigned int delayPerExec = config.getDelaysPerExec();
+
     while (running) {
 
-        // For pausing
+        // For 'scheduler-pause'
         {
             std::unique_lock<std::mutex> lock(pauseMutex);
             pauseCV.wait(lock, [this]() { return !paused || !running; });
@@ -151,7 +154,7 @@ void SchedulerRR::workerLoop(int coreId) {
                 break;
             }
 
-            // For pausing
+            // For 'scheduler-pause'
             {
                 std::unique_lock<std::mutex> pauseLock(pauseMutex);
                 pauseCV.wait(pauseLock, [this]() { return !paused || !running; });
@@ -161,19 +164,25 @@ void SchedulerRR::workerLoop(int coreId) {
                 }
             }
 
-            process->incrementCurrentLine();
-
+            cpuCycles++;
             cmd->execute(process, coreId);
             delete cmd;
 
-            // Delay before executing the next instruction
-            unsigned int delay = Config::getInstance().getDelaysPerExec();
-            if (delay > 0) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+            process->incrementCurrentLine();
+
+            // Busy-wait for delay-per-exec
+            for (unsigned int i = 0; i < delayPerExec; ++i) {
+                cpuCycles++;
             }
 
+            // Decrement time slice after instruction execution
             timeSlice--;
             worker->remainingQuantum--;
+
+            // Check if the quantum has expired
+            if (timeSlice == 0) {
+                break;
+            }
         }
 
         if (!running) break;

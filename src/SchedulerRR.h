@@ -34,6 +34,7 @@ private:
     void schedulerLoop();
     void workerLoop(int coreId);
 
+    int cpuCycles = 0;
     int numCores;
     unsigned int quantum;
     std::vector<std::thread> workerThreads;

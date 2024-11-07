@@ -84,7 +84,7 @@ void SchedulerFCFS::schedulerLoop() {
 
     while (running) {
 
-        // For pausing
+        // For 'scheduler-pause'
         {
             std::unique_lock<std::mutex> lock(pauseMutex);
             pauseCV.wait(lock, [this]() { return !paused || !running; });
@@ -115,9 +115,12 @@ void SchedulerFCFS::schedulerLoop() {
 
 void SchedulerFCFS::workerLoop(int coreId) {
     Worker* worker = workers[coreId];
+    Config& config = Config::getInstance();
+    unsigned int delayPerExec = config.getDelaysPerExec();
+
     while (running) {
 
-        // For pausing
+        // For 'scheduler-pause'
         {
             std::unique_lock<std::mutex> lock(pauseMutex);
             pauseCV.wait(lock, [this]() { return !paused || !running; });
@@ -136,22 +139,22 @@ void SchedulerFCFS::workerLoop(int coreId) {
         Command* cmd = nullptr;
         while ((cmd = process->getNextCommand()) != nullptr) {
 
-            // For pausing
+            // For 'scheduler-pause'
             {
                 std::unique_lock<std::mutex> pauseLock(pauseMutex);
                 pauseCV.wait(pauseLock, [this]() { return !paused || !running; });
                 if (!running) break;
             }
 
-            process->incrementCurrentLine();
-
+            cpuCycles++;
             cmd->execute(process, coreId);
             delete cmd;
 
-            // Delay before executing the next instruction
-            unsigned int delay = Config::getInstance().getDelaysPerExec();
-            if (delay > 0) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+            process->incrementCurrentLine();
+
+            // Busy-wait for delay-per-exec
+            for (unsigned int i = 0; i < delayPerExec; ++i) {
+                cpuCycles++;
             }
         }
 
