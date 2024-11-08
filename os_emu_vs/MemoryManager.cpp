@@ -42,14 +42,19 @@ void MemoryManager::deallocateMemory(const std::string& processName) {
         return;
     }
 
+    bool deallocationPerformed = false;
+
     for (auto it = memoryBlocks.begin(); it != memoryBlocks.end(); ++it) {
         if (!it->isFree && it->processName == processName) {
             it->isFree = true;
             it->processName.clear();
+            deallocationPerformed = true;
         }
     }
 
-    mergeAdjacentFreeBlocks();
+    if (deallocationPerformed) {
+        mergeAdjacentFreeBlocks();
+    }
 }
 
 bool MemoryManager::allocateMemory(const std::string& processName) {
@@ -98,14 +103,14 @@ void MemoryManager::mergeAdjacentFreeBlocks() {
 
     auto current = memoryBlocks.begin();
     while (current != memoryBlocks.end() && std::next(current) != memoryBlocks.end()) {
-        auto next = std::next(current);
-        if (current->isFree && next->isFree) {
-            current->size += next->size;
-            memoryBlocks.erase(next);
+        if (current->isFree) {
+            auto next = std::next(current);
+            while (next != memoryBlocks.end() && next->isFree) {
+                current->size += next->size;
+                next = memoryBlocks.erase(next);
+            }
         }
-        else {
-            ++current;
-        }
+        ++current;
     }
 }
 
@@ -157,7 +162,7 @@ void MemoryManager::generateMemorySnapshot(size_t quantumNumber) {
     std::lock_guard<std::mutex> lock(memoryMutex);
 
     std::stringstream filename;
-    filename << "memory_snapshot_" << std::setw(4) << std::setfill('0') << quantumNumber << ".txt";
+    filename << "memory_stamp_" << std::setw(4) << std::setfill('0') << quantumNumber << ".txt";
 
     std::ofstream outFile(filename.str());
     if (!outFile) {
@@ -166,22 +171,28 @@ void MemoryManager::generateMemorySnapshot(size_t quantumNumber) {
 
     outFile << "Memory Snapshot - Quantum " << quantumNumber << "\n";
     outFile << "Timestamp: " << generateTimestamp() << "\n";
-    outFile << "Total Memory: " << totalMemory << " bytes\n";
-    outFile << "Free Memory: " << getFreeMemory() << " bytes\n";
+    outFile << "Total Memory: " << (totalMemory / 1024) << " KB\n";
+    outFile << "Free Memory: " << (getFreeMemory() / 1024) << " KB\n";
     outFile << "Process Count: " << getProcessCount() << "\n";
-    outFile << "External Fragmentation: " << getExternalFragmentation() << " bytes\n\n";
+    outFile << "External Fragmentation: " << (getExternalFragmentation() / 1024) << " KB\n\n";
 
     outFile << "Memory Map:\n";
-    outFile << "------------\n";
+    outFile << "----------------------------------------\n";
+
+    // Create ASCII representation of memory
     for (const auto& block : memoryBlocks) {
-        outFile << "Address: " << std::setw(10) << block.startAddress
-            << " Size: " << std::setw(10) << block.size
-            << " Status: " << (block.isFree ? "Free" : "Used");
-        if (!block.isFree) {
-            outFile << " Process: " << block.processName;
+        outFile << std::setw(10) << block.startAddress << " - "
+            << std::setw(10) << (block.startAddress + block.size - 1) << " | ";
+
+        if (block.isFree) {
+            outFile << "FREE (" << (block.size / 1024) << " KB)";
+        }
+        else {
+            outFile << block.processName << " (" << (block.size / 1024) << " KB)";
         }
         outFile << "\n";
     }
+    outFile << "----------------------------------------\n";
 
     outFile.close();
 }

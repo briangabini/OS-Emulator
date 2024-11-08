@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <mutex>
+#include <atomic>
 
 class Process {
 public:
@@ -18,7 +20,7 @@ public:
 
     Process(int pid, String name);
     Process() = default;
-    ~Process() = default;  // Remove custom destructor to prevent double-free issues
+    ~Process() = default;
 
     // Command management
     void addCommand(ICommand::CommandType commandType);
@@ -56,6 +58,11 @@ private:
     std::chrono::time_point<std::chrono::system_clock> creationTime;
 
     bool hasMemoryAllocated = false;
+    mutable std::mutex stateMutex;  // Single mutex for all state-related operations
+    std::atomic<bool> isCleaningUp{ false };
+
+    // Private helper methods
+    void performCleanup();
 
     friend class FCFSScheduler;
 };
