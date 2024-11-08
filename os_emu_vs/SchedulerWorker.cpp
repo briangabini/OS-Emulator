@@ -2,6 +2,7 @@
 #include "ConsoleManager.h"
 #include "FlatMemoryAllocator.h"
 #include "GlobalConfig.h"
+#include "GlobalScheduler.h"
 #include "os_emu_vs.h"
 #include "SchedulerWorker.h"
 #include <iostream>
@@ -29,22 +30,23 @@ void SchedulerWorker::run() {
 			if (!scheduler->readyQueue.empty()) {
 				//std::cout << "ready queue not empty, size: " << scheduler->readyQueue.size() << std::endl;
 				process = scheduler->readyQueue.front();
-				scheduler->readyQueue.pop();
-				this->update(true);
-				scheduler->incrementActiveWorkers();
+				void* allocatedMemory = FlatMemoryAllocator::getInstance()->allocate(process->getMemoryRequired(), process->getPID());
+				if (allocatedMemory != nullptr) {
+					scheduler->readyQueue.pop();
+					this->update(true);
+					scheduler->incrementActiveWorkers();
+					process->setMemoryPtr(allocatedMemory);
+				}
+				else {
+					break;
+				}
+
 			}
 		}
 
 		// Process execution
 		if (process) {
-			void* allocatedMemory = FlatMemoryAllocator::getInstance()->allocate(process->getMemoryRequired());
-			if (allocatedMemory == nullptr) {
-				// Not enough memory, move process to the tail of the queue
-				std::lock_guard<std::mutex> lock(scheduler->queueMutex);
-				scheduler->readyQueue.push(process);
-				break;
-			}
-
+			//currentProcess->setMemoryPtr(allocatedMemory);
 			process->setState(Process::RUNNING);
 			process->setCpuCoreId(cpuCoreId);
 
@@ -87,22 +89,32 @@ void SchedulerWorker::run() {
 
 					if (cpuCycles >= endCpuCycle)
 					{
+						GlobalScheduler::getInstance()->logMemory();
 						break;
 					}
 				}
+
 				if (!process->isFinished())
 				{
-					std::unique_lock<std::mutex> lock(scheduler->queueMutex);
-					FlatMemoryAllocator::getInstance()->deallocate(allocatedMemory);
+					std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
+					FlatMemoryAllocator::getInstance()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
+					process->setMemoryPtr(nullptr);
 					scheduler->readyQueue.push(process);
 				}
 			}
 
 
 			if (process->isFinished()) {
-				FlatMemoryAllocator::getInstance()->deallocate(allocatedMemory);
+				std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
+				FlatMemoryAllocator::getInstance()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
+				process->setMemoryPtr(nullptr);
 				process->setState(Process::FINISHED);
 				ConsoleManager::getInstance()->unregisterScreen(process->getName());
+			}
+			//// Ensure memory is deallocated if the process did not finish or was preempted
+			if (process->getMemoryPtr() != nullptr) {
+				FlatMemoryAllocator::getInstance()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
+				process->setMemoryPtr(nullptr);
 			}
 
 			this->update(false); // Mark the worker as free

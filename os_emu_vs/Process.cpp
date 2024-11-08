@@ -1,15 +1,15 @@
-#include "Process.h"
-#include "PrintCommand.h"
 #include "GlobalConfig.h"
+#include "PrintCommand.h"
+#include "Process.h"
 
 Process::Process(int pid, String name)
-	: 
-	pid(pid), name(std::move(name)), 
-	commandCounter(0), 
-	currentState(READY), 
+	:
+	pid(pid), name(std::move(name)),
+	commandCounter(0),
+	currentState(READY),
 	creationTime(std::chrono::system_clock::now()),
 	memoryRequired(GlobalConfig::getInstance()->getMemoryPerProcess())
-	{}
+{}
 
 void Process::addCommand(ICommand::CommandType commandType)
 {
@@ -90,4 +90,12 @@ void Process::setMemoryRequired(int memoryRequired) {
 
 int Process::getMemoryRequired() const {
 	return memoryRequired;
+}
+
+void* Process::getMemoryPtr() {
+	return this->memoryPtr;
+}
+
+void Process::setMemoryPtr(void* ptr) {
+	memoryPtr = ptr;
 }

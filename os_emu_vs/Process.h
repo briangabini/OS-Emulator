@@ -1,9 +1,9 @@
 #pragma once
 #include "ICommand.h"
 #include "TypedefRepo.h"
+#include <chrono>
 #include <string>
 #include <utility>
-#include <chrono>
 #include <vector>
 
 class Process {
@@ -48,6 +48,8 @@ public:
 	// week 8
 	void setMemoryRequired(int memoryRequired);
 	int getMemoryRequired() const;
+	void setMemoryPtr(void* ptr);
+	void* getMemoryPtr();
 
 private:
 	int pid;
@@ -66,4 +68,6 @@ private:
 
 	// week 8
 	int memoryRequired;
+	void* memoryPtr = nullptr;
+
 };

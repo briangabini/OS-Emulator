@@ -26,6 +26,7 @@ public:
 
 	void monitorProcesses() const;
 	void logToFile() const;
+	void logMemory() const;
 	void tick() const;
 
 

@@ -177,10 +177,6 @@ void GlobalScheduler::monitorProcesses() const {
 	}
 	oss << "---------------------------------------\n";
 
-	oss << "\nMemory status: ";
-
-	oss << FlatMemoryAllocator::getInstance()->visualizeMemory() << "\n";
-
 	lastMonitorOutput = oss.str();
 	std::cout << lastMonitorOutput;
 }
@@ -193,6 +189,34 @@ void GlobalScheduler::logToFile() const {
 	logFile.close();
 	std::filesystem::path filePath = std::filesystem::absolute("report.txt");
 	std::cout << "Report generated at " << filePath.string() << "!\n";
+}
+
+void GlobalScheduler::logMemory() const {
+	int processCount = FlatMemoryAllocator::getInstance()->getProcessCount();
+	size_t externalFragmentation = FlatMemoryAllocator::getInstance()->getExternalFragmentation();
+
+	// Open file for logging memory snapshot
+	static int quantumCycle = 0;  // Track quantum cycle number
+	std::ofstream outFile("memory_stamp_" + std::to_string(quantumCycle++) + ".txt");
+
+	if (!outFile.is_open()) {
+		std::cerr << "Error opening file!\n";
+		return;
+	}
+
+	// Write timestamp
+	outFile << "Timestamp: " << "\n";
+
+	// Write number of processes in memory
+	outFile << "Number of processes in memory: " << processCount << "\n";
+
+	// Write total external fragmentation in KB
+	outFile << "Total external fragmentation in KB: " << externalFragmentation << "\n";  // Convert bytes to KB
+
+	// Write ASCII printout of memory (assuming visualizeMemory returns a formatted string)``
+	outFile << FlatMemoryAllocator::getInstance()->visualizeMemory();
+
+	outFile.close();
 }
 
 std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
