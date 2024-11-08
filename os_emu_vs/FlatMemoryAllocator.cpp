@@ -46,6 +46,7 @@ void* FlatMemoryAllocator::allocate(size_t size)
 			return &memory[i];
 		}
 	}
+	processCount++;
 
 	// No available block found,
 	return nullptr;
@@ -56,11 +57,40 @@ void FlatMemoryAllocator::deallocate(void* ptr) {
 	size_t index = static_cast<char*>(ptr) - &memory[0];
 	if (allocationMap[index]) {
 		deallocateAt(index);
+		processCount--;
 	}
 }
 
+int FlatMemoryAllocator::getProcessCount() const {
+	return processCount;
+}
+
+size_t FlatMemoryAllocator::getExternalFragmentation() const {
+	return maximumSize - allocatedSize;
+}
+
 std::string FlatMemoryAllocator::visualizeMemory() {
-	return std::string(memory.begin(), memory.end());
+	std::ostringstream oss;
+	oss << "----end---- = \n" << maximumSize;
+	size_t placeholder = maximumSize;
+	int j = 0;
+
+	for (size_t i = 0; i < memory.size(); i+= GlobalConfig::getInstance()->getMemoryPerProcess()) {
+		if (allocationMap[i]) {
+			oss << "P" << j + 1 << "\n";
+			placeholder -= GlobalConfig::getInstance()->getMemoryPerProcess();
+			oss << placeholder << "\n";
+		}
+		j++;
+		//else {
+		//	placeholder -= GlobalConfig::getInstance()->getMemoryPerFrame();  // Assuming each block of free space is 4096 bytes
+		//	oss << placeholder << "\n";
+		//} 
+	}
+	oss << "----start---- = 0" << std::endl;
+
+	return oss.str();
+
 }
 
 /* PRIVATE METHODS */

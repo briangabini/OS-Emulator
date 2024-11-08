@@ -14,13 +14,18 @@ public:
 	static void initialize();
 	static void destroy();
 
+
 	void* allocate(size_t size) override;
 	void deallocate(void* ptr) override;
 	std::string visualizeMemory() override;
+	int getProcessCount() const;
+	int processCount = 0;
+	size_t getExternalFragmentation() const;
 
 private:
 	size_t maximumSize;
 	size_t allocatedSize;
+	
 	std::vector<char> memory;
 	std::unordered_map<size_t, bool> allocationMap;
 

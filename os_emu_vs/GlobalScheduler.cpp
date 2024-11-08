@@ -177,6 +177,10 @@ void GlobalScheduler::monitorProcesses() const {
 	}
 	oss << "---------------------------------------\n";
 
+	oss << "\nMemory status: ";
+
+	oss << FlatMemoryAllocator::getInstance()->visualizeMemory() << "\n";
+
 	lastMonitorOutput = oss.str();
 	std::cout << lastMonitorOutput;
 }

@@ -42,7 +42,7 @@ void SchedulerWorker::run() {
 				// Not enough memory, move process to the tail of the queue
 				std::lock_guard<std::mutex> lock(scheduler->queueMutex);
 				scheduler->readyQueue.push(process);
-				continue;
+				break;
 			}
 
 			process->setState(Process::RUNNING);
@@ -93,6 +93,7 @@ void SchedulerWorker::run() {
 				if (!process->isFinished())
 				{
 					std::unique_lock<std::mutex> lock(scheduler->queueMutex);
+					FlatMemoryAllocator::getInstance()->deallocate(allocatedMemory);
 					scheduler->readyQueue.push(process);
 				}
 			}
