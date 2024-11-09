@@ -64,10 +64,10 @@ void SchedulerWorker::run() {
 					process->executeCurrentCommand();
 					process->moveToNextLine();
 
-					// busy waiting
 					endExecDelay = cpuCycles + execDelay;
 					while (cpuCycles % (endExecDelay + 1) != 0)
 					{
+						// Busy waiting
 					}
 				}
 			}
@@ -80,16 +80,17 @@ void SchedulerWorker::run() {
 					process->executeCurrentCommand();
 					process->moveToNextLine();
 
-					// busy waiting
 					endExecDelay = cpuCycles + execDelay;
-					while (cpuCycles % (endExecDelay + 1) != 0)
+					while (cpuCycles % (endExecDelay + 1) != 0)						
 					{
-
+						// Busy waiting
 					}
 
 					if (cpuCycles >= endCpuCycle)
 					{
-						GlobalScheduler::getInstance()->logMemory();
+						if (!process->isFinished()) {
+							GlobalScheduler::getInstance()->logMemory();
+						}
 						break;
 					}
 				}
@@ -110,6 +111,9 @@ void SchedulerWorker::run() {
 				process->setMemoryPtr(nullptr);
 				process->setState(Process::FINISHED);
 				ConsoleManager::getInstance()->unregisterScreen(process->getName());
+
+				// do some logging
+				GlobalScheduler::getInstance()->logMemory();
 			}
 			//// Ensure memory is deallocated if the process did not finish or was preempted
 			if (process->getMemoryPtr() != nullptr) {

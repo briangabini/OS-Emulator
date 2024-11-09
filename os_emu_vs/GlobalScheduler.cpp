@@ -6,6 +6,7 @@
 #include <iostream>
 #include <thread>
 
+#include "Util.h"
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
 #include "FlatMemoryAllocator.h"
@@ -197,7 +198,7 @@ void GlobalScheduler::logMemory() const {
 
 	// Open file for logging memory snapshot
 	static int quantumCycle = 0;  // Track quantum cycle number
-	std::ofstream outFile("memory_stamp_" + std::to_string(quantumCycle++) + ".txt");
+	std::ofstream outFile(std::format("logs/memory_stamp_{}.txt", quantumCycle++));
 
 	if (!outFile.is_open()) {
 		std::cerr << "Error opening file!\n";
@@ -205,13 +206,13 @@ void GlobalScheduler::logMemory() const {
 	}
 
 	// Write timestamp
-	outFile << "Timestamp: " << "\n";
+	outFile << std::format("Timestamp: {}\n", Util::getCurrentTimestamp());
 
 	// Write number of processes in memory
-	outFile << "Number of processes in memory: " << processCount << "\n";
+	outFile << std::format("Number of processes in memory: {}\n", processCount);
 
 	// Write total external fragmentation in KB
-	outFile << "Total external fragmentation in KB: " << externalFragmentation << "\n";  // Convert bytes to KB
+	outFile << std::format("Total external fragmentation in KB: {}\n", externalFragmentation);  // Convert bytes to KB
 
 	// Write ASCII printout of memory (assuming visualizeMemory returns a formatted string)``
 	outFile << FlatMemoryAllocator::getInstance()->visualizeMemory();
