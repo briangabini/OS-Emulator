@@ -1,4 +1,6 @@
 #include "MemoryManager.h"
+#include "GlobalConfig.h"
+#include "FlatMemoryAllocator.h"
 
 // initialize the shared instance
 MemoryManager* MemoryManager::sharedInstance = nullptr;
@@ -22,4 +24,13 @@ void MemoryManager::destroy()
 
 MemoryManager::MemoryManager()
 {
+	bool usingFlatMemoryAllocator = GlobalConfig::getInstance()->isUsingFlatMemoryAllocator();
+	const int maxSize = GlobalConfig::getInstance()->getMaxOverallMemory();
+
+	if (usingFlatMemoryAllocator) {
+		memoryAllocator = std::make_shared<FlatMemoryAllocator>(maxSize);
+	}
+	else {
+		//memoryAllocator = std::make_shared<SegmentedMemoryAllocator>();
+	}
 }
