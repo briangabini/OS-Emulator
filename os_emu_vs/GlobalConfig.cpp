@@ -64,6 +64,10 @@ int GlobalConfig::getMemoryPerProcess() const {
 	return minMemPerProcess;
 }
 
+bool GlobalConfig::isUsingFlatMemoryAllocator() const {
+	return usingFlatMemoryAllocator;
+}
+
 void GlobalConfig::loadConfigFromFile(const std::string& filename)
 {
 	if (calledOnce)
@@ -143,5 +147,16 @@ void GlobalConfig::parseLine(const std::string& line)
 				std::cerr << "Unknown configuration key: " << key << std::endl;
 			}
 		}
+	}
+
+	// check if using flat memory allocator
+	// condition: max-overall-mem == mem-per-frame
+	if (maxOverallMemory == memoryPerFrame)
+	{
+		usingFlatMemoryAllocator = true;
+	}
+	else
+	{
+		usingFlatMemoryAllocator = false;
 	}
 }

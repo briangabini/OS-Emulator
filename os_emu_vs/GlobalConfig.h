@@ -24,9 +24,11 @@ public:
     bool isCalledOnce() const;
     void loadConfigFromFile(const std::string& filename);
 
+    // Memory Related
 	int getMaxOverallMemory() const;
 	int getMemoryPerFrame() const;
 	int getMemoryPerProcess() const;
+    bool isUsingFlatMemoryAllocator() const; 
 
 private:
     GlobalConfig() = default;
@@ -56,4 +58,5 @@ private:
     // mco2
     int minMemPerProcess;
     int maxMemPerProcess;
+	bool usingFlatMemoryAllocator;      // true -> flat memory allocator, false -> paging memory allocator
 };
