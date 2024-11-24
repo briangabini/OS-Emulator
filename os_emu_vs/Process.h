@@ -9,13 +9,9 @@
 class Process {
 
 public:
-	/*struct RequirementFlags
-	{
-		bool requireFiles;
-		int numFiles;
-		bool requireMemory;
-		int memoryRequired;
-	};*/
+	// Some Typedefs
+	// For time
+	using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 	enum ProcessState
 	{
@@ -50,11 +46,14 @@ public:
 	int getMemoryRequired() const;
 	void setMemoryPtr(void* ptr);
 	void* getMemoryPtr();
+	TimePoint getMemoryAllocatedTime();
+	void setMemoryAllocatedTime(TimePoint time);
+	
 
 private:
 	int pid;
 	String name;
-	typedef std::vector<std::shared_ptr<ICommand>> CommandList;
+	using CommandList = std::vector<std::shared_ptr<ICommand>>;
 	CommandList commandList;
 
 	int commandCounter;
@@ -67,7 +66,10 @@ private:
 	friend class FCFSScheduler;
 
 	// week 8
-	int memoryRequired;
-	void* memoryPtr = nullptr;			// Used to check if the process is allocated memory
-
+	
+	struct MemoryInfo {
+		int memoryRequired;
+		void* memoryPtr = nullptr;			// Used to check if the process is allocated memory
+		TimePoint memoryAllocatedTime;
+	} memoryInfo;
 };

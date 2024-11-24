@@ -6,9 +6,9 @@ Process::Process(int pid, String name)
 	:
 	pid(pid), name(std::move(name)),
 	commandCounter(0),
-	currentState(READY),
+	currentState(ProcessState::READY),
 	creationTime(std::chrono::system_clock::now()),
-	memoryRequired(GlobalConfig::getInstance()->getMemoryPerProcess())
+	memoryInfo{ GlobalConfig::getInstance()->getMemoryPerProcess(), nullptr, {} }
 {}
 
 void Process::addCommand(ICommand::CommandType commandType)
@@ -85,17 +85,27 @@ void Process::setCpuCoreId(int _cpuCoreId) {
 }
 
 void Process::setMemoryRequired(int memoryRequired) {
-	this->memoryRequired = memoryRequired;
+	this->memoryInfo.memoryRequired = memoryRequired;
 }
 
 int Process::getMemoryRequired() const {
-	return memoryRequired;
+	return memoryInfo.memoryRequired;
 }
 
 void* Process::getMemoryPtr() {
-	return this->memoryPtr;
+	return memoryInfo.memoryPtr;
+}
+
+Process::TimePoint Process::getMemoryAllocatedTime()
+{
+	return memoryInfo.memoryAllocatedTime;
+}
+
+void Process::setMemoryAllocatedTime(Process::TimePoint time)
+{
+	memoryInfo.memoryAllocatedTime = time;
 }
 
 void Process::setMemoryPtr(void* ptr) {
-	memoryPtr = ptr;
+	memoryInfo.memoryPtr = ptr;
 }
