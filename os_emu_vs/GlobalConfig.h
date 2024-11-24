@@ -29,6 +29,7 @@ public:
 	int getMemoryPerFrame() const;
 	int getMemoryPerProcess() const;
     bool isUsingFlatMemoryAllocator() const; 
+    int generateRandomNumberOfPages() const;
 
 private:
     GlobalConfig() = default;

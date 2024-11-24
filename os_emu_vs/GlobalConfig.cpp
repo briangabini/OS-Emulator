@@ -1,4 +1,7 @@
 #include "GlobalConfig.h"
+#include <random>
+#include <cmath>
+#include <iostream>
 
 GlobalConfig* GlobalConfig::sharedInstance = nullptr;
 
@@ -68,6 +71,30 @@ bool GlobalConfig::isUsingFlatMemoryAllocator() const {
 	return usingFlatMemoryAllocator;
 }
 
+int GlobalConfig::generateRandomNumberOfPages() const
+{
+	// Define the range of powers of 2
+	const auto minPower = static_cast<int>(std::log2(minMemPerProcess));
+	const auto maxPower = static_cast<int>(std::log2(maxMemPerProcess)); 
+
+	std::cout << "minPower: " << minPower << std::endl;
+	std::cout << "maxPower: " << maxPower << std::endl;
+
+	// Seed for the random number engine
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution dis(minPower, maxPower);
+
+	// Generate a random power of 2 within the specified range
+	const int power = dis(gen);
+	const auto M = static_cast<int>(std::pow(2, power));
+
+	std::cout << "power: " << power << std::endl;
+	std::cout << "M: " << M << std::endl;
+
+	return M / memoryPerFrame; 
+}
+
 void GlobalConfig::loadConfigFromFile(const std::string& filename)
 {
 	if (calledOnce)
@@ -88,6 +115,16 @@ void GlobalConfig::loadConfigFromFile(const std::string& filename)
 	}
 
 	calledOnce = true;
+
+	/* FOR DEBUGGING */
+	/*std::cout << "max-overall-mem: " << maxOverallMemory << std::endl;
+	std::cout << "mem-per-frame: " << memoryPerFrame << std::endl;
+	std::cout << "min-memory-per-process: " << minMemPerProcess << std::endl;
+	std::cout << "max-memory-per-process: " << maxMemPerProcess << std::endl;
+	std::cout << "usingFlatMemoryAllocator: " << usingFlatMemoryAllocator << std::endl;
+	int numPages = generateRandomNumberOfPages();
+	std::cout << "generatePages: " << numPages << std::endl;
+	std::this_thread::sleep_for(std::chrono::seconds(5));*/
 }
 
 
