@@ -9,10 +9,7 @@ FlatMemoryAllocator* FlatMemoryAllocator::sharedInstance = nullptr;
 FlatMemoryAllocator::FlatMemoryAllocator(size_t maximumSize)
 	: maximumSize(maximumSize), allocatedSize(0), memory(maximumSize, '.')
 {
-	for (size_t i = 0; i < maximumSize; ++i) {
-		allocationMap[i] = false;
-		processMap[i] = -1;
-	}
+	this->initializeMemory();
 }
 
 FlatMemoryAllocator::~FlatMemoryAllocator()
@@ -44,7 +41,7 @@ void* FlatMemoryAllocator::allocate(size_t size, int processId)
 	for (size_t i = 0; i < maximumSize - size + 1; ++i) {
 		if (!allocationMap[i] && canAllocateAt(i, size)) {
 			allocateAt(i, size, processId);
-			return &memory[i];
+			return &memory[i];				// return the pointer to the i-th element of the memory vector
 		}
 	}
 
@@ -105,13 +102,14 @@ bool FlatMemoryAllocator::canAllocateAt(size_t index, size_t size) const {
 	// Check if the memory block is large enough
 	if (index + size > maximumSize) return false;
 	for (size_t i = index; i < index + size; ++i) {
-		if (allocationMap.find(i) != allocationMap.end() && allocationMap.at(i)) {
+		if (allocationMap.contains(i) && allocationMap.at(i)) {	// Checks if the key exists (meaning it is properly allocated) and if the value is true
 			return false;  // If any part of the block is already allocated, return false
 		}
 	}
 	return true;
 }
 
+// allocate memory block by setting the allocationMap to true, and processMap to processId
 void FlatMemoryAllocator::allocateAt(size_t index, size_t size, int processId) {
 	// Mark the memory block as allocated
 	for (size_t i = index; i < index + size; ++i) {
@@ -122,6 +120,7 @@ void FlatMemoryAllocator::allocateAt(size_t index, size_t size, int processId) {
 	processCount++;
 }
 
+// deallocate memory block by setting the allocationMap to false, and processMap to -1
 void FlatMemoryAllocator::deallocateAt(size_t index, size_t size) {
 	// Mark the memory block as deallocated
 	for (size_t i = index; i < index + size; ++i) {

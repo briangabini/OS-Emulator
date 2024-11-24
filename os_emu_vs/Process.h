@@ -68,6 +68,6 @@ private:
 
 	// week 8
 	int memoryRequired;
-	void* memoryPtr = nullptr;
+	void* memoryPtr = nullptr;			// Used to check if the process is allocated memory
 
 };
