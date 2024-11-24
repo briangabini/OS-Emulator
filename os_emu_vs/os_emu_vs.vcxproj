@@ -146,6 +146,7 @@
     <ClCompile Include="IETThread.cpp" />
     <ClCompile Include="MainConsole.cpp" />
     <ClCompile Include="MarqueeConsole.cpp" />
+    <ClCompile Include="MemoryManager.cpp" />
     <ClCompile Include="os_emu_vs.cpp" />
     <ClCompile Include="PrintCommand.cpp" />
     <ClCompile Include="Process.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="IMemoryAllocator.h" />
     <ClInclude Include="MainConsole.h" />
     <ClInclude Include="MarqueeConsole.h" />
+    <ClInclude Include="MemoryManager.h" />
     <ClInclude Include="os_emu_vs.h" />
     <ClInclude Include="PrintCommand.h" />
     <ClInclude Include="Process.h" />

@@ -82,6 +82,9 @@
     <ClCompile Include="Util.cpp">
       <Filter>Util</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryManager.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ICommand.h">
@@ -143,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="Util.h">
       <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryManager.h">
+      <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

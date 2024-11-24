@@ -3,6 +3,7 @@
 #include "GlobalScheduler.h"
 
 #include "FlatMemoryAllocator.h"
+#include "MemoryManager.h"
 #include <iostream>
 
 int cpuCycles = 0;
@@ -32,6 +33,7 @@ int main() {
 	// clean up
 	ConsoleManager::destroy();
 	GlobalScheduler::destroy();
+	MemoryManager::destroy();
 	FlatMemoryAllocator::destroy();
 
 	std::cout << "Exiting the program..." << '\n';

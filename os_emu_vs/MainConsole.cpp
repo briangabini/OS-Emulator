@@ -3,6 +3,7 @@
 #include "ConsoleManager.h"
 #include "GlobalConfig.h"
 #include "GlobalScheduler.h"
+#include "MemoryManager.h"
 #include "MainConsole.h"
 #include "TypedefRepo.h"
 #include <array>
@@ -142,6 +143,7 @@ namespace MainConsoleUtil {
 			GlobalConfig::initialize();
 			GlobalConfig::getInstance()->loadConfigFromFile("config.txt");
 			GlobalScheduler::initialize();
+			MemoryManager::initialize();
 			FlatMemoryAllocator::initialize();
 		}
 		else if (command == "clear") {
