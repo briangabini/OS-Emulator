@@ -19,12 +19,12 @@ public:
 	void deallocate(void* ptr, size_t size) override;
 	std::string visualizeMemory() override;
 	int getProcessCount() const;
-	int processCount = 0;
 	size_t getExternalFragmentation() const;
 
 private:
 	size_t maximumSize;
 	size_t allocatedSize;
+	int processCount = 0;
 
 	std::vector<char> memory;
 	std::unordered_map<size_t, bool> allocationMap;
