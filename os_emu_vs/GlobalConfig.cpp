@@ -60,7 +60,8 @@ int GlobalConfig::getMemoryPerFrame() const {
 }
 
 int GlobalConfig::getMemoryPerProcess() const {
-	return memoryPerProcess;
+	// if using flatmemoryallocator only use minMemPerProcess
+	return minMemPerProcess;
 }
 
 void GlobalConfig::loadConfigFromFile(const std::string& filename)
@@ -128,8 +129,11 @@ void GlobalConfig::parseLine(const std::string& line)
 			else if (key == "mem-per-frame") {
 				memoryPerFrame = std::stoi(value);
 			}
-			else if (key == "mem-per-proc") {
-				memoryPerProcess = std::stoi(value);
+			else if (key == "min-mem-per-proc") {
+				minMemPerProcess = std::stoi(value);
+			}
+			else if (key == "max-mem-per-proc") {
+				maxMemPerProcess = std::stoi(value);
 			}
 			else if (key == "delay-per-exec") {
 				delayPerExec = std::stoi(value);

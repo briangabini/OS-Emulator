@@ -51,5 +51,9 @@ private:
     // week 8
     int maxOverallMemory;
     int memoryPerFrame;
-    int memoryPerProcess;
+    //int memoryPerProcess;
+
+    // mco2
+    int minMemPerProcess;
+    int maxMemPerProcess;
 };
