@@ -54,6 +54,7 @@ protected:
 	std::vector<std::shared_ptr<SchedulerWorker>> schedulerWorkers;
 	std::mutex queueMutex;
 	std::mutex workerMutex;
+	std::mutex memoryMutex;
 	std::condition_variable queueCV;
 	int activeWorkers = 0;
 

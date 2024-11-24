@@ -3,6 +3,7 @@
 #include "TypedefRepo.h"
 #include <chrono>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Process {
@@ -32,7 +33,6 @@ public:
 	void moveToNextLine();
 
 	bool isFinished() const;
-	// int getRemainingTime() const;
 	int getCommandCounter() const;
 	int getLinesOfCode() const;
 	int getPID() const;
@@ -44,6 +44,12 @@ public:
 	// setters
 	void setState(ProcessState state);
 	void setCpuCoreId(int _cpuCoreId);
+
+	// week 8
+	void setMemoryRequired(int memoryRequired);
+	int getMemoryRequired() const;
+	void setMemoryPtr(void* ptr);
+	void* getMemoryPtr();
 
 private:
 	int pid;
@@ -59,4 +65,9 @@ private:
 	// RequirementFlags requirements;
 	// friend class ResourceEmulator
 	friend class FCFSScheduler;
+
+	// week 8
+	int memoryRequired;
+	void* memoryPtr = nullptr;
+
 };

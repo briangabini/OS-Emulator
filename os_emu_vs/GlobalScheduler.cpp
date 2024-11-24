@@ -6,8 +6,10 @@
 #include <iostream>
 #include <thread>
 
+#include "Util.h"
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
+#include "FlatMemoryAllocator.h"
 #include "GlobalConfig.h"
 #include "os_emu_vs.h"
 #include "RRScheduler.h"
@@ -127,6 +129,12 @@ std::shared_ptr<Process> GlobalScheduler::createProcess(std::string processName,
 
 	std::shared_ptr<Process> newProcess = std::make_shared<Process>(nextPid++, newProcessName);
 
+	// Set the memory required by assigning the memory per process to the process
+	newProcess->setMemoryRequired(GlobalConfig::getInstance()->getMemoryPerProcess());
+
+	// processSize contains the memory required by the process initialized above^
+	size_t processSize = newProcess->getMemoryRequired();
+
 	newProcess->addCommand(ICommand::PRINT);
 
 	processes[newProcessName] = newProcess;
@@ -182,6 +190,34 @@ void GlobalScheduler::logToFile() const {
 	logFile.close();
 	std::filesystem::path filePath = std::filesystem::absolute("report.txt");
 	std::cout << "Report generated at " << filePath.string() << "!\n";
+}
+
+void GlobalScheduler::logMemory() const {
+	int processCount = FlatMemoryAllocator::getInstance()->getProcessCount();
+	size_t externalFragmentation = FlatMemoryAllocator::getInstance()->getExternalFragmentation();
+
+	// Open file for logging memory snapshot
+	static int quantumCycle = 0;  // Track quantum cycle number
+	std::ofstream outFile(std::format("logs/memory_stamp_{}.txt", quantumCycle++));
+
+	if (!outFile.is_open()) {
+		std::cerr << "Error opening file!\n";
+		return;
+	}
+
+	// Write timestamp
+	outFile << std::format("Timestamp: {}\n", Util::getCurrentTimestamp());
+
+	// Write number of processes in memory
+	outFile << std::format("Number of processes in memory: {}\n", processCount);
+
+	// Write total external fragmentation in KB
+	outFile << std::format("Total external fragmentation in KB: {}\n", externalFragmentation);  // Convert bytes to KB
+
+	// Write ASCII printout of memory (assuming visualizeMemory returns a formatted string)``
+	outFile << FlatMemoryAllocator::getInstance()->visualizeMemory();
+
+	outFile.close();
 }
 
 std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_clock>& timePoint) {

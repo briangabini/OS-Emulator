@@ -12,6 +12,7 @@
 #include <vector>
 
 
+#include "FlatMemoryAllocator.h"
 #include "os_emu_vs.h"
 
 #define windows
@@ -141,6 +142,7 @@ namespace MainConsoleUtil {
 			GlobalConfig::initialize();
 			GlobalConfig::getInstance()->loadConfigFromFile("config.txt");
 			GlobalScheduler::initialize();
+			FlatMemoryAllocator::initialize();
 		}
 		else if (command == "clear") {
 			clearScreen();

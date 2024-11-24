@@ -1,7 +1,10 @@
 num-cpu 4
 scheduler "rr"
-quantum-cycles 5
+quantum-cycles 4
 batch-process-freq 1
-min-ins 1000
-max-ins 2000
-delay-per-exec 0
+min-ins 30
+max-ins 30
+delay-per-exec 1
+max-overall-mem 16384
+mem-per-frame 16
+mem-per-proc 4096
