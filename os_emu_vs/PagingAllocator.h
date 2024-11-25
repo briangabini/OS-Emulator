@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 #include "IMemoryAllocator.h"
 #include "Process.h"
 
@@ -27,6 +28,7 @@ private:
 	size_t numFrames;
 	std::unordered_map<int, int> frameMap;
 	std::vector<size_t> freeFrameList;
+	std::mutex allocatorMutex;
 
 	// new vars and methods
 	size_t allocateFrames(size_t numFrames, size_t processId);

@@ -15,7 +15,7 @@ PagingAllocator::PagingAllocator(size_t maxMemorySize)
 		freeFrameList.push_back(i);
 
 		// initialize the unordered map with frames
-		frameMap[i] = UNALLOCATED_FRAME;
+		frameMap[i] = -1;
 	}
 }
 
@@ -81,7 +81,7 @@ std::string PagingAllocator::visualizeMemory() {
 	oss << "Memory visualization:\n";
 	for (size_t frameIndex = 0; frameIndex < numFrames; ++frameIndex) {
 		auto it = frameMap.find(frameIndex);
-		if (it != frameMap.end() && it->second != UNALLOCATED_FRAME) {
+		if (it != frameMap.end() && it->second != -1) {
 			oss << "Frame " << frameIndex << " -> Process " << it->second << "\n";
 		}
 		else {
@@ -113,65 +113,8 @@ size_t PagingAllocator::allocateFrames(size_t numFrames, size_t processId) {
 
 void PagingAllocator::deallocateFrames(size_t frameIndex) {
 	// Set frame to -1 to "deallocate"
-	frameMap[frameIndex] = UNALLOCATED_FRAME;
+	frameMap[frameIndex] = -1;
 
 	// Add frame to the free frame list
 	freeFrameList.push_back(frameIndex);
 }
-
-//void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
-//	size_t processId = process->getPID();
-//	size_t numFramesNeeded = process->getNumberOfPages();
-//	// without backing store
-//	if (numFramesNeeded > freeFrameList.size()) {
-//		std::cerr << "Memory allocation failed. Not enough free frames.\n";
-//		return nullptr;
-//	}
-//
-//	// Allocate frames for the process
-//	size_t frameIndex = allocateFrames(numFramesNeeded, processId);
-//	return reinterpret_cast<void*>(frameIndex);
-//}
-
-
-//void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
-//	size_t processId = process->getPID();
-//
-//	// Find frames allocated to the process and deallocate
-//	auto it = std::find_if(frameMap.begin(), frameMap.end(),
-//		[processId](const auto& entry) { return entry.second == processId; });
-//
-//	while (it != frameMap.end()) {
-//		size_t frameIndex = it->first;
-//		deallocateFrames(1, frameIndex);
-//		it = std::find_if(frameMap.begin(), frameMap.end(), [processId](const auto& entry) { return entry.second == processId;  });
-//	}
-//	process->setMemoryPtr(nullptr);
-//}
-
-
-//size_t PagingAllocator::allocateFrames(size_t numFrames, size_t processId) {
-//	int numberOfPagesAllocated = 0;
-//	int index = 0;
-//
-//	while (numberOfPagesAllocated < numFrames) {
-//		if (frameMap[index] == -1) {
-//			frameMap[index] = processId;
-//			numberOfPagesAllocated++;
-//		}
-//
-//		index++;
-//	}
-//}
-
-//void PagingAllocator::deallocateFrames(size_t numFrames, size_t frameIndex) {
-//	// Remove mapping of deallocated frames
-//	for (size_t i = 0; i < numFrames; ++i) {
-//		frameMap.erase(frameIndex + i);
-//	}
-//
-//	// Add frames to the free frame list
-//	for (size_t i = 0; numFrames; ++i) {
-//		freeFrameList.push_back(frameIndex + i);
-//	}
-//}
