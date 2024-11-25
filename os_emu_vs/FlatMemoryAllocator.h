@@ -10,21 +10,15 @@ class FlatMemoryAllocator : public IMemoryAllocator {
 public:
 	explicit FlatMemoryAllocator(size_t maximumSize);
 	virtual ~FlatMemoryAllocator();
-	static FlatMemoryAllocator* getInstance();
-	static void initialize();
-	static void destroy();
-
 
 	void* allocate(size_t size, int processId) override;
 	void deallocate(void* ptr, size_t size) override;
 	std::string visualizeMemory() override;
-	int getProcessCount() const;
-	size_t getExternalFragmentation() const;
+	size_t getExternalFragmentation() const override;
 
 private:
 	size_t maximumSize;
 	size_t allocatedSize;
-	int processCount = 0;
 
 	std::vector<char> memory;
 	std::unordered_map<size_t, bool> allocationMap;

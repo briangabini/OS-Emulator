@@ -1,10 +1,10 @@
 #include "FlatMemoryAllocator.h"
 #include "GlobalConfig.h"
+#include "MemoryManager.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-FlatMemoryAllocator* FlatMemoryAllocator::sharedInstance = nullptr;
 /* PUBLIC METHODS */
 FlatMemoryAllocator::FlatMemoryAllocator(size_t maximumSize)
 	: maximumSize(maximumSize), allocatedSize(0), memory(maximumSize, '.')
@@ -15,24 +15,6 @@ FlatMemoryAllocator::FlatMemoryAllocator(size_t maximumSize)
 FlatMemoryAllocator::~FlatMemoryAllocator()
 {
 	memory.clear();
-}
-
-void FlatMemoryAllocator::initialize()
-{
-	const int maxSize = GlobalConfig::getInstance()->getMaxOverallMemory();
-
-	if (sharedInstance == nullptr) {
-		sharedInstance = new FlatMemoryAllocator(maxSize);
-	}
-}
-
-FlatMemoryAllocator* FlatMemoryAllocator::getInstance() {
-	return sharedInstance;
-}
-
-void FlatMemoryAllocator::destroy() {
-	delete sharedInstance;
-	sharedInstance = nullptr;
 }
 
 void* FlatMemoryAllocator::allocate(size_t size, int processId)
@@ -55,10 +37,6 @@ void FlatMemoryAllocator::deallocate(void* ptr, size_t size) {
 	if (allocationMap[index]) {
 		deallocateAt(index, size);
 	}
-}
-
-int FlatMemoryAllocator::getProcessCount() const {
-	return processCount;
 }
 
 size_t FlatMemoryAllocator::getExternalFragmentation() const {
@@ -117,7 +95,10 @@ void FlatMemoryAllocator::allocateAt(size_t index, size_t size, int processId) {
 		processMap[i] = processId;
 	}
 	allocatedSize += size;
-	processCount++;
+
+	// increment processCount
+	int currentProcessCount = MemoryManager::getInstance()->getProcessCount();
+	MemoryManager::getInstance()->setProcessCount(currentProcessCount + 1);
 }
 
 // deallocate memory block by setting the allocationMap to false, and processMap to -1
@@ -128,5 +109,9 @@ void FlatMemoryAllocator::deallocateAt(size_t index, size_t size) {
 		processMap[i] = -1;
 	}
 	allocatedSize -= size;
-	processCount--;
+
+	// decrement processCount
+	int currentProcessCount = MemoryManager::getInstance()->getProcessCount();
+	MemoryManager::getInstance()->setProcessCount(currentProcessCount - 1);
+
 }

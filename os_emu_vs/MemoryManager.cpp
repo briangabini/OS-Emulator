@@ -34,3 +34,17 @@ MemoryManager::MemoryManager()
 		//memoryAllocator = std::make_shared<SegmentedMemoryAllocator>();
 	}
 }
+
+/* GETTERS AND SETTERS */ 
+std::shared_ptr<IMemoryAllocator> MemoryManager::getMemoryAllocator() const {
+	return memoryAllocator;
+}
+
+int MemoryManager::getProcessCount() const
+{
+	return processCount;
+}
+
+void MemoryManager::setProcessCount(int count) {
+	processCount = count;
+}

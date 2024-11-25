@@ -12,7 +12,9 @@ public:
 	static void destroy();
 
 	// other methods
-	std::shared_ptr<IMemoryAllocator> getMemoryAllocator() const { return memoryAllocator; }
+	std::shared_ptr<IMemoryAllocator> getMemoryAllocator() const;
+	int getProcessCount() const;
+	void setProcessCount(int count);
 
 private:
 	MemoryManager();
@@ -23,4 +25,7 @@ private:
 
 	// assign a memory allocator
 	std::shared_ptr<IMemoryAllocator> memoryAllocator;
+
+	// other info
+	int processCount = 0;
 };

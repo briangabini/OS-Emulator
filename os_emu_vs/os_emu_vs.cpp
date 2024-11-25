@@ -2,7 +2,6 @@
 #include "ConsoleManager.h"
 #include "GlobalScheduler.h"
 
-#include "FlatMemoryAllocator.h"
 #include "MemoryManager.h"
 #include <iostream>
 
@@ -34,7 +33,6 @@ int main() {
 	ConsoleManager::destroy();
 	GlobalScheduler::destroy();
 	MemoryManager::destroy();
-	FlatMemoryAllocator::destroy();
 
 	std::cout << "Exiting the program..." << '\n';
 

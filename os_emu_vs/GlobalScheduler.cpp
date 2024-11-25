@@ -9,7 +9,7 @@
 #include "Util.h"
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
-#include "FlatMemoryAllocator.h"
+#include "MemoryManager.h"
 #include "GlobalConfig.h"
 #include "os_emu_vs.h"
 #include "RRScheduler.h"
@@ -193,8 +193,8 @@ void GlobalScheduler::logToFile() const {
 }
 
 void GlobalScheduler::logMemory() const {
-	int processCount = FlatMemoryAllocator::getInstance()->getProcessCount();
-	size_t externalFragmentation = FlatMemoryAllocator::getInstance()->getExternalFragmentation();
+	int processCount = MemoryManager::getInstance()->getProcessCount();
+	size_t externalFragmentation = MemoryManager::getInstance()->getMemoryAllocator()->getExternalFragmentation();
 
 	// Open file for logging memory snapshot
 	static int quantumCycle = 0;  // Track quantum cycle number
@@ -215,7 +215,7 @@ void GlobalScheduler::logMemory() const {
 	outFile << std::format("Total external fragmentation in KB: {}\n", externalFragmentation);  // Convert bytes to KB
 
 	// Write ASCII printout of memory (assuming visualizeMemory returns a formatted string)``
-	outFile << FlatMemoryAllocator::getInstance()->visualizeMemory();
+	outFile << MemoryManager::getInstance()->getMemoryAllocator()->visualizeMemory();
 
 	outFile.close();
 }

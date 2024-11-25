@@ -144,7 +144,6 @@ namespace MainConsoleUtil {
 			GlobalConfig::getInstance()->loadConfigFromFile("config.txt");
 			GlobalScheduler::initialize();
 			MemoryManager::initialize();
-			FlatMemoryAllocator::initialize();
 		}
 		else if (command == "clear") {
 			clearScreen();
