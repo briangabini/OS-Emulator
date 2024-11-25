@@ -91,8 +91,20 @@ int GlobalConfig::generateRandomNumberOfPages() const
 
 	std::cout << "power: " << power << std::endl;
 	std::cout << "M: " << M << std::endl;
+	std::cout << "memoryPerFrame: " << memoryPerFrame << std::endl;
+	std::cout << "M / memoryPerFrame: " << M / memoryPerFrame << std::endl;
+	std::cout << "-----------------" << std::endl;
 
-	return M / memoryPerFrame; 
+	// P = M / memoryPerFrame
+	// HOTFIX: if M is less than memoryPerFrame, return 1
+	if (M < memoryPerFrame)
+	{
+		return 1;
+	}
+	else {
+		return M / memoryPerFrame; 
+	}
+
 }
 
 void GlobalConfig::loadConfigFromFile(const std::string& filename)
@@ -117,14 +129,15 @@ void GlobalConfig::loadConfigFromFile(const std::string& filename)
 	calledOnce = true;
 
 	/* FOR DEBUGGING */
-	/*std::cout << "max-overall-mem: " << maxOverallMemory << std::endl;
+	std::cout << "max-overall-mem: " << maxOverallMemory << std::endl;
 	std::cout << "mem-per-frame: " << memoryPerFrame << std::endl;
 	std::cout << "min-memory-per-process: " << minMemPerProcess << std::endl;
 	std::cout << "max-memory-per-process: " << maxMemPerProcess << std::endl;
 	std::cout << "usingFlatMemoryAllocator: " << usingFlatMemoryAllocator << std::endl;
-	int numPages = generateRandomNumberOfPages();
-	std::cout << "generatePages: " << numPages << std::endl;
-	std::this_thread::sleep_for(std::chrono::seconds(5));*/
+
+	for (size_t i = 0; i < 5; ++i) {
+		int numPages = generateRandomNumberOfPages();
+	}
 }
 
 

@@ -48,6 +48,10 @@ public:
 	void* getMemoryPtr();
 	TimePoint getMemoryAllocatedTime();
 	void setMemoryAllocatedTime(TimePoint time);
+
+	// mco2
+	void setNumberOfPages(int numberOfPages);
+	int getNumberOfPages() const;
 	
 
 private:
@@ -71,5 +75,6 @@ private:
 		int memoryRequired;
 		void* memoryPtr = nullptr;			// Used to check if the process is allocated memory
 		TimePoint memoryAllocatedTime;
+		int numberOfPages;
 	} memoryInfo;
 };

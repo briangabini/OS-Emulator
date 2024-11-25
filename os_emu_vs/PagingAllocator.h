@@ -14,15 +14,18 @@ public:
 	size_t getExternalFragmentation() const override;
 
 private:
-	size_t maximumSize;
+	size_t maximumSize;			// maxMemorySize
 	size_t allocatedSize;
 
 	std::vector<char> memory;
-	std::unordered_map<size_t, bool> allocationMap;
+	//std::unordered_map<size_t, bool> allocationMap;
 	std::unordered_map<size_t, int> processMap;
 
-	void initializeMemory() override;
-	/*bool canAllocateAt(size_t index, size_t size) const;
-	void allocateAt(size_t index, size_t size, int pId);
-	void deallocateAt(size_t index, size_t size);*/
+	size_t numFrames;
+	std::unordered_map<size_t, size_t> frameMap;
+	std::vector<size_t> freeFramesList;
+
+	// new vars and methods
+	size_t allocateFrames(size_t numFrames, size_t processId, const std::vector<size_t>& pageSizes);
+	void deallocateFrames(size_t numFrames, size_t frameIndex, const std::vector<size_t>& pageSizes);
 };

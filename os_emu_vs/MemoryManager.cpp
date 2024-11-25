@@ -1,6 +1,7 @@
 #include "MemoryManager.h"
 #include "GlobalConfig.h"
 #include "FlatMemoryAllocator.h"
+#include "PagingAllocator.h"
 
 // initialize the shared instance
 MemoryManager* MemoryManager::sharedInstance = nullptr;
@@ -31,7 +32,7 @@ MemoryManager::MemoryManager()
 		memoryAllocator = std::make_shared<FlatMemoryAllocator>(maxSize);
 	}
 	else {
-		//memoryAllocator = std::make_shared<SegmentedMemoryAllocator>();
+		memoryAllocator = std::make_shared<PagingAllocator>(maxSize);
 	}
 }
 

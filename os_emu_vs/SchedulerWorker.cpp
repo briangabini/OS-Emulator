@@ -1,6 +1,6 @@
 #include "AScheduler.h"
 #include "ConsoleManager.h"
-#include "FlatMemoryAllocator.h"
+#include "MemoryManager.h"
 #include "GlobalConfig.h"
 #include "GlobalScheduler.h"
 #include "os_emu_vs.h"
@@ -30,7 +30,14 @@ void SchedulerWorker::run() {
 			if (!scheduler->readyQueue.empty()) {
 				//std::cout << "ready queue not empty, size: " << scheduler->readyQueue.size() << std::endl;
 				process = scheduler->readyQueue.front();
-				void* allocatedMemory = FlatMemoryAllocator::getInstance()->allocate(process->getMemoryRequired(), process->getPID());
+				void* allocatedMemory = MemoryManager::getInstance()->getMemoryAllocator()->allocate(process->getMemoryRequired(), process->getPID());
+
+				if (allocatedMemory == nullptr) {
+					// try to perform backing store on the oldest process
+					// if the oldest process is not finished, then skip
+					// by skip, deallocate it 
+				}
+
 				if (allocatedMemory != nullptr) {
 					scheduler->readyQueue.pop();
 					this->update(true);
@@ -98,7 +105,7 @@ void SchedulerWorker::run() {
 				if (!process->isFinished())
 				{
 					std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
-					FlatMemoryAllocator::getInstance()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
+					MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
 					process->setMemoryPtr(nullptr);
 					scheduler->readyQueue.push(process);
 				}
@@ -107,7 +114,7 @@ void SchedulerWorker::run() {
 
 			if (process->isFinished()) {
 				std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
-				FlatMemoryAllocator::getInstance()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
+				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
 				process->setMemoryPtr(nullptr);
 				process->setState(Process::FINISHED);
 				ConsoleManager::getInstance()->unregisterScreen(process->getName());
@@ -117,7 +124,7 @@ void SchedulerWorker::run() {
 			}
 			//// Ensure memory is deallocated if the process did not finish or was preempted
 			if (process->getMemoryPtr() != nullptr) {
-				FlatMemoryAllocator::getInstance()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
+				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
 				process->setMemoryPtr(nullptr);
 			}
 

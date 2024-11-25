@@ -8,7 +8,7 @@ Process::Process(int pid, String name)
 	commandCounter(0),
 	currentState(ProcessState::READY),
 	creationTime(std::chrono::system_clock::now()),
-	memoryInfo{ GlobalConfig::getInstance()->getMemoryPerProcess(), nullptr, {} }
+	memoryInfo{ GlobalConfig::getInstance()->getMemoryPerProcess(), nullptr, {}, GlobalConfig::getInstance()->generateRandomNumberOfPages()}
 {}
 
 void Process::addCommand(ICommand::CommandType commandType)
@@ -108,4 +108,13 @@ void Process::setMemoryAllocatedTime(Process::TimePoint time)
 
 void Process::setMemoryPtr(void* ptr) {
 	memoryInfo.memoryPtr = ptr;
+}
+
+void Process::setNumberOfPages(int numberOfPages)
+{
+	memoryInfo.numberOfPages = numberOfPages;
+}
+
+int Process::getNumberOfPages() const {
+	return memoryInfo.numberOfPages;
 }
