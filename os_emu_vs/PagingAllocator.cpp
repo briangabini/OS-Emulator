@@ -118,3 +118,4 @@ void PagingAllocator::deallocateFrames(size_t frameIndex) {
 	// Add frame to the free frame list
 	freeFrameList.push_back(frameIndex);
 }
+
