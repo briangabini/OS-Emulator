@@ -144,6 +144,8 @@ namespace MainConsoleUtil {
 			GlobalConfig::getInstance()->loadConfigFromFile("config.txt");
 			GlobalScheduler::initialize();
 			MemoryManager::initialize();
+			// HOTFIX: sleep for 2 seconds
+			std::this_thread::sleep_for(std::chrono::seconds(2));
 		}
 		else if (command == "clear") {
 			clearScreen();

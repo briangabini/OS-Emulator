@@ -26,12 +26,29 @@ size_t PagingAllocator::getExternalFragmentation() const {
 
 // methods from lecture
 void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
+	std::lock_guard<std::mutex> lock(mtx); // Lock for thread safety
+
 	size_t processId = process->getPID();
 	size_t numFramesNeeded = process->getNumberOfPages();
 
-	// without backing store
+	//std::cout << "Current Free Frame List Content" << std::endl;
+	/*for (size_t i = 0; i < freeFrameList.size(); i++) {
+		std::cout << freeFrameList[i] << " ";
+	}
+	std::cout << std::endl;*/
+
+	//std::cout << "Allocating " << numFramesNeeded << " frames for Process " << processId << std::endl;
+
 	if (numFramesNeeded > freeFrameList.size()) {
-		std::cerr << "Memory allocation failed. Not enough free frames.\n";
+		//std::cerr << "Memory allocation failed. Not enough free frames.\n";
+
+		// print the free frame list contents
+		/*std::cerr << "Current Free Frame List Content: ";
+		for (size_t frame : freeFrameList) {
+			std::cerr << frame << " ";
+		}
+		std::cerr << std::endl;*/
+
 		return nullptr;
 	}
 
@@ -49,6 +66,7 @@ void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
 }
 
 void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
+	std::lock_guard<std::mutex> lock(mtx);
 	size_t processId = process->getPID();
 	std::vector<size_t> framesToDeallocate;
 
@@ -60,7 +78,7 @@ void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
 	}
 
 	if (framesToDeallocate.size() == 0) {
-		std::cerr << "Memory deallocation failed. Process not found.\n";
+		//std::cerr << "Memory deallocation failed. Process not found.\n";
 		return;
 	}
 

@@ -33,4 +33,6 @@ private:
 	// new vars and methods
 	size_t allocateFrames(size_t numFrames, size_t processId);
 	void deallocateFrames(size_t frameIndex);
+
+	mutable std::mutex mtx;
 };

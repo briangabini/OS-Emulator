@@ -10,6 +10,9 @@
 void SchedulerWorker::run() {
 	//std::cout << "SchedulerWorker #" << this->cpuCoreId << " Waiting... " << "running : " << running << std::endl;
 
+	// sleep thread for 5 seconds
+	std::this_thread::sleep_for(std::chrono::seconds(5));
+
 	while (true) {
 		std::shared_ptr<Process> process;
 
@@ -30,6 +33,9 @@ void SchedulerWorker::run() {
 			if (!scheduler->readyQueue.empty()) {
 				//std::cout << "ready queue not empty, size: " << scheduler->readyQueue.size() << std::endl;
 				process = scheduler->readyQueue.front();
+
+				//std::cout << "CPU COre ID: " << cpuCoreId << " Process Name: " << process->getName() << " Process State: " << process->getState() << std::endl;
+
 				void* allocatedMemory = MemoryManager::getInstance()->getMemoryAllocator()->allocate(process);
 
 				if (allocatedMemory != nullptr) {
@@ -38,11 +44,19 @@ void SchedulerWorker::run() {
 					scheduler->incrementActiveWorkers();
 				}
 				else {
-					break;
+					//std::cout << "CPU Core ID: " << this->cpuCoreId << " Memory allocation failed for process: " << process->getName() << std::endl;
+
+					// add to the back of the queue
+					scheduler->readyQueue.pop();
+					scheduler->readyQueue.push(process);
+
+					continue;
 				}
 
 			}
 		}
+
+	
 
 		// Process execution
 		if (process) {
@@ -70,6 +84,7 @@ void SchedulerWorker::run() {
 						// Busy waiting
 					}
 				}
+				GlobalScheduler::getInstance()->logMemory();
 			}
 			else if (algo == SchedulingAlgorithm::ROUND_ROBIN)
 			{
@@ -104,17 +119,17 @@ void SchedulerWorker::run() {
 			}
 
 
-			if (process->isFinished()) {
+			if (process->isFinished() && process->getState() != Process::FINISHED) {
 				std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
 				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process);
 				process->setState(Process::FINISHED);
-				ConsoleManager::getInstance()->unregisterScreen(process->getName());
+
+				//ConsoleManager::getInstance()->unregisterScreen(process->getName());
 
 				// do some logging
 				GlobalScheduler::getInstance()->logMemory();
-			}
-			//// Ensure memory is deallocated if the process did not finish or was preempted
-			if (process->getMemoryPtr() != nullptr) {
+			} else if (process->getMemoryPtr() != nullptr) {
+				std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
 				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process);
 			}
 

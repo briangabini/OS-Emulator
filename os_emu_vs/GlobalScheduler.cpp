@@ -167,13 +167,23 @@ void GlobalScheduler::monitorProcesses() const {
 
 	for (const auto& [name, process] : processes) {
 		if (process->getState() != Process::FINISHED) {
-			oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : " \t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\n";
+			if (process->getCreationTime() == std::chrono::system_clock::time_point() || process->getCPUCoreID() < 0) {
+				oss << name << "\t(Invalid Time)\t\tCore: (Invalid)\t(Invalid) / (Invalid)\t\tNumber of Pages: (Invalid)\n";
+			}
+			else {
+				oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : " \t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\t\tNumber of Pages: " << process->getNumberOfPages() << "\n";
+			}
 		}
 	}
 	oss << "\nFinished processes:\n";
 	for (const auto& [name, process] : processes) {
 		if (process->getState() == Process::FINISHED) {
-			oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tFinished\t" << process->getLinesOfCode() << " / " << process->getLinesOfCode() << "\n";
+			if (process->getCreationTime() == std::chrono::system_clock::time_point()) {
+				oss << name << "\t(Invalid Time)\t\tFinished\t(Invalid) / (Invalid)\n";
+			}
+			else {
+				oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tFinished\t" << process->getLinesOfCode() << " / " << process->getLinesOfCode() << "\n";
+			}
 		}
 	}
 	oss << "---------------------------------------\n";
@@ -222,8 +232,11 @@ void GlobalScheduler::logMemory() const {
 
 std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_clock>& timePoint) {
 	std::time_t timeT = std::chrono::system_clock::to_time_t(timePoint);
-	std::tm tm;
-	localtime_s(&tm, &timeT);
+	std::tm tm = {};
+	if (localtime_s(&tm, &timeT) != 0) {
+		std::cerr << "Error converting time to local time." << std::endl;
+		return "(Invalid Time)";
+	}
 	std::ostringstream oss;
 	oss << std::put_time(&tm, "(%m/%d/%Y %I:%M:%S%p)");
 	return oss.str();
