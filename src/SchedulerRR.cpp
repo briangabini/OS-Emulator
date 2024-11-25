@@ -2,10 +2,12 @@
 #include "Command.h"
 #include "Config.h"
 #include <iostream>
+#include <thread>
+#include <algorithm>
 
 SchedulerRR::SchedulerRR(int numCores, unsigned int quantum, ConsoleManager& manager)
-    : numCores(numCores), quantum(quantum), running(false), paused(false), consoleManager(manager) {
-    
+    : numCores(numCores), quantum(quantum), running(false), paused(false), consoleManager(manager), cpuCycles(0) {
+
     for (int i = 0; i < numCores; ++i) {
         Worker* worker = new Worker();
         worker->coreId = i;
@@ -22,33 +24,37 @@ SchedulerRR::~SchedulerRR() {
 
 void SchedulerRR::addProcess(Process* process) {
     {
-        std::unique_lock<std::mutex> lock(queueMutex);
-        processQueue.push(process);
-        queueCV.notify_one();
+        std::lock_guard<std::mutex> lock(queuedProcessesMutex);
+        if (queuedProcessesSet.find(process) == queuedProcessesSet.end()) {
+            queuedProcessesSet.insert(process);
+            processQueue.push(process);
+        }
     }
     {
         std::lock_guard<std::mutex> lock(allProcessesMutex);
-        allProcesses.push_back(process);
+        if (std::find(allProcesses.begin(), allProcesses.end(), process) == allProcesses.end()) {
+            allProcesses.push_back(process);
+        }
     }
 }
 
 void SchedulerRR::start() {
-    if (running) return;
-    running = true;
-    paused = false;
+    if (running.load()) return;
+    running.store(true);
+    paused.store(false);
     schedulerThread = std::thread(&SchedulerRR::schedulerLoop, this);
 }
 
 void SchedulerRR::stop() {
-    if (!running) return;
-    running = false;
-    paused = false;
-    queueCV.notify_all();
+    if (!running.load()) return;
+    running.store(false);
+    paused.store(false);
     pauseCV.notify_all();
+    processQueue.stop();
     if (schedulerThread.joinable()) {
         schedulerThread.join();
     }
-    
+
     for (Worker* worker : workers) {
         worker->cv.notify_all();
         if (worker->thread.joinable()) {
@@ -58,24 +64,22 @@ void SchedulerRR::stop() {
 }
 
 void SchedulerRR::pause() {
-    std::unique_lock<std::mutex> lock(pauseMutex);
-    if (!running || paused) return;
-    paused = true;
+    if (!running.load() || paused.load()) return;
+    paused.store(true);
 }
 
 void SchedulerRR::resume() {
-    std::unique_lock<std::mutex> lock(pauseMutex);
-    if (!running || !paused) return;
-    paused = false;
+    if (!running.load() || !paused.load()) return;
+    paused.store(false);
     pauseCV.notify_all();
 }
 
 bool SchedulerRR::isRunning() const {
-    return running;
+    return running.load();
 }
 
 bool SchedulerRR::isPaused() const {
-    return paused;
+    return paused.load();
 }
 
 void SchedulerRR::schedulerLoop() {
@@ -83,35 +87,45 @@ void SchedulerRR::schedulerLoop() {
         worker->thread = std::thread(&SchedulerRR::workerLoop, this, worker->coreId);
     }
 
-    while (running) {
-
-        // For 'scheduler-pause'
-        {
-            std::unique_lock<std::mutex> lock(pauseMutex);
-            pauseCV.wait(lock, [this]() { return !paused || !running; });
-            if (!running) break;
+    while (running.load()) {
+        // Pause handling
+        while (paused.load()) {
+            if (!running.load()) return;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            cpuCycles++;
         }
+        if (!running.load()) break;
 
-        // Check for idle workers and assign processes
-        {
-            std::unique_lock<std::mutex> lock(queueMutex);
-            for (Worker* worker : workers) {
-                std::unique_lock<std::mutex> wlock(worker->mtx);
-                if (!worker->busy && !processQueue.empty()) {
-                    Process* process = processQueue.front();
-                    processQueue.pop();
+        Process* process = nullptr;
+        if (processQueue.wait_and_pop(process)) {
+            if (!running.load()) break;
 
-                    worker->currentProcess = process;
-                    worker->busy = true;
-                    worker->remainingQuantum = quantum;
+            // Remove from queuedProcessesSet
+            {
+                std::lock_guard<std::mutex> lock(queuedProcessesMutex);
+                queuedProcessesSet.erase(process);
+            }
 
-                    worker->cv.notify_one();
+            // Assign process to an idle worker
+            bool assigned = false;
+            while (!assigned && running.load()) {
+                for (Worker* worker : workers) {
+                    std::unique_lock<std::mutex> lock(worker->mtx);
+                    if (!worker->busy.load()) {
+                        worker->currentProcess = process;
+                        worker->busy.store(true);
+                        worker->remainingQuantum = quantum;
+                        worker->cv.notify_one();
+                        assigned = true;
+                        break;
+                    }
+                }
+                if (!assigned) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    cpuCycles++;
                 }
             }
         }
-
-        // Small sleep to prevent busy-waiting
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
@@ -120,32 +134,46 @@ void SchedulerRR::workerLoop(int coreId) {
     Config& config = Config::getInstance();
     unsigned int delayPerExec = config.getDelaysPerExec();
 
-    while (running) {
-
-        // For 'scheduler-pause'
-        {
-            std::unique_lock<std::mutex> lock(pauseMutex);
-            pauseCV.wait(lock, [this]() { return !paused || !running; });
-            if (!running) break;
+    while (running.load()) {
+        // Pause handling
+        while (paused.load()) {
+            if (!running.load()) return;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            cpuCycles++;
         }
+        if (!running.load()) break;
 
         std::unique_lock<std::mutex> lock(worker->mtx);
-        if (!worker->busy) {
-            worker->cv.wait(lock, [worker, this]() { return worker->busy || !running; });
-        }
-        if (!running) break;
-        Process* process = worker->currentProcess;
-        lock.unlock();
 
-        if (process == nullptr) {
+        // Wait for a process to be assigned
+        worker->cv.wait(lock, [worker, this]() {
+            return worker->busy.load() || !running.load();
+            });
+
+        if (!running.load()) break;
+
+        if (!worker->busy.load() || worker->currentProcess == nullptr) {
+            // Spurious wakeup or process was set to nullptr
             continue;
         }
 
-        // Execute commands up to the quantum limit
+        Process* process = worker->currentProcess;
         unsigned int timeSlice = worker->remainingQuantum;
+
+        lock.unlock();
+
+        // Execute commands up to the quantum limit
         bool processCompleted = false;
 
-        while (timeSlice > 0) {
+        while (timeSlice > 0 && running.load()) {
+            // Pause handling
+            while (paused.load()) {
+                if (!running.load()) return;
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                cpuCycles++;
+            }
+            if (!running.load()) break;
+
             Command* cmd = process->getNextCommand();
             if (cmd == nullptr) {
                 process->setCompleted(true);
@@ -154,49 +182,35 @@ void SchedulerRR::workerLoop(int coreId) {
                 break;
             }
 
-            // For 'scheduler-pause'
-            {
-                std::unique_lock<std::mutex> pauseLock(pauseMutex);
-                pauseCV.wait(pauseLock, [this]() { return !paused || !running; });
-                if (!running) {
-                    delete cmd;
-                    break;
-                }
-            }
-
+            // Execute instruction
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cpuCycles++;
             cmd->execute(process, coreId);
             delete cmd;
 
             process->incrementCurrentLine();
 
-            // Busy-wait for delay-per-exec
+            // Simulate delay-per-exec
             for (unsigned int i = 0; i < delayPerExec; ++i) {
                 cpuCycles++;
             }
 
-            // Decrement time slice after instruction execution
+            // Decrement time slice
             timeSlice--;
             worker->remainingQuantum--;
-
-            // Check if the quantum has expired
-            if (timeSlice == 0) {
-                break;
-            }
         }
 
-        if (!running) break;
+        if (!running.load()) break;
 
         lock.lock();
-        worker->busy = false;
+        worker->busy.store(false);
         worker->currentProcess = nullptr;
         worker->remainingQuantum = 0;
         lock.unlock();
 
         if (!processCompleted && !process->isCompleted()) {
             // Requeue the process
-            std::unique_lock<std::mutex> qlock(queueMutex);
-            processQueue.push(process);
+            addProcess(process);
         }
     }
 }
@@ -208,8 +222,7 @@ int SchedulerRR::getTotalCores() const {
 int SchedulerRR::getBusyCores() const {
     int busyCores = 0;
     for (const Worker* worker : workers) {
-        std::lock_guard<std::mutex> lock(worker->mtx);
-        if (worker->busy) {
+        if (worker->busy.load()) {
             busyCores++;
         }
     }
@@ -219,7 +232,6 @@ int SchedulerRR::getBusyCores() const {
 std::map<Process*, int> SchedulerRR::getRunningProcesses() const {
     std::map<Process*, int> runningProcesses;
     for (const Worker* worker : workers) {
-        std::lock_guard<std::mutex> lock(worker->mtx);
         if (worker->currentProcess != nullptr) {
             runningProcesses[worker->currentProcess] = worker->coreId;
         }
@@ -229,11 +241,11 @@ std::map<Process*, int> SchedulerRR::getRunningProcesses() const {
 
 std::vector<Process*> SchedulerRR::getQueuedProcesses() const {
     std::vector<Process*> queuedProcesses;
-    std::unique_lock<std::mutex> lock(queueMutex);
-    std::queue<Process*> tempQueue = processQueue;
-    while (!tempQueue.empty()) {
-        queuedProcesses.push_back(tempQueue.front());
-        tempQueue.pop();
+    {
+        std::lock_guard<std::mutex> lock(queuedProcessesMutex);
+        for (auto process : queuedProcessesSet) {
+            queuedProcesses.push_back(process);
+        }
     }
     return queuedProcesses;
 }

@@ -51,6 +51,9 @@
     <ClInclude Include="src\SchedulerRR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ThreadSafeQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ConsoleManager.cpp">

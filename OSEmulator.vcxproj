@@ -147,6 +147,7 @@
     <ClInclude Include="src\SchedulerFCFS.h" />
     <ClInclude Include="src\SchedulerRR.h" />
     <ClInclude Include="src\Screen.h" />
+    <ClInclude Include="src\ThreadSafeQueue.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Config.cpp" />

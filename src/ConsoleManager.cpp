@@ -81,6 +81,7 @@ void ConsoleManager::cpuCycleLoop() {
             std::unique_lock<std::mutex> lock(cpuCycleMutex);
             if (!cpuCycleRunning) break;
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
         cpuCycles++;
     }
 }
@@ -252,8 +253,6 @@ void ConsoleManager::schedulerTestLoop() {
                 std::unique_lock<std::mutex> lock(testMutex);
                 if (!testing) return;
             }
-            // Small sleep to prevent busy-waiting
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
 
         // Generate a new dummy process
@@ -268,6 +267,7 @@ void ConsoleManager::schedulerTestLoop() {
         }
 
         nextProcessCycle += freq;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 

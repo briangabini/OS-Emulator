@@ -15,7 +15,7 @@ int main() {
     std::cout << "Recato Dy, John Kieffer\n";
     std::cout << "Tan, Timothy Joshua\n";
     std::cout << "Verano, Carl Matthew\n\n";
-    std::cout << "Last updated: 10-23-2024\n\n";
+    std::cout << "Last updated: 11-25-2024\n\n";
 
     ConsoleManager consoleManager;
     consoleManager.start();
