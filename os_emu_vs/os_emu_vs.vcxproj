@@ -148,6 +148,7 @@
     <ClCompile Include="MarqueeConsole.cpp" />
     <ClCompile Include="MemoryManager.cpp" />
     <ClCompile Include="os_emu_vs.cpp" />
+    <ClCompile Include="PagingAllocator.cpp" />
     <ClCompile Include="PrintCommand.cpp" />
     <ClCompile Include="Process.cpp" />
     <ClCompile Include="RRScheduler.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="MarqueeConsole.h" />
     <ClInclude Include="MemoryManager.h" />
     <ClInclude Include="os_emu_vs.h" />
+    <ClInclude Include="PagingAllocator.h" />
     <ClInclude Include="PrintCommand.h" />
     <ClInclude Include="Process.h" />
     <ClInclude Include="RRScheduler.h" />

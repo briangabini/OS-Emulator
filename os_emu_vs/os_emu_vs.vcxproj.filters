@@ -85,6 +85,9 @@
     <ClCompile Include="MemoryManager.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
+    <ClCompile Include="PagingAllocator.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ICommand.h">
@@ -148,6 +151,9 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="MemoryManager.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="PagingAllocator.h">
       <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>

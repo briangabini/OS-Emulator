@@ -1,19 +1,16 @@
 #pragma once
 #include "IMemoryAllocator.h"
-#include <map>
-#include <string>
-#include <unordered_map>
-#include <vector>
+#include "Process.h"
 
-// FlatMemoryAllocator class implementing IMemoryAllocator
-class FlatMemoryAllocator : public IMemoryAllocator {
+class PagingAllocator : public IMemoryAllocator {
 public:
-	explicit FlatMemoryAllocator(size_t maximumSize);
-	virtual ~FlatMemoryAllocator();
+	PagingAllocator(size_t maxMemorySize);
 
 	void* allocate(size_t size, int processId) override;
 	void deallocate(void* ptr, size_t size) override;
 	std::string visualizeMemory() override;
+
+	// other methods
 	size_t getExternalFragmentation() const override;
 
 private:
@@ -25,7 +22,7 @@ private:
 	std::unordered_map<size_t, int> processMap;
 
 	void initializeMemory() override;
-	bool canAllocateAt(size_t index, size_t size) const;
+	/*bool canAllocateAt(size_t index, size_t size) const;
 	void allocateAt(size_t index, size_t size, int pId);
-	void deallocateAt(size_t index, size_t size);
+	void deallocateAt(size_t index, size_t size);*/
 };
