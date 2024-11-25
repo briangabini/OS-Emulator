@@ -15,16 +15,6 @@ PagingAllocator::PagingAllocator(size_t maxMemorySize)
 	}
 }
 
-void* PagingAllocator::allocate(size_t size, int processId) {
-	// TODO: implement this
-	return nullptr;
-}
-
-void PagingAllocator::deallocate(void* ptr, size_t size) {
-	// TODO: implement
-}
-
-
 // other methods
 size_t PagingAllocator::getExternalFragmentation() const {
 	// TODO: implement
@@ -32,7 +22,7 @@ size_t PagingAllocator::getExternalFragmentation() const {
 }
 
 // methods from lecture
-void* PagingAllocator::allocate(Process* process) {
+void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
 	size_t processId = process->getPID();
 	size_t numFramesNeeded = process->getNumberOfPages();
 	// without backing store
@@ -46,7 +36,7 @@ void* PagingAllocator::allocate(Process* process) {
 	return reinterpret_cast<void*>(frameIndex);
 }
 
-void PagingAllocator::deallocate(Process* process) {
+void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
 	size_t processId = process->getPID();
 
 	// Find frames allocated to the process and deallocate

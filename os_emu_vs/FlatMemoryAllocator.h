@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "Process.h"
 
 // FlatMemoryAllocator class implementing IMemoryAllocator
 class FlatMemoryAllocator : public IMemoryAllocator {
@@ -11,8 +12,8 @@ public:
 	explicit FlatMemoryAllocator(size_t maximumSize);
 	virtual ~FlatMemoryAllocator();
 
-	void* allocate(size_t size, int processId) override;
-	void deallocate(void* ptr, size_t size) override;
+	void* allocate(std::shared_ptr<Process> process) override;
+	void deallocate(std::shared_ptr<Process> process) override;
 	std::string visualizeMemory() override;
 	size_t getExternalFragmentation() const override;
 

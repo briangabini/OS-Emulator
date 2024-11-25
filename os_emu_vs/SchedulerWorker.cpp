@@ -30,7 +30,7 @@ void SchedulerWorker::run() {
 			if (!scheduler->readyQueue.empty()) {
 				//std::cout << "ready queue not empty, size: " << scheduler->readyQueue.size() << std::endl;
 				process = scheduler->readyQueue.front();
-				void* allocatedMemory = MemoryManager::getInstance()->getMemoryAllocator()->allocate(process->getMemoryRequired(), process->getPID());
+				void* allocatedMemory = MemoryManager::getInstance()->getMemoryAllocator()->allocate(process);
 
 				if (allocatedMemory == nullptr) {
 					// try to perform backing store on the oldest process
@@ -105,7 +105,7 @@ void SchedulerWorker::run() {
 				if (!process->isFinished())
 				{
 					std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
-					MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
+					MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process);
 					process->setMemoryPtr(nullptr);
 					scheduler->readyQueue.push(process);
 				}
@@ -114,7 +114,7 @@ void SchedulerWorker::run() {
 
 			if (process->isFinished()) {
 				std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
-				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
+				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process);
 				process->setMemoryPtr(nullptr);
 				process->setState(Process::FINISHED);
 				ConsoleManager::getInstance()->unregisterScreen(process->getName());
@@ -124,7 +124,7 @@ void SchedulerWorker::run() {
 			}
 			//// Ensure memory is deallocated if the process did not finish or was preempted
 			if (process->getMemoryPtr() != nullptr) {
-				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process->getMemoryPtr(), process->getMemoryRequired());
+				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process);
 				process->setMemoryPtr(nullptr);
 			}
 

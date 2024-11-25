@@ -17,8 +17,11 @@ FlatMemoryAllocator::~FlatMemoryAllocator()
 	memory.clear();
 }
 
-void* FlatMemoryAllocator::allocate(size_t size, int processId)
+void* FlatMemoryAllocator::allocate(std::shared_ptr<Process> process)
 {
+	int size = process->getMemoryRequired();
+	int processId = process->getPID();
+
 	// Find the first available block that can accommodate the process
 	for (size_t i = 0; i < maximumSize - size + 1; ++i) {
 		if (!allocationMap[i] && canAllocateAt(i, size)) {
@@ -31,11 +34,11 @@ void* FlatMemoryAllocator::allocate(size_t size, int processId)
 	return nullptr;
 }
 
-void FlatMemoryAllocator::deallocate(void* ptr, size_t size) {
+void FlatMemoryAllocator::deallocate(std::shared_ptr<Process> process) {
 	// Find the index of the memory block to deallocate
-	size_t index = static_cast<char*>(ptr) - &memory[0];
+	size_t index = static_cast<char*>(process->getMemoryPtr()) - &memory[0];
 	if (allocationMap[index]) {
-		deallocateAt(index, size);
+		deallocateAt(index, process->getMemoryRequired());
 	}
 }
 

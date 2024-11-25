@@ -8,8 +8,12 @@ Process::Process(int pid, String name)
 	commandCounter(0),
 	currentState(ProcessState::READY),
 	creationTime(std::chrono::system_clock::now()),
-	memoryInfo{ GlobalConfig::getInstance()->getMemoryPerProcess(), nullptr, {}, GlobalConfig::getInstance()->generateRandomNumberOfPages()}
-{}
+	memoryInfo{ GlobalConfig::getInstance()->getMemoryPerProcess(), nullptr, {}, -1}
+{
+	if (!GlobalConfig::getInstance()->isUsingFlatMemoryAllocator()) {
+		memoryInfo.numberOfPages = GlobalConfig::getInstance()->generateRandomNumberOfPages();
+	}
+}
 
 void Process::addCommand(ICommand::CommandType commandType)
 {
