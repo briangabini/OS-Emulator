@@ -4,6 +4,8 @@
 
 class PagingAllocator : public IMemoryAllocator {
 public:
+	static const int UNALLOCATED_FRAME = -1;
+
 	PagingAllocator(size_t maxMemorySize);
 
 	std::string visualizeMemory() override;
@@ -20,13 +22,13 @@ private:
 
 	std::vector<char> memory;
 	//std::unordered_map<size_t, bool> allocationMap;
-	std::unordered_map<size_t, int> processMap;
+	//std::unordered_map<size_t, int> processMap;
 
 	size_t numFrames;
-	std::unordered_map<size_t, size_t> frameMap;
+	std::unordered_map<int, int> frameMap;
 	std::vector<size_t> freeFrameList;
 
 	// new vars and methods
 	size_t allocateFrames(size_t numFrames, size_t processId);
-	void deallocateFrames(size_t numFrames, size_t frameIndex);
+	void deallocateFrames(size_t frameIndex);
 };

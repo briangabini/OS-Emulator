@@ -26,6 +26,7 @@ void* FlatMemoryAllocator::allocate(std::shared_ptr<Process> process)
 	for (size_t i = 0; i < maximumSize - size + 1; ++i) {
 		if (!allocationMap[i] && canAllocateAt(i, size)) {
 			allocateAt(i, size, processId);
+			process->setMemoryPtr(&memory[i]);
 			return &memory[i];				// return the pointer to the i-th element of the memory vector
 		}
 	}
@@ -40,6 +41,9 @@ void FlatMemoryAllocator::deallocate(std::shared_ptr<Process> process) {
 	if (allocationMap[index]) {
 		deallocateAt(index, process->getMemoryRequired());
 	}
+
+
+	process->setMemoryPtr(nullptr);
 }
 
 size_t FlatMemoryAllocator::getExternalFragmentation() const {
