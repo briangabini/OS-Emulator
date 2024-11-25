@@ -3,12 +3,13 @@
 #include "Scheduler.h"
 #include "Process.h"
 #include "ConsoleManager.h"
-#include <queue>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <vector>
 #include <map>
+#include <atomic>
+#include <condition_variable>
+#include <unordered_set>
+#include "ThreadSafeQueue.h"
 
 class SchedulerFCFS : public Scheduler {
 public:
@@ -34,26 +35,23 @@ private:
     void schedulerLoop();
     void workerLoop(int coreId);
 
-    int cpuCycles = 0;
     int numCores;
     std::vector<std::thread> workerThreads;
     std::thread schedulerThread;
 
-    mutable std::mutex queueMutex;
-    std::condition_variable queueCV;
-    std::queue<Process*> processQueue;
+    ThreadSafeQueue<Process*> processQueue;
 
-    bool running;
-    bool paused;
-    mutable std::mutex pauseMutex;
+    std::atomic<bool> running;
+    std::atomic<bool> paused;
+    std::mutex pauseMutex;
     std::condition_variable pauseCV;
 
     struct Worker {
         int coreId = 0;
-        bool busy = false;
+        std::atomic<bool> busy{ false };
         Process* currentProcess = nullptr;
         std::thread thread;
-        mutable std::mutex mtx;
+        std::mutex mtx;
         std::condition_variable cv;
     };
 
@@ -63,4 +61,9 @@ private:
 
     std::vector<Process*> allProcesses;
     mutable std::mutex allProcessesMutex;
+
+    std::unordered_set<Process*> queuedProcessesSet;
+    mutable std::mutex queuedProcessesMutex;
+
+    std::atomic<unsigned int> cpuCycles;
 };
