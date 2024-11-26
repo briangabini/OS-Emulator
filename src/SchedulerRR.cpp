@@ -88,11 +88,13 @@ void SchedulerRR::schedulerLoop() {
     }
 
     while (running.load()) {
+
         // Pause handling
         while (paused.load()) {
             if (!running.load()) return;
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cpuCycles++;
+            consoleManager.getMemoryManager().incrementIdleCpuTicks();
         }
         if (!running.load()) break;
 
@@ -104,6 +106,16 @@ void SchedulerRR::schedulerLoop() {
             {
                 std::lock_guard<std::mutex> lock(queuedProcessesMutex);
                 queuedProcessesSet.erase(process);
+            }
+
+            if (!process->isInMemory()) {
+                // Process is not in memory, cannot schedule it
+                // Try to allocate memory again
+                if (!consoleManager.getMemoryManager().allocateMemory(process, process->getMemorySize())) {
+                    // Requeue the process
+                    addProcess(process);
+                    continue;
+                }
             }
 
             // Assign process to an idle worker
@@ -123,6 +135,7 @@ void SchedulerRR::schedulerLoop() {
                 if (!assigned) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     cpuCycles++;
+                    consoleManager.getMemoryManager().incrementIdleCpuTicks();
                 }
             }
         }
@@ -135,11 +148,13 @@ void SchedulerRR::workerLoop(int coreId) {
     unsigned int delayPerExec = config.getDelaysPerExec();
 
     while (running.load()) {
+
         // Pause handling
         while (paused.load()) {
             if (!running.load()) return;
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cpuCycles++;
+            consoleManager.getMemoryManager().incrementIdleCpuTicks();
         }
         if (!running.load()) break;
 
@@ -148,7 +163,7 @@ void SchedulerRR::workerLoop(int coreId) {
         // Wait for a process to be assigned
         worker->cv.wait(lock, [worker, this]() {
             return worker->busy.load() || !running.load();
-            });
+        });
 
         if (!running.load()) break;
 
@@ -161,16 +176,16 @@ void SchedulerRR::workerLoop(int coreId) {
         unsigned int timeSlice = worker->remainingQuantum;
 
         lock.unlock();
-
-        // Execute commands up to the quantum limit
         bool processCompleted = false;
 
         while (timeSlice > 0 && running.load()) {
+
             // Pause handling
             while (paused.load()) {
                 if (!running.load()) return;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 cpuCycles++;
+                consoleManager.getMemoryManager().incrementIdleCpuTicks();
             }
             if (!running.load()) break;
 
@@ -178,13 +193,19 @@ void SchedulerRR::workerLoop(int coreId) {
             if (cmd == nullptr) {
                 process->setCompleted(true);
                 process->log("Process finished execution.", coreId);
+
+                // Deallocate memory
+                consoleManager.getMemoryManager().deallocateMemory(process);
+
                 processCompleted = true;
                 break;
             }
 
-            // Execute instruction
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cpuCycles++;
+            consoleManager.getMemoryManager().incrementActiveCpuTicks();
+
+            // Execute instruction
             cmd->execute(process, coreId);
             delete cmd;
 
@@ -193,6 +214,7 @@ void SchedulerRR::workerLoop(int coreId) {
             // Simulate delay-per-exec
             for (unsigned int i = 0; i < delayPerExec; ++i) {
                 cpuCycles++;
+                consoleManager.getMemoryManager().incrementActiveCpuTicks();
             }
 
             // Decrement time slice

@@ -88,11 +88,13 @@ void SchedulerFCFS::schedulerLoop() {
     }
 
     while (running.load()) {
+
         // Pause handling
         while (paused.load()) {
             if (!running.load()) return;
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cpuCycles++;
+            consoleManager.getMemoryManager().incrementIdleCpuTicks();
         }
         if (!running.load()) break;
 
@@ -104,6 +106,16 @@ void SchedulerFCFS::schedulerLoop() {
             {
                 std::lock_guard<std::mutex> lock(queuedProcessesMutex);
                 queuedProcessesSet.erase(process);
+            }
+
+            if (!process->isInMemory()) {
+                // Process is not in memory, cannot schedule it
+                // Try to allocate memory again
+                if (!consoleManager.getMemoryManager().allocateMemory(process, process->getMemorySize())) {
+                    // Requeue the process
+                    addProcess(process);
+                    continue;
+                }
             }
 
             // Assign process to an idle worker
@@ -122,6 +134,7 @@ void SchedulerFCFS::schedulerLoop() {
                 if (!assigned) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     cpuCycles++;
+                    consoleManager.getMemoryManager().incrementIdleCpuTicks();
                 }
             }
         }
@@ -134,11 +147,13 @@ void SchedulerFCFS::workerLoop(int coreId) {
     unsigned int delayPerExec = config.getDelaysPerExec();
 
     while (running.load()) {
+
         // Pause handling
         while (paused.load()) {
             if (!running.load()) return;
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cpuCycles++;
+            consoleManager.getMemoryManager().incrementIdleCpuTicks();
         }
         if (!running.load()) break;
 
@@ -147,7 +162,7 @@ void SchedulerFCFS::workerLoop(int coreId) {
         // Wait for a process to be assigned
         worker->cv.wait(lock, [worker, this]() {
             return worker->busy.load() || !running.load();
-            });
+        });
 
         if (!running.load()) break;
 
@@ -160,20 +175,23 @@ void SchedulerFCFS::workerLoop(int coreId) {
 
         lock.unlock();
 
-        // Execute the process's commands
         Command* cmd = nullptr;
         while ((cmd = process->getNextCommand()) != nullptr && running.load()) {
+
             // Pause handling
             while (paused.load()) {
                 if (!running.load()) return;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 cpuCycles++;
+                consoleManager.getMemoryManager().incrementIdleCpuTicks();
             }
             if (!running.load()) break;
 
-            // Execute instruction
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cpuCycles++;
+            consoleManager.getMemoryManager().incrementActiveCpuTicks();
+
+            // Execute instruction
             cmd->execute(process, coreId);
             delete cmd;
 
@@ -182,6 +200,7 @@ void SchedulerFCFS::workerLoop(int coreId) {
             // Simulate delay-per-exec
             for (unsigned int i = 0; i < delayPerExec; ++i) {
                 cpuCycles++;
+                consoleManager.getMemoryManager().incrementActiveCpuTicks();
             }
         }
 
@@ -189,6 +208,9 @@ void SchedulerFCFS::workerLoop(int coreId) {
 
         process->setCompleted(true);
         process->log("Process finished execution.", coreId);
+
+        // Deallocate memory
+        consoleManager.getMemoryManager().deallocateMemory(process);
 
         lock.lock();
         worker->busy.store(false);

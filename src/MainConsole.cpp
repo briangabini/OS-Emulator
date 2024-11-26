@@ -150,6 +150,48 @@ void MainConsole::handleCommand(const std::string& input) {
             std::cout << "  screen -ls -a                  : List all processes including queued\n";
         }
     }
+    else if (command == "process-smi") {
+        MemoryManager& memoryManager = consoleManager.getMemoryManager();
+        Scheduler* scheduler = consoleManager.getScheduler();
+        if (!scheduler) {
+            std::cout << "Scheduler is not initialized.\n";
+            return;
+        }
+
+        std::cout << "-----------------------------------------------\n";
+        std::cout << "PROCESS-SMI V01.00 Driver Version: 01.00\n";
+        std::cout << "-----------------------------------------------\n";
+        double cpuUtilization = ((double)scheduler->getBusyCores() / scheduler->getTotalCores()) * 100.0;
+        std::cout << "CPU Util: " << cpuUtilization << "%\n";
+        unsigned int totalMem = memoryManager.getTotalMemory() / 1024; // Convert to MiB
+        unsigned int usedMem = memoryManager.getUsedMemory() / 1024;   // Convert to MiB
+        double memUtil = memoryManager.getMemoryUtilization();
+        std::cout << "Memory Usage: " << usedMem << " MiB / " << totalMem << " MiB\n";
+        std::cout << "Memory Util: " << memUtil << "%\n";
+        std::cout << "\n============================\n";
+        std::cout << "Running processes and memory usage:\n";
+        std::cout << "------------------------------------------------\n";
+
+        auto processesInMemory = memoryManager.getProcessesInMemory();
+        for (const auto& entry : processesInMemory) {
+            unsigned int memUsageMiB = entry.second / 1024; // Convert to MiB
+            std::cout << entry.first << " " << memUsageMiB << " MiB\n";
+        }
+        std::cout << "------------------------------------------------\n";
+    }
+    else if (command == "vmstat") {
+        MemoryManager& memoryManager = consoleManager.getMemoryManager();
+        std::cout << "Total memory: " << memoryManager.getTotalMemory() << " KB\n";
+        std::cout << "Used memory: " << memoryManager.getUsedMemory() << " KB\n";
+        std::cout << "Free memory: " << memoryManager.getFreeMemory() << " KB\n";
+        std::cout << "Idle cpu ticks: " << memoryManager.getIdleCpuTicks() << "\n";
+        std::cout << "Active cpu ticks: " << memoryManager.getActiveCpuTicks() << "\n";
+        std::cout << "Total cpu ticks: " << memoryManager.getTotalCpuTicks() << "\n";
+        if (memoryManager.isPaging()) {
+            std::cout << "Num paged in: " << memoryManager.getNumPagedIn() << "\n";
+            std::cout << "Num paged out: " << memoryManager.getNumPagedOut() << "\n";
+        }
+    }
     else if (command == "scheduler-pause") {
         consoleManager.pauseScheduler();
     }

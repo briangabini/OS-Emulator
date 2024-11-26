@@ -16,6 +16,12 @@ public:
     const std::string& getName() const;
     int getId() const;
 
+    void setMemorySize(unsigned int size);
+    unsigned int getMemorySize() const;
+
+    void setInMemory(bool inMemory);
+    bool isInMemory() const;
+
     void addCommand(Command* cmd);
     Command* getNextCommand();
 
@@ -40,6 +46,9 @@ private:
     int id;
 
     static int nextId;
+
+    unsigned int memorySize;
+    bool inMemory;
 
     std::queue<Command*> commandQueue;
     mutable std::mutex queueMutex;

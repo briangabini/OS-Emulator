@@ -10,7 +10,8 @@ int Process::nextId = 1;
 bool Process::loggingEnabled = false;
 
 Process::Process(const std::string& name)
-    : name(name), currentLine(0), totalLines(0), completed(false) {
+    : name(name), currentLine(0), totalLines(0), completed(false),
+      memorySize(0), inMemory(false) {
     creationTime = std::chrono::system_clock::now();
     id = nextId++;
 
@@ -40,6 +41,22 @@ int Process::getId() const {
 
 const std::string& Process::getName() const {
     return name;
+}
+
+void Process::setMemorySize(unsigned int size) {
+    memorySize = size;
+}
+
+unsigned int Process::getMemorySize() const {
+    return memorySize;
+}
+
+void Process::setInMemory(bool inMemory) {
+    this->inMemory = inMemory;
+}
+
+bool Process::isInMemory() const {
+    return inMemory;
 }
 
 void Process::addCommand(Command* cmd) {

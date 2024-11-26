@@ -35,6 +35,11 @@ bool ConsoleManager::initialize() {
         return false;
     }
 
+    memoryManager.initialize(
+        config.getMaxOverallMem(),
+        config.getMemPerFrame()
+    );
+
     if (config.getSchedulerType() == "fcfs") {
         scheduler = new SchedulerFCFS(config.getNumCpu(), *this);
     }
@@ -126,8 +131,25 @@ void ConsoleManager::createProcess(const std::string& name) {
     std::lock_guard<std::mutex> lock(processMutex);
     if (processes.find(name) == processes.end()) {
         Process* process = new Process(name);
-        processes[name] = process;
-        scheduler->addProcess(process);
+
+        // Set memory size for the process
+        Config& config = Config::getInstance();
+        unsigned int minMem = config.getMinMemPerProc();
+        unsigned int maxMem = config.getMaxMemPerProc();
+        unsigned int memSize = minMem + rand() % (maxMem - minMem + 1);
+        process->setMemorySize(memSize);
+
+        // Try to allocate memory for the process
+        if (memoryManager.allocateMemory(process, memSize)) {
+            processes[name] = process;
+            scheduler->addProcess(process);
+            // std::cout << "Process '" << name << "' created with " << memSize << " KB memory.\n";
+        }
+        else {
+            // Not enough memory, cannot create process
+            delete process;
+            std::cout << "Not enough memory to create process '" << name << "'.\n";
+        }
     }
     else {
         std::cout << "Process with name '" << name << "' already exists.\n";
@@ -148,6 +170,10 @@ Process* ConsoleManager::getProcess(const std::string& name) {
 
 std::map<std::string, Process*>& ConsoleManager::getProcesses() {
     return processes;
+}
+
+MemoryManager& ConsoleManager::getMemoryManager() {
+    return memoryManager;
 }
 
 Scheduler* ConsoleManager::getScheduler() {

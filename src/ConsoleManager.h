@@ -4,6 +4,7 @@
 #include "Console.h"
 #include "Process.h"
 #include "Scheduler.h"
+#include "MemoryManager.h"
 #include <map>
 #include <mutex>
 #include <string>
@@ -29,6 +30,7 @@ public:
     Process* getProcess(const std::string& name);
     std::map<std::string, Process*>& getProcesses();
 
+    MemoryManager& getMemoryManager();
     Scheduler* getScheduler();
 
     void startScheduler();
@@ -62,6 +64,7 @@ private:
     std::condition_variable cpuCycleCV;
     void cpuCycleLoop();
 
+    MemoryManager memoryManager;
     Scheduler* scheduler;
 
     // For scheduler test

@@ -80,6 +80,34 @@ bool Config::loadConfig(const std::string& filename) {
                 return false;
             }
         }
+        else if (paramName == "max-overall-mem") {
+            iss >> maxOverallMem;
+            if (maxOverallMem < 1) {
+                std::cerr << "Invalid max-overall-mem in " << filename << std::endl;
+                return false;
+            }
+        }
+        else if (paramName == "mem-per-frame") {
+            iss >> memPerFrame;
+            if (memPerFrame < 1) {
+                std::cerr << "Invalid mem-per-frame in " << filename << std::endl;
+                return false;
+            }
+        }
+        else if (paramName == "min-mem-per-proc") {
+            iss >> minMemPerProc;
+            if (minMemPerProc < 1) {
+                std::cerr << "Invalid min-mem-per-proc in " << filename << std::endl;
+                return false;
+            }
+        }
+        else if (paramName == "max-mem-per-proc") {
+            iss >> maxMemPerProc;
+            if (maxMemPerProc < minMemPerProc) {
+                std::cerr << "Invalid max-mem-per-proc in " << filename << std::endl;
+                return false;
+            }
+        }
         else {
             std::cerr << "Unknown parameter in " << filename << ": " << paramName << std::endl;
             return false;
@@ -125,4 +153,20 @@ unsigned int Config::getMaxIns() const {
 
 unsigned int Config::getDelaysPerExec() const {
     return delaysPerExec;
+}
+
+unsigned int Config::getMaxOverallMem() const {
+    return maxOverallMem;
+}
+
+unsigned int Config::getMemPerFrame() const {
+    return memPerFrame;
+}
+
+unsigned int Config::getMinMemPerProc() const {
+    return minMemPerProc;
+}
+
+unsigned int Config::getMaxMemPerProc() const {
+    return maxMemPerProc;
 }

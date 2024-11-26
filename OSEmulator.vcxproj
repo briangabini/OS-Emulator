@@ -141,6 +141,7 @@
     <ClInclude Include="src\Console.h" />
     <ClInclude Include="src\ConsoleManager.h" />
     <ClInclude Include="src\MainConsole.h" />
+    <ClInclude Include="src\MemoryManager.h" />
     <ClInclude Include="src\PrintCommand.h" />
     <ClInclude Include="src\Process.h" />
     <ClInclude Include="src\Scheduler.h" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Config.cpp" />
+    <ClCompile Include="src\MemoryManager.cpp" />
     <ClCompile Include="src\PrintCommand.cpp" />
     <ClCompile Include="src\ConsoleManager.cpp" />
     <ClCompile Include="src\MainConsole.cpp" />
