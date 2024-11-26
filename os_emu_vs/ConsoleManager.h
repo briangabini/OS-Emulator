@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <Windows.h>
+#include <mutex>
 #include "AConsole.h" // This is an abstract class for the screen
 #include "TypedefRepo.h"
 #include "BaseScreen.h"
@@ -48,6 +49,7 @@ private:
 	ConsoleTable consoleTable;
 	std::shared_ptr<AConsole> currentConsole;
 	std::shared_ptr<AConsole> previousConsole;
+	std::mutex consoleMutex;
 
 	// HANDLE consoleHandle;
 	bool running = true;

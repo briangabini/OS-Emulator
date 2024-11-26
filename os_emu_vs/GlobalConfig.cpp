@@ -62,23 +62,11 @@ int GlobalConfig::getMemoryPerFrame() const {
 	return memoryPerFrame;
 }
 
-int GlobalConfig::getMemoryPerProcess() const {
-	// if using flatmemoryallocator only use minMemPerProcess
-	return minMemPerProcess;
-}
-
-bool GlobalConfig::isUsingFlatMemoryAllocator() const {
-	return usingFlatMemoryAllocator;
-}
-
-int GlobalConfig::generateRandomNumberOfPages() const
-{
+// Add this private helper function to the GlobalConfig class
+int GlobalConfig::generateRandomPowerOf2(int minVal, int maxVal) const {
 	// Define the range of powers of 2
-	const auto minPower = static_cast<int>(std::log2(minMemPerProcess));
-	const auto maxPower = static_cast<int>(std::log2(maxMemPerProcess)); 
-
-	/*std::cout << "minPower: " << minPower << std::endl;
-	std::cout << "maxPower: " << maxPower << std::endl;*/
+	const auto minPower = static_cast<int>(std::log2(minVal));
+	const auto maxPower = static_cast<int>(std::log2(maxVal));
 
 	// Seed for the random number engine
 	std::random_device rd;
@@ -87,7 +75,16 @@ int GlobalConfig::generateRandomNumberOfPages() const
 
 	// Generate a random power of 2 within the specified range
 	const int power = dis(gen);
-	const auto M = static_cast<int>(std::pow(2, power));
+	return static_cast<int>(std::pow(2, power));
+}
+
+int GlobalConfig::getMemoryPerProcess() const {
+	// return generateRandomPowerOf2(minMemPerProcess, maxMemPerProcess);
+	return minMemPerProcess;
+}
+
+int GlobalConfig::generateRandomNumberOfPages() const {
+	const int M = generateRandomPowerOf2(minMemPerProcess, maxMemPerProcess);
 
 	/*std::cout << "power: " << power << std::endl;
 	std::cout << "M: " << M << std::endl;
@@ -95,16 +92,17 @@ int GlobalConfig::generateRandomNumberOfPages() const
 	std::cout << "M / memoryPerFrame: " << M / memoryPerFrame << std::endl;
 	std::cout << "-----------------" << std::endl;*/
 
-	// P = M / memoryPerFrame
 	// HOTFIX: if M is less than memoryPerFrame, return 1
-	if (M < memoryPerFrame)
-	{
+	if (M < memoryPerFrame) {
 		return 1;
 	}
 	else {
-		return M / memoryPerFrame; 
+		return M / memoryPerFrame;
 	}
+}
 
+bool GlobalConfig::isUsingFlatMemoryAllocator() const {
+	return usingFlatMemoryAllocator;
 }
 
 void GlobalConfig::loadConfigFromFile(const std::string& filename)

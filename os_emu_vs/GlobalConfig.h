@@ -28,7 +28,8 @@ public:
 	int getMaxOverallMemory() const;
 	int getMemoryPerFrame() const;
 	int getMemoryPerProcess() const;
-    bool isUsingFlatMemoryAllocator() const; 
+    bool isUsingFlatMemoryAllocator() const;
+    int generateRandomPowerOf2(int minVal, int maxVal) const;
     int generateRandomNumberOfPages() const;
 
 private:

@@ -1,7 +1,5 @@
 #include "ConsoleManager.h"
-
 #include <iostream>
-
 #include "MainConsole.h"
 #include "MarqueeConsole.h"
 // #include "SchedulingConsole.h"
@@ -97,6 +95,7 @@ void ConsoleManager::switchToScreen(const String& screenName)
 
 void ConsoleManager::unregisterScreen(const String& screenName)
 {
+	std::lock_guard<std::mutex> lock(consoleMutex);
 	if (this->consoleTable.contains(screenName))
 	{
 		this->consoleTable.erase(screenName);

@@ -105,7 +105,7 @@ std::string PagingAllocator::visualizeMemory() {
 		else {
 			oss << "Frame " << frameIndex << " -> Free\n";
 		}
-	} 
+	}
 	oss << "---------------------\n";
 
 	return oss.str();

@@ -56,7 +56,7 @@ void SchedulerWorker::run() {
 			}
 		}
 
-	
+
 
 		// Process execution
 		if (process) {
@@ -96,7 +96,7 @@ void SchedulerWorker::run() {
 					process->moveToNextLine();
 
 					endExecDelay = cpuCycles + execDelay;
-					while (cpuCycles % (endExecDelay + 1) != 0)						
+					while (cpuCycles % (endExecDelay + 1) != 0)
 					{
 						// Busy waiting
 					}
@@ -124,7 +124,7 @@ void SchedulerWorker::run() {
 				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process);
 				process->setState(Process::FINISHED);
 
-				//ConsoleManager::getInstance()->unregisterScreen(process->getName());
+				ConsoleManager::getInstance()->unregisterScreen(process->getName());
 
 				// do some logging
 				GlobalScheduler::getInstance()->logMemory();

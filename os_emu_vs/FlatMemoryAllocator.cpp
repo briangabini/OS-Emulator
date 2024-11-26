@@ -63,14 +63,13 @@ std::string FlatMemoryAllocator::visualizeMemory() {
 			i -= GlobalConfig::getInstance()->getMemoryPerProcess() - 1;
 			oss << i << "\n\n";
 		}
-		i--;
+		--i;
 	}
 
 	// Print lower boundary
 	oss << "----start---- = 0\n";
 
 	return oss.str();
-
 }
 
 /* PRIVATE METHODS */

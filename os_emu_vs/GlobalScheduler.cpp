@@ -158,39 +158,45 @@ void GlobalScheduler::run() {
 
 void GlobalScheduler::monitorProcesses() const {
 	std::ostringstream oss;
-	oss << "CPU utilization: " << scheduler->getCpuUtilization() << "%\n";
-	oss << "Cores used: " << scheduler->getActiveWorkersCount() << "\n";
-	oss << "Cores available: " << scheduler->workersCount - scheduler->getActiveWorkersCount() << "\n\n";
 
-	oss << "---------------------------------------\n";
-	oss << "Running processes:\n";
+		oss.str(""); // Clear the string stream
+		oss << "CPU utilization: " << scheduler->getCpuUtilization() << "%\n";
+		oss << "Cores used: " << scheduler->getActiveWorkersCount() << "\n";
+		oss << "Cores available: " << scheduler->workersCount - scheduler->getActiveWorkersCount() << "\n\n";
 
-	for (const auto& [name, process] : processes) {
-		if (process->getState() != Process::FINISHED) {
-			if (process->getCreationTime() == std::chrono::system_clock::time_point() || process->getCPUCoreID() < 0) {
-				oss << name << "\t(Invalid Time)\t\tCore: (Invalid)\t(Invalid) / (Invalid)\t\tNumber of Pages: (Invalid)\n";
-			}
-			else {
-				oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : " \t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\t\tNumber of Pages: " << process->getNumberOfPages() << "\n";
+		oss << "---------------------------------------\n";
+		oss << "Running processes:\n";
+
+
+		for (const auto& [name, process] : processes) {
+			if (process->getState() != Process::FINISHED) {
+				if (process->getCreationTime() == std::chrono::system_clock::time_point()) {
+					oss << name << "\t(Invalid Time)\t\tCore: (Invalid)\t(Invalid) / (Invalid)\t\tNumber of Pages: (Invalid)\n";
+				}
+				else {
+					oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : " \t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\t\tNumber of Pages: " << process->getNumberOfPages() << "\n";
+				}
 			}
 		}
-	}
-	oss << "\nFinished processes:\n";
-	for (const auto& [name, process] : processes) {
-		if (process->getState() == Process::FINISHED) {
-			if (process->getCreationTime() == std::chrono::system_clock::time_point()) {
-				oss << name << "\t(Invalid Time)\t\tFinished\t(Invalid) / (Invalid)\n";
-			}
-			else {
-				oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tFinished\t" << process->getLinesOfCode() << " / " << process->getLinesOfCode() << "\n";
+
+		oss << "\nFinished processes:\n";
+		for (const auto& [name, process] : processes) {
+			if (process->getState() == Process::FINISHED) {
+				if (process->getCreationTime() == std::chrono::system_clock::time_point()) {
+					oss << name << "\t(Invalid Time)\t\tFinished\t(Invalid) / (Invalid)\n";
+				}
+				else {
+					oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tFinished\t" << process->getLinesOfCode() << " / " << process->getLinesOfCode() << "\n";
+				}
 			}
 		}
-	}
-	oss << "---------------------------------------\n";
+		oss << "---------------------------------------\n";
+
 
 	lastMonitorOutput = oss.str();
 	std::cout << lastMonitorOutput;
 }
+
 
 void GlobalScheduler::logToFile() const {
 	std::ofstream logFile("report.txt", std::ofstream::trunc);
