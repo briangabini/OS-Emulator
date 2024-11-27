@@ -65,7 +65,9 @@ GlobalScheduler::~GlobalScheduler()
 void GlobalScheduler::startSchedulerTest()
 {
 	schedulerTestRunning = true;
-	processGeneratorThread = std::thread(&GlobalScheduler::generateProcesses, this);
+	//processGeneratorThread = std::thread(&GlobalScheduler::generateProcesses, this);
+	const auto newProcess = createProcess("process_", Mode::KERNEL);
+	const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, newProcess->getName());
 }
 
 void GlobalScheduler::stopSchedulerTest()

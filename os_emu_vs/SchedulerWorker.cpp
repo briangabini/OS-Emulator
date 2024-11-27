@@ -11,7 +11,7 @@ void SchedulerWorker::run() {
 	//std::cout << "SchedulerWorker #" << this->cpuCoreId << " Waiting... " << "running : " << running << std::endl;
 
 	// sleep thread for 5 seconds
-	std::this_thread::sleep_for(std::chrono::seconds(5));
+	//std::this_thread::sleep_for(std::chrono::seconds(5));
 
 	while (true) {
 		std::shared_ptr<Process> process;
@@ -36,7 +36,8 @@ void SchedulerWorker::run() {
 
 				//std::cout << "CPU COre ID: " << cpuCoreId << " Process Name: " << process->getName() << " Process State: " << process->getState() << std::endl;
 
-				void* allocatedMemory = MemoryManager::getInstance()->getMemoryAllocator()->allocate(process);
+				auto memory = MemoryManager::getInstance()->getMemoryAllocator();
+				void* allocatedMemory = memory->allocate(process);
 
 				if (allocatedMemory != nullptr) {
 					scheduler->readyQueue.pop();
@@ -47,8 +48,9 @@ void SchedulerWorker::run() {
 					//std::cout << "CPU Core ID: " << this->cpuCoreId << " Memory allocation failed for process: " << process->getName() << std::endl;
 
 					// add to the back of the queue
-					scheduler->readyQueue.pop();
-					scheduler->readyQueue.push(process);
+					//scheduler->readyQueue.pop();
+					//scheduler->readyQueue.push(process);
+					std::cout << "allocatedMemory is nullptr";
 
 					continue;
 				}

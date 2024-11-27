@@ -20,9 +20,20 @@ PagingAllocator::PagingAllocator(size_t maxMemorySize)
 }
 
 // other methods
-// TODO: implement this 
 size_t PagingAllocator::getExternalFragmentation() const {
-	return freeFrameList.size() * GlobalConfig::getInstance()->getMemoryPerFrame();
+	std::lock_guard<std::mutex> lock(mtx); // Lock for thread safety
+
+	size_t freeMemory = 0;
+	size_t memoryPerFrame = GlobalConfig::getInstance()->getMemoryPerFrame();
+
+	// Iterate through the frameMap to count the number of free frames
+	for (const auto& entry : frameMap) {
+		if (entry.second == UNALLOCATED_FRAME) {
+			freeMemory += memoryPerFrame;
+		}
+	}
+
+	return freeMemory;
 }
 
 // methods from lecture
@@ -32,13 +43,18 @@ void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
 	size_t processId = process->getPID();
 	size_t numFramesNeeded = process->getNumberOfPages();
 
+	// print pid and numFramesNeeded
+	//std::cout << "Process ID: " << processId << " Number of Frames Needed: " << numFramesNeeded << std::endl;
+	//std::cout << "Allocating " << numFramesNeeded << " frames for process " << processId << std::endl;
+
 	if (numFramesNeeded > freeFrameList.size()) {
+		std::cout << "numFramesNeeded > freeFrameList.size()";
 		return nullptr;
 	}
 
 	// Allocate frames for the process
 	size_t frameIndex = allocateFrames(numFramesNeeded, processId);
-	void* memoryPtr = reinterpret_cast<void*>(frameIndex);
+	void* memoryPtr = &frameMap[frameIndex];
 	process->setMemoryPtr(memoryPtr);
 
 	// increment processCount
@@ -69,6 +85,11 @@ void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
 		deallocateFrames(frameIndex);
 	}
 
+	// list deallocated frames
+	for (size_t frameIndex : framesToDeallocate) {
+		std::cout << "Deallocated Frame: " << frameIndex << std::endl;
+	}
+
 	process->setMemoryPtr(nullptr);
 	// decrement processCount
 	int currentProcessCount = MemoryManager::getInstance()->getProcessCount();
@@ -76,6 +97,7 @@ void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
 }
 
 std::string PagingAllocator::visualizeMemory() {
+	std::lock_guard<std::mutex> lock(mtx);
 	std::ostringstream oss;
 
 	oss << "Memory visualization:\n";
@@ -102,6 +124,11 @@ size_t PagingAllocator::allocateFrames(size_t numFrames, size_t processId) {
 		freeFrameList.pop();
 	}
 
+	// print allocated frames
+	for (size_t frameIndex : allocatedFrames) {
+		std::cout << "Allocated Frame: " << frameIndex << std::endl;
+	}
+
 	// Map allocated frames to the process ID
 	for (size_t frameIndex : allocatedFrames) {
 		frameMap[frameIndex] = processId;
@@ -118,4 +145,3 @@ void PagingAllocator::deallocateFrames(size_t frameIndex) {
 	// Add frame to the free frame list
 	freeFrameList.push(frameIndex);
 }
-
