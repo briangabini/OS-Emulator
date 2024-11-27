@@ -222,10 +222,10 @@ namespace MainConsoleUtil {
 	}
 
 	void processSmi() {
-		int cpuUtil = GlobalScheduler::getInstance()->getCpuUtilization();
+		double cpuUtil = GlobalScheduler::getInstance()->getCpuUtilization();
 		int memoryUsed = MemoryManager::getInstance()->getUsedMemory();
 		int totalMemory = MemoryManager::getInstance()->getTotalMemory();
-		int memoryUtil = MemoryManager::getInstance()->getMemoryUtilization();
+		double memoryUtil = MemoryManager::getInstance()->getMemoryUtilization();
 
 		auto processMapPtr = GlobalScheduler::getInstance()->getProcesses();
 
@@ -241,8 +241,8 @@ namespace MainConsoleUtil {
 
 		for (const auto& [key, value] : *processMapPtr) {
 			if (value->getState() == Process::RUNNING) {
-				std::cout << std::format("Process: {}", key);
-				std::cout << std::format("\t\tMemory Usage: {}KB\n", value->getMemoryRequired());
+				std::cout << std::format("{}", key);
+				std::cout << std::format("\t\t{}KB\n", value->getMemoryRequired());
 			}
 		}
 
