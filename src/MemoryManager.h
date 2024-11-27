@@ -4,6 +4,7 @@
 #include <list>
 #include <mutex>
 #include <vector>
+#include <set>
 #include "Process.h"
 
 struct MemoryBlock {
@@ -51,7 +52,8 @@ public:
     bool isPaging() const;
 
 private:
-    void compactMemory();
+    // void compactMemory();
+    void mergeAdjacentFreeBlocks();
     bool findFreeFrames(unsigned int numFramesNeeded, std::vector<int>& frameNumbers);
     void removeOldestProcess();
 
@@ -70,6 +72,8 @@ private:
     std::map<Process*, std::vector<PageTableEntry>> pageTables;
 
     std::list<Process*> memoryQueue;
+    std::set<Process*> swappedOutProcesses;
+
     unsigned int numPagedIn;
     unsigned int numPagedOut;
     unsigned int idleCpuTicks;

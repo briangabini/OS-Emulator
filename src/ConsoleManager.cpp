@@ -127,7 +127,7 @@ void ConsoleManager::switchToScreen(Process* process) {
     screen.run();
 }
 
-void ConsoleManager::createProcess(const std::string& name) {
+bool ConsoleManager::createProcess(const std::string& name) {
     std::lock_guard<std::mutex> lock(processMutex);
     if (processes.find(name) == processes.end()) {
         Process* process = new Process(name);
@@ -144,7 +144,7 @@ void ConsoleManager::createProcess(const std::string& name) {
                 << " KB) exceeds system memory ("
                 << config.getMaxOverallMem() << " KB).\n";
             delete process;
-            return;
+            return false;
         }
 
         process->setMemorySize(memSize);
@@ -154,22 +154,26 @@ void ConsoleManager::createProcess(const std::string& name) {
             if (memoryManager.allocateMemory(process, memSize)) {
                 processes[name] = process;
                 scheduler->addProcess(process);
+                return true;
             }
             else {
                 // Not enough memory, cannot create process
                 delete process;
                 std::cout << "Not enough memory to create process '" << name
                     << "' (required: " << memSize << " KB).\n";
+                return false;
             }
         }
         catch (const std::exception& e) {
             delete process;
             std::cout << "Error allocating memory for process '" << name
                 << "': " << e.what() << "\n";
+            return false;
         }
     }
     else {
         std::cout << "Process with name '" << name << "' already exists.\n";
+        return false;
     }
 }
 
@@ -300,13 +304,15 @@ void ConsoleManager::schedulerTestLoop() {
 
         // Generate a new dummy process
         std::string processName = "dummyProcess" + std::to_string(processCounter++);
-        createProcess(processName);
-
-        // Add dummy commands to the process
-        Process* process = getProcess(processName);
-        unsigned int numIns = config.getMinIns() + rand() % (config.getMaxIns() - config.getMinIns() + 1);
-        for (unsigned int j = 0; j < numIns; ++j) {
-            process->addCommand(new PrintCommand("Hello from " + processName + " Instruction " + std::to_string(j + 1)));
+        if (createProcess(processName)) {
+            Process* process = getProcess(processName);
+            unsigned int numIns = config.getMinIns() + rand() % (config.getMaxIns() - config.getMinIns() + 1);
+            for (unsigned int j = 0; j < numIns; ++j) {
+                process->addCommand(new PrintCommand("Hello from " + processName + " Instruction " + std::to_string(j + 1)));
+            }
+        }
+        else {
+            std::cout << "Failed to create process '" << processName << "'. Skipping...\n";
         }
 
         nextProcessCycle += freq;

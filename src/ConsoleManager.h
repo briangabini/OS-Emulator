@@ -26,7 +26,7 @@ public:
     void switchToMainConsole();
     void switchToScreen(Process* process);
 
-    void createProcess(const std::string& name);
+    bool createProcess(const std::string& name);
     Process* getProcess(const std::string& name);
     std::map<std::string, Process*>& getProcesses();
 

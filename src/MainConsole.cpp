@@ -227,7 +227,7 @@ void MainConsole::displayProcessSmi() {
     std::cout << "| CPU Usage    : " << std::right << std::setw(9) << std::fixed << std::setprecision(1)
         << cpuUtilization << "%" << std::string(19, ' ') << "|\n";
     std::cout << "| Memory       : " << std::right << std::setw(10) << usedMemStr.str() << " / "
-        << std::left << std::setw(7) << totalMemStr.str() << std::string(9, ' ') << "|\n";
+        << std::left << std::setw(10) << totalMemStr.str() << std::string(6, ' ') << "|\n";
     std::cout << "| Memory Usage : " << std::right << std::setw(9) << std::fixed << std::setprecision(1)
         << memUtil << "%" << std::string(19, ' ') << "|\n";
 
