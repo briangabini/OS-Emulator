@@ -1,5 +1,7 @@
 #pragma once
 #include <mutex>
+#include <queue>
+#include <unordered_map>
 #include "IMemoryAllocator.h"
 #include "Process.h"
 
@@ -21,13 +23,13 @@ private:
 	size_t maximumSize;			// maxMemorySize
 	size_t allocatedSize;
 
-	std::vector<char> memory;
+	//std::vector<char> memory;
 	//std::unordered_map<size_t, bool> allocationMap;
 	//std::unordered_map<size_t, int> processMap;
 
 	size_t numFrames;
 	std::unordered_map<int, int> frameMap;
-	std::vector<size_t> freeFrameList;
+	std::queue<size_t> freeFrameList;
 	std::mutex allocatorMutex;
 
 	// new vars and methods

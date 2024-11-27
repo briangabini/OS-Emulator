@@ -7,19 +7,20 @@
 #include "MemoryManager.h"
 
 PagingAllocator::PagingAllocator(size_t maxMemorySize)
-	: maximumSize(maxMemorySize) 
+	: maximumSize(maxMemorySize)
 {
 	numFrames = maxMemorySize / GlobalConfig::getInstance()->getMemoryPerFrame();
 
 	for (size_t i = 0; i < numFrames; ++i) {
-		freeFrameList.push_back(i);
+		freeFrameList.push(i);
 
 		// initialize the unordered map with frames
-		frameMap[i] = -1;
+		frameMap[i] = UNALLOCATED_FRAME;
 	}
 }
 
 // other methods
+// TODO: implement this 
 size_t PagingAllocator::getExternalFragmentation() const {
 	return freeFrameList.size() * GlobalConfig::getInstance()->getMemoryPerFrame();
 }
@@ -31,24 +32,7 @@ void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
 	size_t processId = process->getPID();
 	size_t numFramesNeeded = process->getNumberOfPages();
 
-	//std::cout << "Current Free Frame List Content" << std::endl;
-	/*for (size_t i = 0; i < freeFrameList.size(); i++) {
-		std::cout << freeFrameList[i] << " ";
-	}
-	std::cout << std::endl;*/
-
-	//std::cout << "Allocating " << numFramesNeeded << " frames for Process " << processId << std::endl;
-
 	if (numFramesNeeded > freeFrameList.size()) {
-		//std::cerr << "Memory allocation failed. Not enough free frames.\n";
-
-		// print the free frame list contents
-		/*std::cerr << "Current Free Frame List Content: ";
-		for (size_t frame : freeFrameList) {
-			std::cerr << frame << " ";
-		}
-		std::cerr << std::endl;*/
-
 		return nullptr;
 	}
 
@@ -56,7 +40,6 @@ void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
 	size_t frameIndex = allocateFrames(numFramesNeeded, processId);
 	void* memoryPtr = reinterpret_cast<void*>(frameIndex);
 	process->setMemoryPtr(memoryPtr);
-
 
 	// increment processCount
 	int currentProcessCount = MemoryManager::getInstance()->getProcessCount();
@@ -78,7 +61,6 @@ void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
 	}
 
 	if (framesToDeallocate.size() == 0) {
-		//std::cerr << "Memory deallocation failed. Process not found.\n";
 		return;
 	}
 
@@ -90,7 +72,7 @@ void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
 	process->setMemoryPtr(nullptr);
 	// decrement processCount
 	int currentProcessCount = MemoryManager::getInstance()->getProcessCount();
-	MemoryManager::getInstance()->setProcessCount(currentProcessCount + 1);
+	MemoryManager::getInstance()->setProcessCount(currentProcessCount - 1);
 }
 
 std::string PagingAllocator::visualizeMemory() {
@@ -99,7 +81,7 @@ std::string PagingAllocator::visualizeMemory() {
 	oss << "Memory visualization:\n";
 	for (size_t frameIndex = 0; frameIndex < numFrames; ++frameIndex) {
 		auto it = frameMap.find(frameIndex);
-		if (it != frameMap.end() && it->second != -1) {
+		if (it != frameMap.end() && it->second != UNALLOCATED_FRAME) {
 			oss << "Frame " << frameIndex << " -> Process " << it->second << "\n";
 		}
 		else {
@@ -116,8 +98,8 @@ size_t PagingAllocator::allocateFrames(size_t numFrames, size_t processId) {
 
 	// Collect the required number of frames from the freeFrameList
 	for (size_t i = 0; i < numFrames; ++i) {
-		allocatedFrames.push_back(freeFrameList.back());
-		freeFrameList.pop_back();
+		allocatedFrames.push_back(freeFrameList.front());
+		freeFrameList.pop();
 	}
 
 	// Map allocated frames to the process ID
@@ -130,10 +112,10 @@ size_t PagingAllocator::allocateFrames(size_t numFrames, size_t processId) {
 }
 
 void PagingAllocator::deallocateFrames(size_t frameIndex) {
-	// Set frame to -1 to "deallocate"
-	frameMap[frameIndex] = -1;
+	// Set frame to UNALLOCATED_FRAME to "deallocate"
+	frameMap[frameIndex] = UNALLOCATED_FRAME;
 
 	// Add frame to the free frame list
-	freeFrameList.push_back(frameIndex);
+	freeFrameList.push(frameIndex);
 }
 
