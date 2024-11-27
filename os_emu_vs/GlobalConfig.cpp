@@ -68,6 +68,10 @@ int GlobalConfig::generateRandomPowerOf2(int minVal, int maxVal) const {
 	const auto minPower = static_cast<int>(std::log2(minVal));
 	const auto maxPower = static_cast<int>(std::log2(maxVal));
 
+	if (minVal == maxVal) {
+		return static_cast<int>(std::pow(2, minPower));
+	}
+
 	// Seed for the random number engine
 	std::random_device rd;
 	std::mt19937 gen(rd());
