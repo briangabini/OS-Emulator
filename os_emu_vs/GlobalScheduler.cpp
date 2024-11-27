@@ -33,16 +33,6 @@ void GlobalScheduler::initialize()
 {
 	SchedulingAlgorithm algo = GlobalConfig::getInstance()->getScheduler();
 
-	/*if (algo == SchedulingAlgorithm::ROUND_ROBIN)
-	{
-		std::cout << "Round Robin Scheduler\n";
-	}
-	else if (algo == SchedulingAlgorithm::FCFS)
-	{
-		std::cout << "FCFS Scheduler\n";
-	}*/
-
-
 	if (sharedInstance == nullptr) {
 		sharedInstance = new GlobalScheduler(algo);
 	}
@@ -66,8 +56,6 @@ void GlobalScheduler::startSchedulerTest()
 {
 	schedulerTestRunning = true;
 	processGeneratorThread = std::thread(&GlobalScheduler::generateProcesses, this);
-	//const auto newProcess = createProcess("process_", Mode::KERNEL);
-	//const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, newProcess->getName());
 }
 
 void GlobalScheduler::stopSchedulerTest()

@@ -1,6 +1,7 @@
 #pragma once
 #include "IMemoryAllocator.h"
 #include <iostream>
+#include <string>
 
 class MemoryManager
 {
@@ -27,6 +28,8 @@ public:
 	void setFreeMemory(int freeMemory);
 	void setNumPagedIn(int numPagedIn);
 	void setNumPagedOut(int numPagedOut);
+
+	std::string getMemoryUtilization();
 
 private:
 	MemoryManager();

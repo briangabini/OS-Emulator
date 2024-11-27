@@ -1,4 +1,5 @@
 #include "MemoryManager.h"
+#include <string>
 #include "GlobalConfig.h"
 #include "FlatMemoryAllocator.h"
 #include "PagingAllocator.h"
@@ -82,4 +83,13 @@ void MemoryManager::setNumPagedIn(int numPagedIn) {
 
 void MemoryManager::setNumPagedOut(int numPagedOut) {
 	additionalMemoryInfo.numPagedOut = numPagedOut;
+}
+
+std::string MemoryManager::getMemoryUtilization() {
+	// usedMemory / totalMemory * 100
+	int usedMemory = getUsedMemory();
+	int totalMemory = getTotalMemory();
+	double utilization = (double)usedMemory / totalMemory * 100;
+
+	return std::to_string(utilization);
 }
