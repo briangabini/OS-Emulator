@@ -282,3 +282,10 @@ int GlobalScheduler::getActiveCpuCycles() const {
 	return activeCpuCycles.load();
 }
 
+double GlobalScheduler::getCpuUtilization() const {
+	return scheduler->getCpuUtilization();
+}
+
+const std::map<String, std::shared_ptr<Process>, GlobalScheduler::CompareByProcessNumber>* GlobalScheduler::getProcesses() const {
+	return &processes;
+}

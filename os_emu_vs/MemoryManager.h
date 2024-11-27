@@ -29,7 +29,7 @@ public:
 	void setNumPagedIn(int numPagedIn);
 	void setNumPagedOut(int numPagedOut);
 
-	std::string getMemoryUtilization();
+	double getMemoryUtilization();
 
 private:
 	MemoryManager();

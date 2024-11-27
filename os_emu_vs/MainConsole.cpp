@@ -1,20 +1,19 @@
-
-#include "BaseScreen.h"
-#include "ConsoleManager.h"
-#include "GlobalConfig.h"
-#include "GlobalScheduler.h"
-#include "MemoryManager.h"
 #include "MainConsole.h"
-#include "TypedefRepo.h"
 #include <array>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-
 #include "FlatMemoryAllocator.h"
 #include "os_emu_vs.h"
+#include "BaseScreen.h"
+#include "ConsoleManager.h"
+#include "GlobalConfig.h"
+#include "GlobalScheduler.h"
+#include "MemoryManager.h"
+#include "TypedefRepo.h"
+#include "Process.h"
+
 
 #define windows
 
@@ -28,7 +27,7 @@ namespace {
 		" \\______|_______/     \\______/  | _|      |_______|_______/        |__|     \n"
 		"                                                                            \n";
 
-	inline constexpr int commandsCount = 9;
+	inline constexpr int commandsCount = 10;
 
 	inline constexpr std::array<std::string_view, commandsCount> commands = {
 		"initialize",
@@ -38,7 +37,7 @@ namespace {
 		"report-util",
 		"clear",
 		"exit",
-		//"process-smi,
+		"process-smi",
 		"vmstat",
 		"marquee"
 	};
@@ -65,6 +64,7 @@ namespace MainConsoleUtil {
 	void displayVmstat();
 	void onEvent(const std::string_view command);
 	void getUserInput(std::string& userInput);
+	void processSmi();
 
 
 	// Helper function to split command into tokens
@@ -155,8 +155,8 @@ namespace MainConsoleUtil {
 		else if (command == "clear") {
 			clearScreen();
 		}
-		else if (command == "nvidia-smi") {
-			//printNvidiaSmiOutput();
+		else if (command == "process-smi") {
+			processSmi();
 		}
 		else if (command == "marquee")
 		{
@@ -219,6 +219,34 @@ namespace MainConsoleUtil {
 		std::cout << std::format("{} num paged in\n", numPagedIn);
 		std::cout << std::format("{} num paged out\n", numPagedOut);
 		std::cout << "-------------------------------\n";
+	}
+
+	void processSmi() {
+		int cpuUtil = GlobalScheduler::getInstance()->getCpuUtilization();
+		int memoryUsed = MemoryManager::getInstance()->getUsedMemory();
+		int totalMemory = MemoryManager::getInstance()->getTotalMemory();
+		int memoryUtil = MemoryManager::getInstance()->getMemoryUtilization();
+
+		auto processMapPtr = GlobalScheduler::getInstance()->getProcesses();
+
+		std::cout << "---------------------------------------------\n";
+		std::cout << "| PROCESS-SMI V01.00 Driver Version: 01.00 |\n";
+		std::cout << "---------------------------------------------\n";
+		std::cout << std::format("CPU-Util: {}%\n", cpuUtil);
+		std::cout << std::format("Memory Usage: {}KB / {}KB\n", memoryUsed, totalMemory);
+		std::cout << std::format("Memory Util: {}%\n", memoryUtil);
+		std::cout << "\n=============================================\n";
+		std::cout << "Running processes and memory usage:\n";
+		std::cout << "---------------------------------------------\n";
+
+		for (const auto& [key, value] : *processMapPtr) {
+			if (value->getState() == Process::RUNNING) {
+				std::cout << std::format("Process: {}", key);
+				std::cout << std::format("\t\tMemory Usage: {}KB\n", value->getMemoryRequired());
+			}
+		}
+
+		std::cout << "---------------------------------------------\n";
 	}
 }
 

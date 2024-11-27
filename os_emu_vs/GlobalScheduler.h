@@ -16,6 +16,8 @@ enum class Mode {
 
 class GlobalScheduler : public IETThread {
 public:
+	struct CompareByProcessNumber;
+
 	static GlobalScheduler* getInstance();
 	static void initialize();
 	static void destroy();
@@ -43,6 +45,9 @@ public:
 	void startActiveCpuThread();
 	void stopActiveCpuThread();
 	int getActiveCpuCycles() const;
+
+	double getCpuUtilization() const;
+	const std::map<String, std::shared_ptr<Process>, CompareByProcessNumber>* getProcesses() const;
 
 private:
 	GlobalScheduler(SchedulingAlgorithm algo);

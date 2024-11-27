@@ -85,11 +85,11 @@ void MemoryManager::setNumPagedOut(int numPagedOut) {
 	additionalMemoryInfo.numPagedOut = numPagedOut;
 }
 
-std::string MemoryManager::getMemoryUtilization() {
+double MemoryManager::getMemoryUtilization() {
 	// usedMemory / totalMemory * 100
 	int usedMemory = getUsedMemory();
 	int totalMemory = getTotalMemory();
 	double utilization = (double)usedMemory / totalMemory * 100;
 
-	return std::to_string(utilization);
+	return utilization;
 }

@@ -76,6 +76,7 @@ void SchedulerWorker::run() {
 			if (algo == SchedulingAlgorithm::FCFS)
 			{
 				while (!process->isFinished() && running) {
+					process->setState(Process::RUNNING);
 					process->executeCurrentCommand();
 					process->moveToNextLine();
 
@@ -93,6 +94,7 @@ void SchedulerWorker::run() {
 
 				while (!process->isFinished() && running)
 				{
+					process->setState(Process::RUNNING);
 					process->executeCurrentCommand();
 					process->moveToNextLine();
 
@@ -114,6 +116,7 @@ void SchedulerWorker::run() {
 				if (!process->isFinished())
 				{
 					std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
+					process->setState(Process::READY);
 					MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process);
 					scheduler->readyQueue.push(process);
 				}
