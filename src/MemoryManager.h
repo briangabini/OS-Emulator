@@ -30,7 +30,7 @@ public:
     void incrementIdleCpuTicks();
     void incrementActiveCpuTicks();
 
-    std::vector<std::pair<std::string, unsigned int>> getProcessesInMemory() const;
+    std::vector<std::pair<Process*, unsigned int>> getProcessesInMemory() const;
 
     bool isProcessInMemory(Process* process) const;
     bool isPaging() const;

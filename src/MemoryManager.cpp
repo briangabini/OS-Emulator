@@ -1,6 +1,7 @@
 #include "MemoryManager.h"
 #include "Config.h"
 #include <algorithm>
+#include <climits>
 
 MemoryManager::MemoryManager()
     : maxMemory(0), memPerFrame(0), totalFrames(0),
@@ -130,7 +131,12 @@ unsigned int MemoryManager::getUsedMemory() const {
         return usedMemory;
     }
     else {
-        return processPageMap.size() * memPerFrame;
+        // Cast to larger type before multiplication to prevent overflow
+        unsigned long long totalUsed = static_cast<unsigned long long>(processPageMap.size()) * memPerFrame;
+        if (totalUsed > UINT_MAX) {
+            return UINT_MAX;  // Return maximum possible value if overflow would occur
+        }
+        return static_cast<unsigned int>(totalUsed);
     }
 }
 
@@ -174,18 +180,18 @@ void MemoryManager::incrementActiveCpuTicks() {
     totalCpuTicks++;
 }
 
-std::vector<std::pair<std::string, unsigned int>> MemoryManager::getProcessesInMemory() const {
+std::vector<std::pair<Process*, unsigned int>> MemoryManager::getProcessesInMemory() const {
     std::lock_guard<std::mutex> lock(memoryMutex);
-    std::vector<std::pair<std::string, unsigned int>> processes;
+    std::vector<std::pair<Process*, unsigned int>> processes;
 
     if (flatMemory) {
         for (const auto& entry : processMemoryMap) {
-            processes.emplace_back(entry.first->getName(), entry.second);
+            processes.emplace_back(entry.first, entry.second);
         }
     }
     else {
         for (const auto& entry : processPageMap) {
-            processes.emplace_back(entry.first->getName(), entry.second * memPerFrame);
+            processes.emplace_back(entry.first, entry.second * memPerFrame);
         }
     }
 

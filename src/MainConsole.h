@@ -16,6 +16,8 @@ public:
 private:
     void handleCommand(const std::string& input);
 
+    void displayProcessSmi();
+    void displayVmStat();
     void displayRunningProcesses(const std::vector<Process*>& runningProcesses, const std::map<Process*, int>& runningProcessesMap);
     void displayFinishedProcesses(const std::vector<Process*>& finishedProcesses);
     void displayQueuedProcesses(const std::vector<Process*>& queuedProcesses);
