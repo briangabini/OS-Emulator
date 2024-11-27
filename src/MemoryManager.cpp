@@ -1,127 +1,217 @@
 #include "MemoryManager.h"
-#include "Config.h"
 #include <algorithm>
-#include <climits>
 
 MemoryManager::MemoryManager()
-    : maxMemory(0), memPerFrame(0), totalFrames(0),
-    flatMemory(true), usedMemory(0),
-    numPagedIn(0), numPagedOut(0),
-    idleCpuTicks(0), activeCpuTicks(0), totalCpuTicks(0) {
-}
+    : maxMemory(0), memPerFrame(0), totalFrames(0), flatMemory(true),
+    usedMemory(0), numPagedIn(0), numPagedOut(0),
+    idleCpuTicks(0), activeCpuTicks(0), totalCpuTicks(0) {}
 
-MemoryManager::~MemoryManager() {
-}
+MemoryManager::~MemoryManager() {}
 
 void MemoryManager::initialize(unsigned int maxMem, unsigned int memPerFrame) {
+    std::lock_guard<std::mutex> lock(memoryMutex);
+
     maxMemory = maxMem;
     this->memPerFrame = memPerFrame;
     totalFrames = maxMemory / memPerFrame;
     flatMemory = (maxMemory == memPerFrame);
+
+    if (flatMemory) {
+        // Initialize single block of free memory
+        memoryBlocks.clear();
+        memoryBlocks.push_back({ 0, maxMemory, nullptr });
+    }
+    else {
+        // Initialize frames for paging
+        frames.resize(totalFrames);
+        for (auto& frame : frames) {
+            frame.allocated = false;
+            frame.owner = nullptr;
+            frame.pageNumber = -1;
+        }
+    }
+}
+
+void MemoryManager::compactMemory() {
+    if (!flatMemory) return;
+
+    std::vector<MemoryBlock> newBlocks;
+    size_t currentOffset = 0;
+
+    // Move all allocated blocks to the front
+    for (const auto& block : memoryBlocks) {
+        if (block.process != nullptr) {
+            newBlocks.push_back({ currentOffset, block.size, block.process });
+            currentOffset += block.size;
+        }
+    }
+
+    // Add remaining space as a single free block
+    if (currentOffset < maxMemory) {
+        newBlocks.push_back({ currentOffset, maxMemory - currentOffset, nullptr });
+    }
+
+    memoryBlocks = std::move(newBlocks);
+}
+
+bool MemoryManager::findFreeFrames(unsigned int numFramesNeeded, std::vector<int>& frameNumbers) {
+    frameNumbers.clear();
+    for (size_t i = 0; i < frames.size() && frameNumbers.size() < numFramesNeeded; ++i) {
+        if (!frames[i].allocated) {
+            frameNumbers.push_back(i);
+        }
+    }
+    return frameNumbers.size() == numFramesNeeded;
+}
+
+void MemoryManager::removeOldestProcess() {
+    if (memoryQueue.empty()) return;
+
+    Process* oldestProcess = memoryQueue.front();
+    memoryQueue.pop_front();
+
+    if (flatMemory) {
+        for (auto& block : memoryBlocks) {
+            if (block.process == oldestProcess) {
+                block.process = nullptr;
+                usedMemory -= block.size;
+            }
+        }
+        compactMemory();
+    }
+    else {
+        auto it = pageTables.find(oldestProcess);
+        if (it != pageTables.end()) {
+            for (const auto& entry : it->second) {
+                if (entry.present) {
+                    frames[entry.frameNumber].allocated = false;
+                    frames[entry.frameNumber].owner = nullptr;
+                    frames[entry.frameNumber].pageNumber = -1;
+                    numPagedOut++;
+                }
+            }
+            pageTables.erase(it);
+        }
+    }
+
+    oldestProcess->setInMemory(false);
 }
 
 bool MemoryManager::allocateMemory(Process* process, unsigned int size) {
     std::lock_guard<std::mutex> lock(memoryMutex);
 
+    if (size > maxMemory) {
+        return false;
+    }
+
     if (flatMemory) {
-        // Flat memory allocation
-        if (usedMemory + size <= maxMemory) {
-            usedMemory += size;
-            processMemoryMap[process] = size;
-            memoryQueue.push_back(process);
-            process->setInMemory(true);
-            return true;
-        }
-        else {
-            // Need to swap out oldest processes until there's enough memory
-            while (usedMemory + size > maxMemory && !memoryQueue.empty()) {
-                Process* oldestProcess = memoryQueue.front();
-                memoryQueue.pop_front();
-                unsigned int freedSize = processMemoryMap[oldestProcess];
-                usedMemory -= freedSize;
-                processMemoryMap.erase(oldestProcess);
-                oldestProcess->setInMemory(false);
-
-                // Note: In a real system, we'd write the process's state to backing store here
-            }
-
-            if (usedMemory + size <= maxMemory) {
+        // First, try to find a suitable free block
+        for (auto& block : memoryBlocks) {
+            if (block.process == nullptr && block.size >= size) {
+                // Split block if it's larger than needed
+                if (block.size > size) {
+                    memoryBlocks.push_back({
+                        block.offset + size,
+                        block.size - size,
+                        nullptr
+                        });
+                }
+                block.size = size;
+                block.process = process;
                 usedMemory += size;
-                processMemoryMap[process] = size;
                 memoryQueue.push_back(process);
                 process->setInMemory(true);
                 return true;
             }
-            else {
-                // Not enough memory even after swapping out
-                return false;
+        }
+
+        // If no suitable block found, try to free up space
+        while (getFreeMemory() < size && !memoryQueue.empty()) {
+            removeOldestProcess();
+            compactMemory();
+        }
+
+        // Try allocation again
+        if (getFreeMemory() >= size) {
+            for (auto& block : memoryBlocks) {
+                if (block.process == nullptr && block.size >= size) {
+                    if (block.size > size) {
+                        memoryBlocks.push_back({
+                            block.offset + size,
+                            block.size - size,
+                            nullptr
+                            });
+                    }
+                    block.size = size;
+                    block.process = process;
+                    usedMemory += size;
+                    memoryQueue.push_back(process);
+                    process->setInMemory(true);
+                    return true;
+                }
             }
         }
     }
     else {
         // Paging allocation
         unsigned int numPages = (size + memPerFrame - 1) / memPerFrame;
+        std::vector<int> freeFrames;
 
-        if (processPageMap.size() + numPages <= totalFrames) {
-            processPageMap[process] = numPages;
+        while (!findFreeFrames(numPages, freeFrames) && !memoryQueue.empty()) {
+            removeOldestProcess();
+        }
+
+        if (findFreeFrames(numPages, freeFrames)) {
+            std::vector<PageTableEntry> pageTable(numPages);
+            for (size_t i = 0; i < numPages; ++i) {
+                int frameNum = freeFrames[i];
+                frames[frameNum].allocated = true;
+                frames[frameNum].owner = process;
+                frames[frameNum].pageNumber = i;
+
+                pageTable[i].frameNumber = frameNum;
+                pageTable[i].present = true;
+                numPagedIn++;
+            }
+
+            pageTables[process] = std::move(pageTable);
             memoryQueue.push_back(process);
             process->setInMemory(true);
-            numPagedIn += numPages;
             return true;
         }
-        else {
-            // Need to swap out oldest processes
-            while (processPageMap.size() + numPages > totalFrames && !memoryQueue.empty()) {
-                Process* oldestProcess = memoryQueue.front();
-                memoryQueue.pop_front();
-                unsigned int pagesFreed = processPageMap[oldestProcess];
-                processPageMap.erase(oldestProcess);
-                oldestProcess->setInMemory(false);
-                numPagedOut += pagesFreed;
-            }
-
-            if (processPageMap.size() + numPages <= totalFrames) {
-                processPageMap[process] = numPages;
-                memoryQueue.push_back(process);
-                process->setInMemory(true);
-                numPagedIn += numPages;
-                return true;
-            }
-            else {
-                // Not enough frames even after swapping out
-                return false;
-            }
-        }
     }
+
+    return false;
 }
 
 void MemoryManager::deallocateMemory(Process* process) {
     std::lock_guard<std::mutex> lock(memoryMutex);
 
     if (flatMemory) {
-        auto it = processMemoryMap.find(process);
-        if (it != processMemoryMap.end()) {
-            usedMemory -= it->second;
-            processMemoryMap.erase(it);
+        for (auto& block : memoryBlocks) {
+            if (block.process == process) {
+                usedMemory -= block.size;
+                block.process = nullptr;
+            }
         }
-
-        memoryQueue.remove(process);
+        compactMemory();
     }
     else {
-        auto it = processPageMap.find(process);
-        if (it != processPageMap.end()) {
-            numPagedOut += it->second;
-            processPageMap.erase(it);
+        auto it = pageTables.find(process);
+        if (it != pageTables.end()) {
+            for (const auto& entry : it->second) {
+                if (entry.present) {
+                    frames[entry.frameNumber].allocated = false;
+                    frames[entry.frameNumber].owner = nullptr;
+                    frames[entry.frameNumber].pageNumber = -1;
+                }
+            }
+            pageTables.erase(it);
         }
-
-        memoryQueue.remove(process);
     }
 
+    memoryQueue.remove(process);
     process->setInMemory(false);
-}
-
-unsigned int MemoryManager::getTotalMemory() const {
-    return maxMemory;
 }
 
 unsigned int MemoryManager::getUsedMemory() const {
@@ -131,13 +221,18 @@ unsigned int MemoryManager::getUsedMemory() const {
         return usedMemory;
     }
     else {
-        // Cast to larger type before multiplication to prevent overflow
-        unsigned long long totalUsed = static_cast<unsigned long long>(processPageMap.size()) * memPerFrame;
-        if (totalUsed > UINT_MAX) {
-            return UINT_MAX;  // Return maximum possible value if overflow would occur
+        unsigned int usedFrames = 0;
+        for (const auto& frame : frames) {
+            if (frame.allocated) {
+                usedFrames++;
+            }
         }
-        return static_cast<unsigned int>(totalUsed);
+        return usedFrames * memPerFrame;
     }
+}
+
+unsigned int MemoryManager::getTotalMemory() const {
+    return maxMemory;
 }
 
 unsigned int MemoryManager::getFreeMemory() const {
@@ -145,7 +240,44 @@ unsigned int MemoryManager::getFreeMemory() const {
 }
 
 double MemoryManager::getMemoryUtilization() const {
-    return ((double)getUsedMemory() / getTotalMemory()) * 100.0;
+    return (static_cast<double>(getUsedMemory()) / getTotalMemory()) * 100.0;
+}
+
+std::vector<std::pair<Process*, unsigned int>> MemoryManager::getProcessesInMemory() const {
+    std::lock_guard<std::mutex> lock(memoryMutex);
+    std::vector<std::pair<Process*, unsigned int>> result;
+
+    if (flatMemory) {
+        std::map<Process*, unsigned int> processMemory;
+        for (const auto& block : memoryBlocks) {
+            if (block.process != nullptr) {
+                processMemory[block.process] += block.size;
+            }
+        }
+        for (const auto& pair : processMemory) {
+            result.emplace_back(pair.first, pair.second);
+        }
+    }
+    else {
+        for (const auto& pair : pageTables) {
+            unsigned int numPages = 0;
+            for (const auto& entry : pair.second) {
+                if (entry.present) numPages++;
+            }
+            result.emplace_back(pair.first, numPages * memPerFrame);
+        }
+    }
+
+    return result;
+}
+
+bool MemoryManager::isProcessInMemory(Process* process) const {
+    std::lock_guard<std::mutex> lock(memoryMutex);
+    return std::find(memoryQueue.begin(), memoryQueue.end(), process) != memoryQueue.end();
+}
+
+bool MemoryManager::isPaging() const {
+    return !flatMemory;
 }
 
 unsigned int MemoryManager::getIdleCpuTicks() const {
@@ -178,37 +310,4 @@ void MemoryManager::incrementActiveCpuTicks() {
     std::lock_guard<std::mutex> lock(memoryMutex);
     activeCpuTicks++;
     totalCpuTicks++;
-}
-
-std::vector<std::pair<Process*, unsigned int>> MemoryManager::getProcessesInMemory() const {
-    std::lock_guard<std::mutex> lock(memoryMutex);
-    std::vector<std::pair<Process*, unsigned int>> processes;
-
-    if (flatMemory) {
-        for (const auto& entry : processMemoryMap) {
-            processes.emplace_back(entry.first, entry.second);
-        }
-    }
-    else {
-        for (const auto& entry : processPageMap) {
-            processes.emplace_back(entry.first, entry.second * memPerFrame);
-        }
-    }
-
-    return processes;
-}
-
-bool MemoryManager::isProcessInMemory(Process* process) const {
-    std::lock_guard<std::mutex> lock(memoryMutex);
-
-    if (flatMemory) {
-        return processMemoryMap.find(process) != processMemoryMap.end();
-    }
-    else {
-        return processPageMap.find(process) != processPageMap.end();
-    }
-}
-
-bool MemoryManager::isPaging() const {
-    return !flatMemory;
 }

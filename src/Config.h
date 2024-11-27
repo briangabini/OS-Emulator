@@ -26,6 +26,8 @@ private:
     Config& operator=(const Config&) = delete;
 
     std::string stripQuotes(const std::string& str);
+    static bool isPowerOfTwo(unsigned int x);
+    static bool isInValidRange(unsigned int x);
 
     int numCpu;
     std::string schedulerType;

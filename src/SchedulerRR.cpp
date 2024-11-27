@@ -88,7 +88,6 @@ void SchedulerRR::schedulerLoop() {
     }
 
     while (running.load()) {
-
         // Pause handling
         while (paused.load()) {
             if (!running.load()) return;
@@ -148,7 +147,6 @@ void SchedulerRR::workerLoop(int coreId) {
     unsigned int delayPerExec = config.getDelaysPerExec();
 
     while (running.load()) {
-
         // Pause handling
         while (paused.load()) {
             if (!running.load()) return;
@@ -163,7 +161,7 @@ void SchedulerRR::workerLoop(int coreId) {
         // Wait for a process to be assigned
         worker->cv.wait(lock, [worker, this]() {
             return worker->busy.load() || !running.load();
-        });
+            });
 
         if (!running.load()) break;
 
@@ -176,10 +174,27 @@ void SchedulerRR::workerLoop(int coreId) {
         unsigned int timeSlice = worker->remainingQuantum;
 
         lock.unlock();
+
+        // Check if process is in memory before starting execution
+        if (!process->isInMemory()) {
+            if (!consoleManager.getMemoryManager().allocateMemory(process, process->getMemorySize())) {
+                // Cannot allocate memory, requeue the process
+                lock.lock();
+                worker->busy.store(false);
+                worker->currentProcess = nullptr;
+                worker->remainingQuantum = 0;
+                lock.unlock();
+
+                process->log("Process requeued due to insufficient memory.", coreId);
+                addProcess(process);
+                continue;
+            }
+        }
+
         bool processCompleted = false;
+        Command* lastCommand = nullptr;
 
         while (timeSlice > 0 && running.load()) {
-
             // Pause handling
             while (paused.load()) {
                 if (!running.load()) return;
@@ -189,25 +204,40 @@ void SchedulerRR::workerLoop(int coreId) {
             }
             if (!running.load()) break;
 
+            // Verify memory status before executing next instruction
+            if (!process->isInMemory()) {
+                if (!consoleManager.getMemoryManager().allocateMemory(process, process->getMemorySize())) {
+                    // Lost memory allocation during execution, need to requeue
+                    process->log("Process lost memory allocation, requeueing.", coreId);
+                    if (lastCommand != nullptr) {
+                        // Re-add the last command that couldn't be executed
+                        process->addCommand(lastCommand);
+                    }
+                    addProcess(process);
+                    break;
+                }
+            }
+
             Command* cmd = process->getNextCommand();
+            lastCommand = cmd;
+
             if (cmd == nullptr) {
+                // Process is done; deallocate memory
                 process->setCompleted(true);
                 process->log("Process finished execution.", coreId);
-
-                // Deallocate memory
                 consoleManager.getMemoryManager().deallocateMemory(process);
-
                 processCompleted = true;
                 break;
             }
 
+            // Execute the command
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cpuCycles++;
             consoleManager.getMemoryManager().incrementActiveCpuTicks();
 
-            // Execute instruction
             cmd->execute(process, coreId);
             delete cmd;
+            lastCommand = nullptr;
 
             process->incrementCurrentLine();
 
@@ -217,7 +247,7 @@ void SchedulerRR::workerLoop(int coreId) {
                 consoleManager.getMemoryManager().incrementActiveCpuTicks();
             }
 
-            // Decrement time slice
+            // Update time slice
             timeSlice--;
             worker->remainingQuantum--;
         }
@@ -231,7 +261,8 @@ void SchedulerRR::workerLoop(int coreId) {
         lock.unlock();
 
         if (!processCompleted && !process->isCompleted()) {
-            // Requeue the process
+            // Process still has work to do, requeue it
+            process->log("Process quantum expired, requeueing.", coreId);
             addProcess(process);
         }
     }

@@ -88,7 +88,6 @@ void SchedulerFCFS::schedulerLoop() {
     }
 
     while (running.load()) {
-
         // Pause handling
         while (paused.load()) {
             if (!running.load()) return;
@@ -147,7 +146,6 @@ void SchedulerFCFS::workerLoop(int coreId) {
     unsigned int delayPerExec = config.getDelaysPerExec();
 
     while (running.load()) {
-
         // Pause handling
         while (paused.load()) {
             if (!running.load()) return;
@@ -162,7 +160,7 @@ void SchedulerFCFS::workerLoop(int coreId) {
         // Wait for a process to be assigned
         worker->cv.wait(lock, [worker, this]() {
             return worker->busy.load() || !running.load();
-        });
+            });
 
         if (!running.load()) break;
 
@@ -172,11 +170,35 @@ void SchedulerFCFS::workerLoop(int coreId) {
         }
 
         Process* process = worker->currentProcess;
-
         lock.unlock();
+
+        // Check if process is in memory before executing
+        if (!process->isInMemory()) {
+            // Process not in memory, try to allocate
+            if (!consoleManager.getMemoryManager().allocateMemory(process, process->getMemorySize())) {
+                // Cannot allocate memory, requeue the process
+                lock.lock();
+                worker->busy.store(false);
+                worker->currentProcess = nullptr;
+                lock.unlock();
+
+                addProcess(process);
+                continue;
+            }
+        }
 
         Command* cmd = nullptr;
         while ((cmd = process->getNextCommand()) != nullptr && running.load()) {
+            // Check memory status before each instruction
+            if (!process->isInMemory()) {
+                // Lost memory allocation, need to requeue
+                if (!consoleManager.getMemoryManager().allocateMemory(process, process->getMemorySize())) {
+                    // Put command back and requeue process
+                    process->addCommand(cmd);
+                    addProcess(process);
+                    break;
+                }
+            }
 
             // Pause handling
             while (paused.load()) {
@@ -206,11 +228,12 @@ void SchedulerFCFS::workerLoop(int coreId) {
 
         if (!running.load()) break;
 
-        process->setCompleted(true);
-        process->log("Process finished execution.", coreId);
-
-        // Deallocate memory
-        consoleManager.getMemoryManager().deallocateMemory(process);
+        // Only deallocate memory and mark process as completed if we finished all instructions
+        if (process->getNextCommand() == nullptr) {
+            process->setCompleted(true);
+            process->log("Process finished execution.", coreId);
+            consoleManager.getMemoryManager().deallocateMemory(process);
+        }
 
         lock.lock();
         worker->busy.store(false);

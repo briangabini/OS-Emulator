@@ -137,18 +137,35 @@ void ConsoleManager::createProcess(const std::string& name) {
         unsigned int minMem = config.getMinMemPerProc();
         unsigned int maxMem = config.getMaxMemPerProc();
         unsigned int memSize = minMem + rand() % (maxMem - minMem + 1);
+
+        // Validate memory size against total available memory
+        if (memSize > config.getMaxOverallMem()) {
+            std::cout << "Process memory requirement (" << memSize
+                << " KB) exceeds system memory ("
+                << config.getMaxOverallMem() << " KB).\n";
+            delete process;
+            return;
+        }
+
         process->setMemorySize(memSize);
 
         // Try to allocate memory for the process
-        if (memoryManager.allocateMemory(process, memSize)) {
-            processes[name] = process;
-            scheduler->addProcess(process);
-            // std::cout << "Process '" << name << "' created with " << memSize << " KB memory.\n";
+        try {
+            if (memoryManager.allocateMemory(process, memSize)) {
+                processes[name] = process;
+                scheduler->addProcess(process);
+            }
+            else {
+                // Not enough memory, cannot create process
+                delete process;
+                std::cout << "Not enough memory to create process '" << name
+                    << "' (required: " << memSize << " KB).\n";
+            }
         }
-        else {
-            // Not enough memory, cannot create process
+        catch (const std::exception& e) {
             delete process;
-            std::cout << "Not enough memory to create process '" << name << "'.\n";
+            std::cout << "Error allocating memory for process '" << name
+                << "': " << e.what() << "\n";
         }
     }
     else {

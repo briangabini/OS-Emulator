@@ -219,12 +219,16 @@ void MainConsole::displayProcessSmi() {
     unsigned int usedMem = memoryManager.getUsedMemory();
     double memUtil = memoryManager.getMemoryUtilization();
 
+    std::stringstream usedMemStr, totalMemStr;
+    usedMemStr << usedMem << " KB";
+    totalMemStr << totalMem << " KB";
+
     std::cout << "| System Utilization                          |\n";
-    std::cout << "| CPU Usage    : " << std::setw(9) << std::fixed << std::setprecision(1)
+    std::cout << "| CPU Usage    : " << std::right << std::setw(9) << std::fixed << std::setprecision(1)
         << cpuUtilization << "%" << std::string(19, ' ') << "|\n";
-    std::cout << "| Memory       : " << std::setw(7) << usedMem << " KB / "
-        << totalMem << " KB" << std::string(9, ' ') << "|\n";
-    std::cout << "| Memory Usage : " << std::setw(9) << std::fixed << std::setprecision(1)
+    std::cout << "| Memory       : " << std::right << std::setw(10) << usedMemStr.str() << " / "
+        << std::left << std::setw(7) << totalMemStr.str() << std::string(9, ' ') << "|\n";
+    std::cout << "| Memory Usage : " << std::right << std::setw(9) << std::fixed << std::setprecision(1)
         << memUtil << "%" << std::string(19, ' ') << "|\n";
 
     // Process Memory Section
@@ -260,28 +264,28 @@ void MainConsole::displayVmStat() {
     std::cout << "|      Virtual Memory Stats      |\n";
     std::cout << "+--------------------------------+\n";
     std::cout << "| Memory Summary:                |\n";
-    std::cout << "| Total Memory  : " << std::setw(10) << memoryManager.getTotalMemory()
+    std::cout << "| Total Memory  : " << std::right << std::setw(10) << memoryManager.getTotalMemory()
         << " KB" << std::string(2, ' ') << "|\n";
-    std::cout << "| Used Memory   : " << std::setw(10) << memoryManager.getUsedMemory()
+    std::cout << "| Used Memory   : " << std::right << std::setw(10) << memoryManager.getUsedMemory()
         << " KB" << std::string(2, ' ') << "|\n";
-    std::cout << "| Free Memory   : " << std::setw(10) << memoryManager.getFreeMemory()
+    std::cout << "| Free Memory   : " << std::right << std::setw(10) << memoryManager.getFreeMemory()
         << " KB" << std::string(2, ' ') << "|\n";
 
     std::cout << "+--------------------------------+\n";
     std::cout << "| CPU Statistics:                |\n";
-    std::cout << "| Idle Ticks    : " << std::setw(13) << memoryManager.getIdleCpuTicks()
+    std::cout << "| Idle Ticks    : " << std::right << std::setw(13) << memoryManager.getIdleCpuTicks()
         << std::string(2, ' ') << "|\n";
-    std::cout << "| Active Ticks  : " << std::setw(13) << memoryManager.getActiveCpuTicks()
+    std::cout << "| Active Ticks  : " << std::right << std::setw(13) << memoryManager.getActiveCpuTicks()
         << std::string(2, ' ') << "|\n";
-    std::cout << "| Total Ticks   : " << std::setw(13) << memoryManager.getTotalCpuTicks()
+    std::cout << "| Total Ticks   : " << std::right << std::setw(13) << memoryManager.getTotalCpuTicks()
         << std::string(2, ' ') << "|\n";
 
     if (memoryManager.isPaging()) {
         std::cout << "+--------------------------------+\n";
         std::cout << "| Paging Information:            |\n";
-        std::cout << "| Pages In      : " << std::setw(13) << memoryManager.getNumPagedIn()
+        std::cout << "| Pages In      : " << std::right << std::setw(13) << memoryManager.getNumPagedIn()
             << std::string(2, ' ') << "|\n";
-        std::cout << "| Pages Out     : " << std::setw(13) << memoryManager.getNumPagedOut()
+        std::cout << "| Pages Out     : " << std::right << std::setw(13) << memoryManager.getNumPagedOut()
             << std::string(2, ' ') << "|\n";
     }
 
