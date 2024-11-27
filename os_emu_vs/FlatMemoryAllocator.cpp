@@ -46,10 +46,6 @@ void FlatMemoryAllocator::deallocate(std::shared_ptr<Process> process) {
 	process->setMemoryPtr(nullptr);
 }
 
-size_t FlatMemoryAllocator::getExternalFragmentation() const {
-	return maximumSize - allocatedSize;
-}
-
 std::string FlatMemoryAllocator::visualizeMemory() {
 	std::ostringstream oss;
 
@@ -120,4 +116,12 @@ void FlatMemoryAllocator::deallocateAt(size_t index, size_t size) {
 	int currentProcessCount = MemoryManager::getInstance()->getProcessCount();
 	MemoryManager::getInstance()->setProcessCount(currentProcessCount - 1);
 
+}
+
+int FlatMemoryAllocator::getUsedMemory() const {
+	return allocatedSize;
+}
+
+int FlatMemoryAllocator::getFreeMemory() const {
+	return maximumSize - allocatedSize;
 }

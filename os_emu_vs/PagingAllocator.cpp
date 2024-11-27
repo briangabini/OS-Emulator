@@ -19,23 +19,6 @@ PagingAllocator::PagingAllocator(size_t maxMemorySize)
 	}
 }
 
-// other methods
-size_t PagingAllocator::getExternalFragmentation() const {
-	std::lock_guard<std::mutex> lock(mtx); // Lock for thread safety
-
-	size_t freeMemory = 0;
-	size_t memoryPerFrame = GlobalConfig::getInstance()->getMemoryPerFrame();
-
-	// Iterate through the frameMap to count the number of free frames
-	for (const auto& entry : frameMap) {
-		if (entry.second == UNALLOCATED_FRAME) {
-			freeMemory += memoryPerFrame;
-		}
-	}
-
-	return freeMemory;
-}
-
 // methods from lecture
 void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
 	std::lock_guard<std::mutex> lock(mtx); // Lock for thread safety
@@ -122,6 +105,11 @@ size_t PagingAllocator::allocateFrames(size_t numFrames, size_t processId) {
 	for (size_t i = 0; i < numFrames; ++i) {
 		allocatedFrames.push_back(freeFrameList.front());
 		freeFrameList.pop();
+		
+		// increment numPagedIn
+		auto memoryManager = MemoryManager::getInstance();
+		int currentNumPagedIn = memoryManager->getNumPagedIn();
+		memoryManager->setNumPagedIn(currentNumPagedIn + 1);
 	}
 
 	// print allocated frames
@@ -144,4 +132,37 @@ void PagingAllocator::deallocateFrames(size_t frameIndex) {
 
 	// Add frame to the free frame list
 	freeFrameList.push(frameIndex);
+
+	// increment numPagedIn
+	auto memoryManager = MemoryManager::getInstance();
+	int currentNumPagedOut = memoryManager->getNumPagedOut();
+	memoryManager->setNumPagedOut(currentNumPagedOut + 1);
+}
+
+int PagingAllocator::getUsedMemory() const {
+	std::lock_guard<std::mutex> lock(mtx);
+	int usedMemory = 0;
+	size_t memoryPerFrame = GlobalConfig::getInstance()->getMemoryPerFrame();
+
+	for (const auto& entry : frameMap) {
+		if (entry.second != UNALLOCATED_FRAME) {
+			usedMemory += memoryPerFrame;
+		}
+	}
+
+	return usedMemory;
+}
+
+int PagingAllocator::getFreeMemory() const {
+	std::lock_guard<std::mutex> lock(mtx);
+	int freeMemory = 0;
+	size_t memoryPerFrame = GlobalConfig::getInstance()->getMemoryPerFrame();
+
+	for (const auto& entry : frameMap) {
+		if (entry.second == UNALLOCATED_FRAME) {
+			freeMemory += memoryPerFrame;
+		}
+	}
+
+	return freeMemory;
 }

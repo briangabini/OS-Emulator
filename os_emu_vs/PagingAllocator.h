@@ -14,18 +14,15 @@ public:
 	std::string visualizeMemory() override;
 
 	// other methods
-	size_t getExternalFragmentation() const override;
-
 	void* allocate(std::shared_ptr<Process> process) override;
 	void deallocate(std::shared_ptr<Process> process) override;
+
+	int getUsedMemory() const override;
+	int getFreeMemory() const override;
 
 private:
 	size_t maximumSize;			// maxMemorySize
 	size_t allocatedSize;
-
-	//std::vector<char> memory;
-	//std::unordered_map<size_t, bool> allocationMap;
-	//std::unordered_map<size_t, int> processMap;
 
 	size_t numFrames;
 	std::unordered_map<int, int> frameMap;

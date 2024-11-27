@@ -12,5 +12,6 @@ public:
 	virtual std::string visualizeMemory() = 0;
 
 	// add new methods
-	virtual size_t getExternalFragmentation() const = 0;
+	virtual int getUsedMemory() const = 0;
+	virtual int getFreeMemory() const = 0;
 };

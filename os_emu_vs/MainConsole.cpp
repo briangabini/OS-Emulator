@@ -38,7 +38,8 @@ namespace {
 		"report-util",
 		"clear",
 		"exit",
-		//"nvidia-smi,
+		//"process-smi,
+		"vmstat",
 		"marquee"
 	};
 
@@ -61,6 +62,10 @@ namespace {
 
 namespace MainConsoleUtil {
 	// forward declarations
+	void displayVmstat();
+	void onEvent(const std::string_view command);
+	void getUserInput(std::string& userInput);
+
 
 	// Helper function to split command into tokens
 	std::vector<std::string> splitCommand(const std::string& command) {
@@ -171,6 +176,9 @@ namespace MainConsoleUtil {
 		{
 			GlobalScheduler::getInstance()->stopSchedulerTest();
 		}
+		else if (command == "vmstat") {
+			displayVmstat();
+		}
 
 	}
 
@@ -186,6 +194,31 @@ namespace MainConsoleUtil {
 			text = "..." + text.substr(text.length() - (maxWidth - 3));  // Truncate and add "..." at the start
 		}
 		return text;
+	}
+
+	void displayVmstat() {
+		auto memoryManager = MemoryManager::getInstance();
+		int totalMemory = memoryManager->getTotalMemory();
+		int usedMemory = memoryManager->getUsedMemory();
+		int freeMemory = memoryManager->getFreeMemory();
+		int numPagedIn = memoryManager->getNumPagedIn();
+		int numPagedOut = memoryManager->getNumPagedOut();
+
+		// Assuming you have functions to get CPU ticks
+		int idleCpuTicks = 0;
+		int activeCpuTicks = 0;
+		int totalCpuTicks = idleCpuTicks + activeCpuTicks;
+
+		std::cout << "-------------------------------\n";
+		std::cout << std::format("{} K total memory\n", totalMemory);
+		std::cout << std::format("{} K used memory\n", usedMemory);
+		std::cout << std::format("{} K free memory\n", freeMemory);
+		std::cout << std::format("{} idle cpu ticks\n", idleCpuTicks);
+		std::cout << std::format("{} active cpu ticks\n", activeCpuTicks);
+		std::cout << std::format("{} total cpu ticks\n", totalCpuTicks);
+		std::cout << std::format("{} num paged in\n", numPagedIn);
+		std::cout << std::format("{} num paged out\n", numPagedOut);
+		std::cout << "-------------------------------\n";
 	}
 }
 

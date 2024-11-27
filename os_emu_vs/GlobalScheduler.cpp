@@ -212,7 +212,6 @@ void GlobalScheduler::logToFile() const {
 
 void GlobalScheduler::logMemory() const {
 	int processCount = MemoryManager::getInstance()->getProcessCount();
-	size_t externalFragmentation = MemoryManager::getInstance()->getMemoryAllocator()->getExternalFragmentation();
 
 	// Open file for logging memory snapshot
 	static int quantumCycle = 0;  // Track quantum cycle number
@@ -228,9 +227,6 @@ void GlobalScheduler::logMemory() const {
 
 	// Write number of processes in memory
 	outFile << std::format("Number of processes in memory: {}\n", processCount);
-
-	// Write total external fragmentation in KB
-	outFile << std::format("Total external fragmentation in KB: {}\n", externalFragmentation);  // Convert bytes to KB
 
 	// Write ASCII printout of memory (assuming visualizeMemory returns a formatted string)``
 	outFile << MemoryManager::getInstance()->getMemoryAllocator()->visualizeMemory();

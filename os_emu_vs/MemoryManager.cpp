@@ -27,6 +27,7 @@ MemoryManager::MemoryManager()
 {
 	bool usingFlatMemoryAllocator = GlobalConfig::getInstance()->isUsingFlatMemoryAllocator();
 	const int maxSize = GlobalConfig::getInstance()->getMaxOverallMemory();
+	additionalMemoryInfo.totalMemory = maxSize;
 
 	if (usingFlatMemoryAllocator) {
 		memoryAllocator = std::make_shared<FlatMemoryAllocator>(maxSize);
@@ -48,4 +49,37 @@ int MemoryManager::getProcessCount() const
 
 void MemoryManager::setProcessCount(int count) {
 	processCount = count;
+}
+
+int MemoryManager::getTotalMemory() const {
+	return additionalMemoryInfo.totalMemory;
+}
+
+int MemoryManager::getUsedMemory() const {
+	return memoryAllocator->getUsedMemory();
+}
+
+int MemoryManager::getFreeMemory() const {
+	return memoryAllocator->getFreeMemory();
+}
+
+int MemoryManager::getNumPagedIn() const {
+	return additionalMemoryInfo.numPagedIn;
+}
+
+int MemoryManager::getNumPagedOut() const {
+	return additionalMemoryInfo.numPagedOut;
+}
+
+void MemoryManager::setTotalMemory(int totalMemory) {
+	additionalMemoryInfo.totalMemory = totalMemory;
+}
+
+
+void MemoryManager::setNumPagedIn(int numPagedIn) {
+	additionalMemoryInfo.numPagedIn = numPagedIn;
+}
+
+void MemoryManager::setNumPagedOut(int numPagedOut) {
+	additionalMemoryInfo.numPagedOut = numPagedOut;
 }

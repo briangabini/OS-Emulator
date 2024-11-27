@@ -15,7 +15,10 @@ public:
 	void* allocate(std::shared_ptr<Process> process) override;
 	void deallocate(std::shared_ptr<Process> process) override;
 	std::string visualizeMemory() override;
-	size_t getExternalFragmentation() const override;
+
+	// others
+	virtual int getUsedMemory() const override;
+	int getFreeMemory() const override;
 
 private:
 	size_t maximumSize;
