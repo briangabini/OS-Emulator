@@ -56,6 +56,8 @@ void FlatMemoryAllocator::deallocate(std::shared_ptr<Process> process) {
 }
 
 std::string FlatMemoryAllocator::visualizeMemory() {
+	std::lock_guard<std::mutex> lock(mtx);
+
 	std::ostringstream oss;
 
 	oss << "----end---- = " << maximumSize << "\n";
