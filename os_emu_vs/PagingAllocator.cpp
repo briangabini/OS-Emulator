@@ -44,6 +44,9 @@ void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
 	int currentProcessCount = MemoryManager::getInstance()->getProcessCount();
 	MemoryManager::getInstance()->setProcessCount(currentProcessCount + 1);
 
+	// set memoryAllocatedTime
+	process->setMemoryAllocatedTime(Process::TimePoint(std::chrono::system_clock::now()));
+
 	return memoryPtr;
 }
 
@@ -77,6 +80,9 @@ void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
 	// decrement processCount
 	int currentProcessCount = MemoryManager::getInstance()->getProcessCount();
 	MemoryManager::getInstance()->setProcessCount(currentProcessCount - 1);
+
+	// set memoryAllocatedTime to 0
+	process->setMemoryAllocatedTime(Process::TimePoint());
 }
 
 std::string PagingAllocator::visualizeMemory() {

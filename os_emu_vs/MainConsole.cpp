@@ -242,7 +242,17 @@ namespace MainConsoleUtil {
 		for (const auto& [key, value] : *processMapPtr) {
 			if (value->getState() == Process::RUNNING) {
 				std::cout << std::format("{}", key);
-				std::cout << std::format("\t\t{}KB\n", value->getMemoryRequired());
+				if (GlobalConfig::getInstance()->isUsingFlatMemoryAllocator()) {
+					std::cout << std::format("\t\t{}KB\n", value->getMemoryRequired());
+				}
+				else {
+					if (value->getMemoryRequired() < GlobalConfig::getInstance()->getMemoryPerFrame()) {
+						std::cout << std::format("\t\t{}KB\n", GlobalConfig::getInstance()->getMemoryPerFrame());
+					}
+					else {
+						std::cout << std::format("\t\t{}KB\n", value->getMemoryRequired()); std::cout << std::format("\t\t{}KB\n", value->getMemoryRequired());
+					}
+				}
 			}
 		}
 

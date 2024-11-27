@@ -39,6 +39,11 @@ void Process::executeCurrentCommand() const
 void Process::moveToNextLine()
 {
 	this->commandCounter++;
+
+	if (this->commandCounter == this->commandList.size())
+	{
+		this->currentState = ProcessState::FINISHED;
+	}
 }
 
 bool Process::isFinished() const

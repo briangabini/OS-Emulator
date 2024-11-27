@@ -75,7 +75,7 @@ void SchedulerWorker::run() {
 
 			if (algo == SchedulingAlgorithm::FCFS)
 			{
-				while (!process->isFinished() && running) {
+				while (process->getState() == Process::RUNNING && running) {
 					process->setState(Process::RUNNING);
 					process->executeCurrentCommand();
 					process->moveToNextLine();
@@ -92,7 +92,7 @@ void SchedulerWorker::run() {
 			{
 				endCpuCycle = GlobalScheduler::getInstance()->getCpuCycles() + quantumCycle;
 
-				while (!process->isFinished() && running)
+				while (process->getState() == Process::RUNNING && running)
 				{
 					process->setState(Process::RUNNING);
 					process->executeCurrentCommand();
@@ -123,7 +123,7 @@ void SchedulerWorker::run() {
 			}
 
 
-			if (process->isFinished() && process->getState() != Process::FINISHED) {
+			if (process->isFinished()) {
 				std::unique_lock<std::mutex> lock2(scheduler->memoryMutex);
 				MemoryManager::getInstance()->getMemoryAllocator()->deallocate(process);
 				process->setState(Process::FINISHED);

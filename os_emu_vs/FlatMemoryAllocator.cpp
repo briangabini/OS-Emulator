@@ -31,6 +31,9 @@ void* FlatMemoryAllocator::allocate(std::shared_ptr<Process> process)
 		if (!allocationMap[i] && canAllocateAt(i, size)) {
 			allocateAt(i, size, processId);
 			process->setMemoryPtr(&memory[i]);
+
+			// get current time
+			process->setMemoryAllocatedTime(Process::TimePoint(std::chrono::system_clock::now()));
 			return &memory[i];				// return the pointer to the i-th element of the memory vector
 		}
 	}
@@ -47,7 +50,8 @@ void FlatMemoryAllocator::deallocate(std::shared_ptr<Process> process) {
 		deallocateAt(index, process->getMemoryRequired());
 	}
 
-
+	// set memoryAllocatedTime to 0
+	process->setMemoryAllocatedTime(Process::TimePoint());
 	process->setMemoryPtr(nullptr);
 }
 

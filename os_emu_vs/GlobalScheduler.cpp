@@ -172,21 +172,22 @@ void GlobalScheduler::monitorProcesses() const {
 
 
 		for (const auto& [name, process] : processes) {
-			if (process->getState() != Process::FINISHED) {
+			if (!process->isFinished()) {
 				if (process->getCreationTime() == std::chrono::system_clock::time_point()) {
 					oss << name << "\t(Invalid Time)\t\tCore: (Invalid)\t(Invalid) / (Invalid)\t\tNumber of Pages: (Invalid)\n";
 				}
 				else {
 					oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : " \t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\n";
-					oss << "Required Memory: " << process->getMemoryRequired() << "\n";
-					oss << "Number of Pages: " << process->getNumberOfPages() << "\n";
+					//oss << "memoryAllocatedTime: " << process->getMemoryAllocatedTime();
+					//oss << "Required Memory: " << process->getMemoryRequired() << "\n";
+					//oss << "Number of Pages: " << process->getNumberOfPages() << "\n";
 				}
 			}
 		}
 
 		oss << "\nFinished processes:\n";
 		for (const auto& [name, process] : processes) {
-			if (process->getState() == Process::FINISHED) {
+			if (process->isFinished()) {
 				if (process->getCreationTime() == std::chrono::system_clock::time_point()) {
 					oss << name << "\t(Invalid Time)\t\tFinished\t(Invalid) / (Invalid)\n";
 				}
