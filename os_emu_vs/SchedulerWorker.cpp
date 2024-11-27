@@ -79,8 +79,8 @@ void SchedulerWorker::run() {
 					process->executeCurrentCommand();
 					process->moveToNextLine();
 
-					endExecDelay = cpuCycles + execDelay;
-					while (cpuCycles % (endExecDelay + 1) != 0)
+					endExecDelay = GlobalScheduler::getInstance()->getCpuCycles() + execDelay;
+					while (GlobalScheduler::getInstance()->getCpuCycles() % (endExecDelay + 1) != 0)
 					{
 						// Busy waiting
 					}
@@ -89,20 +89,20 @@ void SchedulerWorker::run() {
 			}
 			else if (algo == SchedulingAlgorithm::ROUND_ROBIN)
 			{
-				endCpuCycle = cpuCycles + quantumCycle;
+				endCpuCycle = GlobalScheduler::getInstance()->getCpuCycles() + quantumCycle;
 
 				while (!process->isFinished() && running)
 				{
 					process->executeCurrentCommand();
 					process->moveToNextLine();
 
-					endExecDelay = cpuCycles + execDelay;
-					while (cpuCycles % (endExecDelay + 1) != 0)
+					endExecDelay = GlobalScheduler::getInstance()->getCpuCycles() + execDelay;
+					while (GlobalScheduler::getInstance()->getCpuCycles() % (endExecDelay + 1) != 0)
 					{
 						// Busy waiting
 					}
 
-					if (cpuCycles >= endCpuCycle)
+					if (GlobalScheduler::getInstance()->getCpuCycles() >= endCpuCycle)
 					{
 						if (!process->isFinished()) {
 							GlobalScheduler::getInstance()->logMemory();

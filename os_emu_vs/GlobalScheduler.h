@@ -34,6 +34,16 @@ public:
 	void startSchedulerTest();
 	void stopSchedulerTest();
 
+	// for cpu ticks
+	void startCpuThread();
+	void stopCpuThread();
+	int getCpuCycles() const;
+
+	// for active cpu ticks
+	void startActiveCpuThread();
+	void stopActiveCpuThread();
+	int getActiveCpuCycles() const;
+
 private:
 	GlobalScheduler(SchedulingAlgorithm algo);
 	~GlobalScheduler();
@@ -83,6 +93,16 @@ private:
 	std::thread processGeneratorThread;
 	void generateProcesses();
 	mutable std::string lastMonitorOutput;
+
+	// cpuTicks
+	std::atomic<int> cpuCycles;
+	std::atomic<bool> cpuCycleRunning;
+	std::thread cpuThread;
+
+	// active cpu ticks
+	std::atomic<int> activeCpuCycles;
+	std::atomic<bool> activeCpuCycleRunning;
+	std::thread activeCpuThread;
 };
 
 std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_clock>& timePoint);

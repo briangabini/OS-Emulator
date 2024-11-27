@@ -26,7 +26,9 @@ GlobalScheduler::GlobalScheduler(SchedulingAlgorithm algo) {
 	}
 
 	this->start();
-	scheduler->start();
+	this->scheduler->start();
+	this->startCpuThread();
+	this->startActiveCpuThread();
 }
 
 void GlobalScheduler::initialize()
@@ -50,6 +52,8 @@ void GlobalScheduler::destroy() {
 GlobalScheduler::~GlobalScheduler()
 {
 	stopSchedulerTest();
+	stopCpuThread();
+	stopActiveCpuThread();
 }
 
 void GlobalScheduler::startSchedulerTest()
@@ -76,7 +80,7 @@ void GlobalScheduler::generateProcesses()
 	while (schedulerTestRunning)
 	{
 
-		if (cpuCycles % (batchProcessFrequency + 1) == 0 && !processCreatedInCurrentCycle)
+		if (GlobalScheduler::getInstance()->getCpuCycles() % (batchProcessFrequency + 1) == 0 && !processCreatedInCurrentCycle)
 		{
 			const auto newProcess = createProcess("process_", Mode::KERNEL);
 			const auto newBaseScreen = std::make_shared<BaseScreen>(newProcess, newProcess->getName());
@@ -90,7 +94,7 @@ void GlobalScheduler::generateProcesses()
 				return;
 			}
 		}
-		else if (cpuCycles % (batchProcessFrequency + 1) != 0)
+		else if (GlobalScheduler::getInstance()->getCpuCycles() % (batchProcessFrequency + 1) != 0)
 		{
 			processCreatedInCurrentCycle = false;
 		}
@@ -233,3 +237,48 @@ std::string formatTimestamp(const std::chrono::time_point<std::chrono::system_cl
 	oss << std::put_time(&tm, "(%m/%d/%Y %I:%M:%S%p)");
 	return oss.str();
 }
+
+void GlobalScheduler::startCpuThread() {
+	cpuCycleRunning = true;
+	cpuThread = std::thread([this]() {
+		while (cpuCycleRunning) {
+			cpuCycles++;
+			std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 0.1 second
+		}
+		});
+}
+
+void GlobalScheduler::stopCpuThread() {
+	cpuCycleRunning = false;
+	if (cpuThread.joinable()) {
+		cpuThread.join();
+	}
+}
+
+int GlobalScheduler::getCpuCycles() const {
+	return cpuCycles.load();
+}
+
+void GlobalScheduler::startActiveCpuThread() {
+	activeCpuCycleRunning = true;
+	activeCpuThread = std::thread([this]() {
+		while (activeCpuCycleRunning) {
+			if (scheduler->getCpuUtilization() != 0) {
+				activeCpuCycles++;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 0.1 second
+		}
+		});
+}
+
+void GlobalScheduler::stopActiveCpuThread() {
+	activeCpuCycleRunning = false;
+	if (activeCpuThread.joinable()) {
+		activeCpuThread.join();
+	}
+}
+
+int GlobalScheduler::getActiveCpuCycles() const {
+	return activeCpuCycles.load();
+}
+

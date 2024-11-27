@@ -5,20 +5,11 @@
 #include "MemoryManager.h"
 #include <iostream>
 
-int cpuCycles = 0;
-
 int main() {
 	ConsoleManager::initialize();
 	bool running = true;
 
 	// start incrementing cpuCycle in another thread
-	std::thread cpuThread([&running]() {
-		while (running) {
-			cpuCycles++;
-			std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 0.1 second
-		}
-		});
-
 	while (running) {
 
 		ConsoleManager::getInstance()->drawConsole();
@@ -26,8 +17,6 @@ int main() {
 
 		running = ConsoleManager::getInstance()->isRunning();
 	}
-
-	cpuThread.join();
 
 	// clean up
 	ConsoleManager::destroy();

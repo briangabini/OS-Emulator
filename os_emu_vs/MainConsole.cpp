@@ -150,7 +150,7 @@ namespace MainConsoleUtil {
 			GlobalScheduler::initialize();
 			MemoryManager::initialize();
 			// HOTFIX: sleep for 2 seconds
-			std::this_thread::sleep_for(std::chrono::seconds(2));
+			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
 		else if (command == "clear") {
 			clearScreen();
@@ -205,9 +205,9 @@ namespace MainConsoleUtil {
 		int numPagedOut = memoryManager->getNumPagedOut();
 
 		// Assuming you have functions to get CPU ticks
-		int idleCpuTicks = 0;
-		int activeCpuTicks = 0;
-		int totalCpuTicks = idleCpuTicks + activeCpuTicks;
+		int totalCpuTicks = GlobalScheduler::getInstance()->getCpuCycles();
+		int activeCpuTicks = GlobalScheduler::getInstance()->getActiveCpuCycles();
+		int idleCpuTicks = totalCpuTicks - activeCpuTicks;
 
 		std::cout << "-------------------------------\n";
 		std::cout << std::format("{} K total memory\n", totalMemory);
@@ -253,7 +253,7 @@ void MainConsole::process() {
 
 
 		//for debugging
-		std::cout << "Cpu cycles: " << cpuCycles << '\n';
+		//std::cout << "Cpu cycles: " << GlobalScheduler::getInstance()->getCpuCycles() << '\n';
 	}
 }
 
