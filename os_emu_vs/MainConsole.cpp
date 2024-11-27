@@ -150,7 +150,7 @@ namespace MainConsoleUtil {
 			GlobalScheduler::initialize();
 			MemoryManager::initialize();
 			// HOTFIX: sleep for 2 seconds
-			std::this_thread::sleep_for(std::chrono::seconds(1));
+			std::this_thread::sleep_for(std::chrono::seconds(2));
 		}
 		else if (command == "clear") {
 			clearScreen();

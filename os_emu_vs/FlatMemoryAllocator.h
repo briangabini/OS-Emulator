@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <mutex>
 #include "Process.h"
 
 // FlatMemoryAllocator class implementing IMemoryAllocator
@@ -28,8 +29,11 @@ private:
 	std::unordered_map<size_t, bool> allocationMap;
 	std::unordered_map<size_t, int> processMap;
 
+
 	void initializeMemory();
 	bool canAllocateAt(size_t index, size_t size) const;
 	void allocateAt(size_t index, size_t size, int pId);
 	void deallocateAt(size_t index, size_t size);
+
+	mutable std::mutex mtx;
 };

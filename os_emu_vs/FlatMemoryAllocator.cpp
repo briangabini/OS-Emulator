@@ -19,8 +19,11 @@ FlatMemoryAllocator::~FlatMemoryAllocator()
 
 void* FlatMemoryAllocator::allocate(std::shared_ptr<Process> process)
 {
+	std::lock_guard<std::mutex> lock(mtx);
+
 	int size = process->getMemoryRequired();
 	int processId = process->getPID();
+
 
 	// Find the first available block that can accommodate the process
 	for (size_t i = 0; i < maximumSize - size + 1; ++i) {
@@ -37,6 +40,7 @@ void* FlatMemoryAllocator::allocate(std::shared_ptr<Process> process)
 
 void FlatMemoryAllocator::deallocate(std::shared_ptr<Process> process) {
 	// Find the index of the memory block to deallocate
+	std::lock_guard<std::mutex> lock(mtx);
 	size_t index = static_cast<char*>(process->getMemoryPtr()) - &memory[0];
 	if (allocationMap[index]) {
 		deallocateAt(index, process->getMemoryRequired());
