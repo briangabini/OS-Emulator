@@ -50,8 +50,7 @@ void SchedulerWorker::run() {
 					// add to the back of the queue
 					//scheduler->readyQueue.pop();
 					//scheduler->readyQueue.push(process);
-					std::cout << "allocatedMemory is nullptr";
-
+					//std::cout << "allocatedMemory is nullptr";
 					continue;
 				}
 

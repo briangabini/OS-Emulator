@@ -48,7 +48,7 @@ void* PagingAllocator::allocate(std::shared_ptr<Process> process) {
 	//std::cout << "Allocating " << numFramesNeeded << " frames for process " << processId << std::endl;
 
 	if (numFramesNeeded > freeFrameList.size()) {
-		std::cout << "numFramesNeeded > freeFrameList.size()";
+		//std::cout << "numFramesNeeded > freeFrameList.size()";
 		return nullptr;
 	}
 
@@ -86,9 +86,9 @@ void PagingAllocator::deallocate(std::shared_ptr<Process> process) {
 	}
 
 	// list deallocated frames
-	for (size_t frameIndex : framesToDeallocate) {
+	/*for (size_t frameIndex : framesToDeallocate) {
 		std::cout << "Deallocated Frame: " << frameIndex << std::endl;
-	}
+	}*/
 
 	process->setMemoryPtr(nullptr);
 	// decrement processCount
@@ -125,9 +125,9 @@ size_t PagingAllocator::allocateFrames(size_t numFrames, size_t processId) {
 	}
 
 	// print allocated frames
-	for (size_t frameIndex : allocatedFrames) {
+	/*for (size_t frameIndex : allocatedFrames) {
 		std::cout << "Allocated Frame: " << frameIndex << std::endl;
-	}
+	}*/
 
 	// Map allocated frames to the process ID
 	for (size_t frameIndex : allocatedFrames) {
