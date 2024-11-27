@@ -25,6 +25,7 @@ public:
 
 	std::shared_ptr<Process> createProcess(String processName, Mode mode);
 	std::shared_ptr<Process> findProcess(String& name) const;
+	std::shared_ptr<Process> findProcessById(int id) const;
 
 	void monitorProcesses() const;
 	void logToFile() const;

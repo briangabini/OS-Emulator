@@ -1,9 +1,10 @@
 #include "FlatMemoryAllocator.h"
-#include "GlobalConfig.h"
-#include "MemoryManager.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "GlobalConfig.h"
+#include "MemoryManager.h"
+#include "GlobalScheduler.h"
 
 /* PUBLIC METHODS */
 FlatMemoryAllocator::FlatMemoryAllocator(size_t maximumSize)
@@ -60,7 +61,11 @@ std::string FlatMemoryAllocator::visualizeMemory() {
 		if (allocationMap[i]) {
 			oss << i + 1 << "\n";
 			oss << "P" << processMap[i] << "\n";
-			i -= GlobalConfig::getInstance()->getMemoryPerProcess() - 1;
+
+			// get process using id
+			std::shared_ptr<Process> process = GlobalScheduler::getInstance()->findProcessById(processMap[i]);
+
+			i -= process->getMemoryRequired()  - 1;
 			oss << i << "\n\n";
 		}
 		--i;

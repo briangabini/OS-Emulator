@@ -79,8 +79,8 @@ int GlobalConfig::generateRandomPowerOf2(int minVal, int maxVal) const {
 }
 
 int GlobalConfig::getMemoryPerProcess() const {
-	// return generateRandomPowerOf2(minMemPerProcess, maxMemPerProcess);
-	return minMemPerProcess;
+	 return generateRandomPowerOf2(minMemPerProcess, maxMemPerProcess);
+	//return minMemPerProcess;
 }
 
 int GlobalConfig::generateRandomNumberOfPages() const {

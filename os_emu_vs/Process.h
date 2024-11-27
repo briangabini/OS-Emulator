@@ -52,6 +52,7 @@ public:
 	// mco2
 	void setNumberOfPages(int numberOfPages);
 	int getNumberOfPages() const;
+	bool isMemoryAllocatedTimeNull() const;
 	
 
 private:

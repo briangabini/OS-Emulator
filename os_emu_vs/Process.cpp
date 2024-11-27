@@ -122,3 +122,7 @@ void Process::setNumberOfPages(int numberOfPages)
 int Process::getNumberOfPages() const {
 	return memoryInfo.numberOfPages;
 }
+
+bool Process::isMemoryAllocatedTimeNull() const {
+	return memoryInfo.memoryAllocatedTime == Process::TimePoint();
+}

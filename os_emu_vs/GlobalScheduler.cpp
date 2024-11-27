@@ -145,6 +145,15 @@ std::shared_ptr<Process> GlobalScheduler::findProcess(String& name) const {
 	return (it != processes.end()) ? it->second : nullptr;
 }
 
+std::shared_ptr<Process> GlobalScheduler::findProcessById(int id) const {
+	for (const auto& [name, process] : processes) {
+		if (process->getPID() == id) {
+			return process;
+		}
+	}
+	return nullptr; // Return nullptr if no process with the given ID is found
+}
+
 // from video
 void GlobalScheduler::run() {
 	this->scheduler->execute();
@@ -168,7 +177,9 @@ void GlobalScheduler::monitorProcesses() const {
 					oss << name << "\t(Invalid Time)\t\tCore: (Invalid)\t(Invalid) / (Invalid)\t\tNumber of Pages: (Invalid)\n";
 				}
 				else {
-					oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : " \t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\t\tNumber of Pages: " << process->getNumberOfPages() << "\n";
+					oss << name << "\t" << formatTimestamp(process->getCreationTime()) << "\t\tCore: " << process->getCPUCoreID() << (process->getCPUCoreID() == -1 ? " " : " \t") << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\n";
+					oss << "Required Memory: " << process->getMemoryRequired() << "\n";
+					oss << "Number of Pages: " << process->getNumberOfPages() << "\n";
 				}
 			}
 		}
