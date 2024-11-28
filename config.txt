@@ -7,5 +7,5 @@ max-ins 2000
 delay-per-exec 1000
 max-overall-mem 2048
 mem-per-frame 2048
-min-mem-per-proc 512
-max-mem-per-proc 512
+min-mem-per-proc 128
+max-mem-per-proc 1024

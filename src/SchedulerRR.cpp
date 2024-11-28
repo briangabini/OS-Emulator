@@ -214,6 +214,14 @@ void SchedulerRR::workerLoop(int coreId) {
                         process->addCommand(lastCommand);
                     }
                     addProcess(process);
+
+                    // Reset worker state
+                    lock.lock();
+                    worker->busy.store(false);
+                    worker->currentProcess = nullptr;
+                    worker->remainingQuantum = 0;
+                    lock.unlock();
+
                     break;
                 }
             }
@@ -275,7 +283,7 @@ int SchedulerRR::getTotalCores() const {
 int SchedulerRR::getBusyCores() const {
     int busyCores = 0;
     for (const Worker* worker : workers) {
-        if (worker->busy.load()) {
+        if (worker->busy.load() && worker->currentProcess != nullptr && worker->currentProcess->isInMemory()) {
             busyCores++;
         }
     }
@@ -285,7 +293,7 @@ int SchedulerRR::getBusyCores() const {
 std::map<Process*, int> SchedulerRR::getRunningProcesses() const {
     std::map<Process*, int> runningProcesses;
     for (const Worker* worker : workers) {
-        if (worker->currentProcess != nullptr) {
+        if (worker->currentProcess != nullptr && worker->currentProcess->isInMemory()) {
             runningProcesses[worker->currentProcess] = worker->coreId;
         }
     }

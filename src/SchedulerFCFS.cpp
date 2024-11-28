@@ -196,6 +196,13 @@ void SchedulerFCFS::workerLoop(int coreId) {
                     // Put command back and requeue process
                     process->addCommand(cmd);
                     addProcess(process);
+
+                    // Reset worker state
+                    lock.lock();
+                    worker->busy.store(false);
+                    worker->currentProcess = nullptr;
+                    lock.unlock();
+
                     break;
                 }
             }
@@ -249,7 +256,7 @@ int SchedulerFCFS::getTotalCores() const {
 int SchedulerFCFS::getBusyCores() const {
     int busyCores = 0;
     for (const Worker* worker : workers) {
-        if (worker->busy.load()) {
+        if (worker->busy.load() && worker->currentProcess != nullptr && worker->currentProcess->isInMemory()) {
             busyCores++;
         }
     }
@@ -259,7 +266,7 @@ int SchedulerFCFS::getBusyCores() const {
 std::map<Process*, int> SchedulerFCFS::getRunningProcesses() const {
     std::map<Process*, int> runningProcesses;
     for (const Worker* worker : workers) {
-        if (worker->currentProcess != nullptr) {
+        if (worker->currentProcess != nullptr && worker->currentProcess->isInMemory()) {
             runningProcesses[worker->currentProcess] = worker->coreId;
         }
     }
