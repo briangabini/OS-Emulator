@@ -19,6 +19,7 @@ void MainConsole::run() {
         std::getline(std::cin, input);
 
         if (input == "exit") {
+            std::cout << "Ending processes and stopping scheduler..." << std::endl;
             if (consoleManager.isInitialized()) {
                 consoleManager.stopSchedulerTest();
                 consoleManager.stopScheduler();
@@ -162,11 +163,45 @@ void MainConsole::handleCommand(const std::string& input) {
     else if (command == "scheduler-resume") {
         consoleManager.resumeScheduler();
     }
-    else if (command == "scheduler-10") {
-        consoleManager.startScheduler10();
-    }
     else if (command == "scheduler-test") {
-        consoleManager.startSchedulerTest();
+        if (tokens.size() == 1) {
+            consoleManager.startSchedulerTest();
+        }
+        else if (tokens.size() >= 3) {
+            std::string flag = tokens[1];
+            try {
+                int value = std::stoi(tokens[2]);
+                if (value <= 0) {
+                    std::cout << "Value must be positive.\n";
+                    return;
+                }
+
+                if (flag == "-p") {
+                    consoleManager.startSchedulerTestWithProcesses(value);
+                }
+                else if (flag == "-t") {
+                    consoleManager.startSchedulerTestWithDuration(value);
+                }
+                else {
+                    std::cout << "Invalid flag. Usage:\n"
+                        << "scheduler-test              (continuous generation)\n"
+                        << "scheduler-test -p <number>  (generate exact number of processes)\n"
+                        << "scheduler-test -t <seconds> (run for specified time)\n";
+                }
+            }
+            catch (const std::invalid_argument&) {
+                std::cout << "Invalid number format.\n";
+            }
+            catch (const std::out_of_range&) {
+                std::cout << "Number is too large. Please use a smaller number.\n";
+            }
+        }
+        else {
+            std::cout << "Usage:\n"
+                << "scheduler-test              (continuous generation)\n"
+                << "scheduler-test -p <number>  (generate exact number of processes)\n"
+                << "scheduler-test -t <seconds> (run for specified time)\n";
+        }
     }
     else if (command == "scheduler-stop") {
         consoleManager.stopSchedulerTest();

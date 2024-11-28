@@ -94,7 +94,7 @@ void ConsoleManager::cpuCycleLoop() {
 void ConsoleManager::safePrint(const std::string& message) {
     std::lock_guard<std::mutex> lock(ioMutex);
     // Move to new line and print message
-    std::cout << "\n" << message << std::endl;
+    std::cout << message << std::endl;
     // Reprint the prompt
     std::cout << currentPrompt;
     std::cout.flush();
@@ -263,7 +263,7 @@ void ConsoleManager::startSchedulerTest() {
     testThread = std::thread(&ConsoleManager::schedulerTestLoop, this);
 
     int batchProcessFreq = Config::getInstance().getBatchProcessFreq();
-    std::cout << "Scheduler test started. Generating dummy processes every " << batchProcessFreq << " CPU cycles...\n";
+    std::cout << "Scheduler test started. Generating dummy processes every " + std::to_string(batchProcessFreq) + " CPU cycles...\n";
 }
 
 void ConsoleManager::stopSchedulerTest() {
@@ -284,7 +284,6 @@ void ConsoleManager::stopSchedulerTest() {
 
 void ConsoleManager::schedulerTestLoop() {
     Config& config = Config::getInstance();
-    int processCounter = 1;
     unsigned int freq = config.getBatchProcessFreq();
     unsigned int nextProcessCycle = cpuCycles.load() + freq;
 
@@ -302,39 +301,60 @@ void ConsoleManager::schedulerTestLoop() {
             }
         }
 
-        // Generate a new dummy process
-        std::string processName = "dummyProcess" + std::to_string(processCounter++);
-        if (createProcess(processName)) {
-            Process* process = getProcess(processName);
-            unsigned int numIns = config.getMinIns() + rand() % (config.getMaxIns() - config.getMinIns() + 1);
-            for (unsigned int j = 0; j < numIns; ++j) {
-                process->addCommand(new PrintCommand("Hello from " + processName + " Instruction " + std::to_string(j + 1)));
-            }
-        }
-        else {
-            std::cout << "Failed to create process '" << processName << "'. Skipping...\n";
-        }
+        generateTestProcess("dummyProcess");
 
         nextProcessCycle += freq;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
+void ConsoleManager::generateTestProcess(const std::string& baseName, std::stringstream* outputStream) {
+    // Use atomic increment to get unique process number
+    int processNum = processCounter++;
+    std::string processName = baseName + std::to_string(processNum);
 
-void ConsoleManager::startScheduler10() {
-    std::lock_guard<std::mutex> lock(testMutex);
-    // Generate 10 processes, each with 100 print commands
-    for (int i = 1; i <= 10; ++i) {
-        std::string processName = "process" + std::to_string(i);
-        createProcess(processName);
-
+    if (createProcess(processName)) {
         Process* process = getProcess(processName);
-        for (int j = 1; j <= 100; ++j) {
-            process->addCommand(new PrintCommand("Message " + std::to_string(j) + " from " + processName));
-        }
+        if (process) {
+            Config& config = Config::getInstance();
+            unsigned int numIns = config.getMinIns() + rand() % (config.getMaxIns() - config.getMinIns() + 1);
 
-        std::cout << "Generated process: " << processName << " with 100 print commands.\n";
+            for (unsigned int j = 0; j < numIns; ++j) {
+                process->addCommand(new PrintCommand("Hello from " + processName + " Instruction " + std::to_string(j + 1)));
+            }
+
+            // Only output if we're in batch mode (-p flag)
+            if (outputStream) {
+                *outputStream << "Generated process: " << processName << " with " << numIns << " print commands.\n";
+            }
+        }
     }
+    else if (outputStream) {
+        *outputStream << "Failed to create process '" << processName << "'. Skipping...\n";
+    }
+}
+
+void ConsoleManager::startSchedulerTestWithProcesses(int numProcesses) {
+    std::stringstream outputBuffer;
+    std::cout << "Generating " << numProcesses << " processes...\n";
+
+    for (int i = 0; i < numProcesses; ++i) {
+        generateTestProcess("process", &outputBuffer);
+    }
+
+    // Print all process generation messages at once
+    std::cout << outputBuffer.str();
+}
+
+void ConsoleManager::startSchedulerTestWithDuration(int seconds) {
+    std::cout << "Starting scheduler test for " + std::to_string(seconds) + " seconds...\n";
+    startSchedulerTest();
+
+    std::thread([this, seconds]() {
+        std::this_thread::sleep_for(std::chrono::seconds(seconds));
+        stopSchedulerTest();
+        safePrint("Scheduler test completed after " + std::to_string(seconds) + " seconds.");
+        }).detach();
 }
 
 std::mutex& ConsoleManager::getIOMutex() {

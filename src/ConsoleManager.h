@@ -11,6 +11,7 @@
 #include <thread>
 #include <condition_variable>
 #include <atomic>
+#include <sstream>
 
 class MainConsole;
 
@@ -38,9 +39,11 @@ public:
     void pauseScheduler();
     void resumeScheduler();
 
+    // Scheduler test methods
     void startSchedulerTest();
+    void startSchedulerTestWithProcesses(int numProcesses);
+    void startSchedulerTestWithDuration(int seconds);
     void stopSchedulerTest();
-    void startScheduler10();
 
     // Console output management
     void safePrint(const std::string& message);
@@ -69,10 +72,12 @@ private:
 
     // For scheduler test
     void schedulerTestLoop();
+    void generateTestProcess(const std::string& baseName, std::stringstream* outputStream = nullptr);
     std::thread testThread;
     bool testing;
     std::mutex testMutex;
     std::condition_variable testCV;
+    std::atomic<int> processCounter{ 1 };
 
     // Console output management
     std::string currentPrompt;
