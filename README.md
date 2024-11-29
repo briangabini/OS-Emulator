@@ -9,7 +9,7 @@ Group Members:
 ## Instructions to run:
 
  1. Clone repository to local machine: ```git clone https://github.com/briangabini/OS-Emulator.git```
- 2. Open ```csopesy.sln``` in Visual Studio 2022
+ 2. Open ```OSEmulator.sln``` in Visual Studio 2022
  3. Run application
 
 ## Other Details
