@@ -13,4 +13,4 @@ Group Members:
  3. Run application
 
 ## Other Details
-Main File: os_emu_vs.cpp
+Main File: OSEmulator.cpp
