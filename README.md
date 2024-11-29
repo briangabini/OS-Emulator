@@ -1,4 +1,4 @@
-# CSOPESY MO1 - Process Multiplexer and CLI
+# CSOPESY MO - OS Emulator
 
 Group Members:
 - Tan, Timothy Joshua O.
