@@ -1,4 +1,6 @@
 #include "MemoryManager.h"
+#include <fstream>
+#include <iostream>
 #include <algorithm>
 
 MemoryManager::MemoryManager()
@@ -86,6 +88,17 @@ void MemoryManager::removeOldestProcess() {
         // Mark process as swapped out
         swappedOutProcesses.insert(oldestProcess);
         oldestProcess->setInMemory(false);
+
+        int processId = oldestProcess->getId();
+        std::string filename = std::to_string(processId) + ".txt";
+        std::ofstream outfile(filename);
+        if (outfile.is_open()) {
+            outfile << processId;
+            outfile.close();
+        }
+        else {
+            std::cerr << "Failed to create backing store file for process " << processId << std::endl;
+        }
     }
     else {
         auto it = pageTables.find(oldestProcess);
@@ -238,7 +251,19 @@ bool MemoryManager::allocateMemory(Process* process, unsigned int size) {
 
         pageTables[process] = std::move(pageTable);
         memoryQueue.push_back(process);
+
         process->setInMemory(true);
+        if (swappedOutProcesses.erase(process) > 0) {
+            // Process was in the backing store, so clear the content of the .txt file
+            int processId = process->getId();
+            std::string filename = std::to_string(processId) + ".txt";
+            std::ofstream outfile(filename, std::ios::trunc);
+            if (!outfile.is_open()) {
+                std::cerr << "Failed to open backing store file for process " << processId << " to empty it" << std::endl;
+            }
+            outfile.close();
+        }
+
         return true;
     }
 }
