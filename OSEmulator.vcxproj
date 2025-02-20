@@ -158,8 +158,8 @@
     <ClCompile Include="src\MainConsole.cpp" />
     <ClCompile Include="src\OSEmulator.cpp" />
     <ClCompile Include="src\Process.cpp" />
-    <ClCompile Include="src\SchedulerFCFS.cpp" />
-    <ClCompile Include="src\SchedulerRR.cpp" />
+    <ClCompile Include="src\SchedulerFirstComeFirstServe.cpp" />
+    <ClCompile Include="src\SchedulerRoundRobin.cpp" />
     <ClCompile Include="src\Screen.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

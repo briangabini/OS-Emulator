@@ -11,10 +11,10 @@
 #include <unordered_set>
 #include "ThreadSafeQueue.h"
 
-class SchedulerFCFS : public Scheduler {
+class SchedulerRoundRobin : public Scheduler {
 public:
-    SchedulerFCFS(int numCores, ConsoleManager& manager);
-    ~SchedulerFCFS();
+    SchedulerRoundRobin(int numCores, unsigned int quantum, ConsoleManager& manager);
+    ~SchedulerRoundRobin();
 
     void addProcess(Process* process) override;
     void start() override;
@@ -36,6 +36,8 @@ private:
     void workerLoop(int coreId);
 
     int numCores;
+    unsigned int quantum;
+
     std::vector<std::thread> workerThreads;
     std::thread schedulerThread;
 
@@ -50,6 +52,7 @@ private:
         int coreId = 0;
         std::atomic<bool> busy{ false };
         Process* currentProcess = nullptr;
+        unsigned int remainingQuantum = 0;
         std::thread thread;
         std::mutex mtx;
         std::condition_variable cv;
@@ -62,8 +65,8 @@ private:
     std::vector<Process*> allProcesses;
     mutable std::mutex allProcessesMutex;
 
+    std::atomic<unsigned int> cpuCycles;
+
     std::unordered_set<Process*> queuedProcessesSet;
     mutable std::mutex queuedProcessesMutex;
-
-    std::atomic<unsigned int> cpuCycles;
 };
